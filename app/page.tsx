@@ -4,19 +4,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, X, Check, Trophy, User, Edit3, BookOpen, LogOut, Lock, LayoutDashboard, Library, AlertCircle, Loader2, CloudUpload
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, increment, collection, getDocs } from "firebase/firestore";
 
 // ---------------------------------------------------------
-// 🟢 CONFIGURATION FIREBASE
+// 🟢 ZONE DE CONFIGURATION
 // ---------------------------------------------------------
 const firebaseConfig = {
-  apiKey: "AIzaSyDPWOdxYtnvVrDB6wk68EF0Gz62fqVCwBE",
+  apiKey: "AIzaSyDPWOdxYtnvVrDB6wk68EF0Gz62fqVcwBE",
   authDomain: "espanolsprint.firebaseapp.com",
   projectId: "espanolsprint",
   storageBucket: "espanolsprint.firebasestorage.app",
@@ -28,6 +28,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
 
 /* --- DATASET DE SECOURS (Pour l'initialisation) --- */
 const INITIAL_LESSONS_DATA = {
@@ -70,39 +71,35 @@ export default function EspanolSprintPro() {
   const [loading, setLoading] = useState(true);
   const [activeLessonId, setActiveLessonId] = useState(1);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  
-  // État pour stocker les leçons qui viennent du Cloud
   const [cloudLessons, setCloudLessons] = useState({}); 
 
-  // 1. Initialisation & Chargement des données
+  // 1. Initialisation & Chargement
   useEffect(() => {
     const initApp = async (user) => {
       if (user) {
         setCurrentUser(user);
-        
-        // A. Charger Profil Utilisateur
         const userRef = doc(db, "users", user.uid);
         try {
           const userSnap = await getDoc(userRef);
-          
           if (userSnap.exists()) {
             setUserData(userSnap.data());
           } else {
+            // Création auto si Google Login
+            const name = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
             const newProfile = { 
-              name: user.email.split('@')[0], xp: 0, streak: 1, level: 1, vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 }
+              name: name, xp: 0, streak: 1, level: 1, vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 }
             };
             await setDoc(userRef, newProfile);
             setUserData(newProfile);
           }
 
-          // B. Charger le contenu des leçons depuis Firestore (Cloud)
+          // Chargement Leçons Cloud
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
           const lessonsData = {};
           lessonsSnapshot.forEach((doc) => {
             lessonsData[doc.id] = doc.data().content;
           });
           
-          // Si aucune leçon dans le cloud, on utilise celles de secours
           if (Object.keys(lessonsData).length > 0) {
             setCloudLessons(lessonsData);
           } else {
@@ -111,10 +108,9 @@ export default function EspanolSprintPro() {
           
           setView('dashboard');
         } catch (error) {
-          console.error("Erreur chargement leçons:", error);
+          console.error("Erreur chargement:", error);
           setCloudLessons(INITIAL_LESSONS_DATA); 
         }
-
       } else {
         setCurrentUser(null);
         setUserData(null);
@@ -127,15 +123,14 @@ export default function EspanolSprintPro() {
     return () => unsubscribe();
   }, []);
 
-  // Fonction d'ADMIN pour envoyer les leçons locales vers le Cloud
+  // Fonction ADMIN
   const uploadLessonsToCloud = async () => {
-    if (!confirm("Attention : Cela va initialiser les leçons dans Firebase. Continuer ?")) return;
-    
+    if (!confirm("Initialiser les leçons dans Firebase ?")) return;
     try {
       for (const [id, content] of Object.entries(INITIAL_LESSONS_DATA)) {
         await setDoc(doc(db, "lessons", id), { content: content });
       }
-      alert("✅ Leçons envoyées vers le Cloud !");
+      alert("✅ Leçons envoyées !");
       window.location.reload(); 
     } catch (e) {
       alert("Erreur: " + e.message);
@@ -155,7 +150,18 @@ export default function EspanolSprintPro() {
       }
     } catch (error) {
       console.error(error);
-      alert("Erreur connexion: " + error.message);
+      alert("Erreur : " + error.message);
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error(error);
+      alert("Erreur Google : " + error.message);
       setLoading(false);
     }
   };
@@ -200,7 +206,6 @@ export default function EspanolSprintPro() {
 
   return (
     <div className="h-[100dvh] w-full bg-slate-50 font-sans text-slate-800 flex flex-col md:flex-row overflow-hidden">
-      {/* Modals */}
       {showLimitModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center space-y-6 animate-in zoom-in duration-200">
@@ -214,7 +219,7 @@ export default function EspanolSprintPro() {
       {(!currentUser || view === 'landing' || view === 'auth') ? (
         <div className="w-full h-full flex items-center justify-center bg-white">
            {view === 'landing' && <LandingPage onStart={() => setView('auth')} />}
-           {view === 'auth' && <AuthScreen onAuth={handleAuth} onBack={() => setView('landing')} />}
+           {view === 'auth' && <AuthScreen onAuth={handleAuth} onGoogle={handleGoogleLogin} onBack={() => setView('landing')} />}
         </div>
       ) : (
         <>
@@ -249,7 +254,7 @@ const LandingPage = ({ onStart }) => (
   </div>
 );
 
-const AuthScreen = ({ onAuth, onBack }) => {
+const AuthScreen = ({ onAuth, onGoogle, onBack }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -257,7 +262,19 @@ const AuthScreen = ({ onAuth, onBack }) => {
     <div className="w-full max-w-md p-8 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
       <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold"><X size={20} /> Retour</button>
       <div><h2 className="text-4xl font-black text-slate-900 mb-2">{isSignUp ? 'Créer un compte' : 'Bon retour !'}</h2><p className="text-slate-500">Sauvegarde ta progression ☁️</p></div>
+      
       <div className="space-y-4">
+        <button onClick={onGoogle} className="w-full bg-white border-2 border-slate-200 text-slate-800 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all">
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" />
+          Continuer avec Google
+        </button>
+        
+        <div className="flex items-center gap-4">
+          <div className="h-px bg-slate-200 flex-1"></div>
+          <span className="text-slate-400 text-sm font-bold">OU</span>
+          <div className="h-px bg-slate-200 flex-1"></div>
+        </div>
+
         <input type="email" placeholder="Email" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={email} onChange={(e) => setEmail(e.target.value)} />
         <input type="password" placeholder="Mot de passe" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
@@ -450,4 +467,4 @@ const LessonComplete = ({ xp, onHome }) => (
     <div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div>
     <button onClick={onHome} className="w-full max-w-sm bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">Continuer</button>
   </div>
-); 
+);
