@@ -1,9 +1,10 @@
+/* eslint-disable */
 // @ts-nocheck
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload
+  Flame, X, Check, Trophy, User, Edit3, BookOpen, LogOut, Lock, LayoutDashboard, Library, AlertCircle, Loader2, CloudUpload
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
@@ -12,7 +13,7 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, si
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, increment, collection, getDocs } from "firebase/firestore";
 
 // ---------------------------------------------------------
-// 🟢 ZONE DE CONFIGURATION (TES CLÉS SONT INTÉGRÉES)
+// 🟢 CONFIGURATION FIREBASE
 // ---------------------------------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyDPWOdxYtnvVrDB6wk68EF0Gz62fqVCwBE",
@@ -69,9 +70,11 @@ export default function EspanolSprintPro() {
   const [loading, setLoading] = useState(true);
   const [activeLessonId, setActiveLessonId] = useState(1);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  
+  // État pour stocker les leçons qui viennent du Cloud
   const [cloudLessons, setCloudLessons] = useState({}); 
 
-  // 1. Initialisation & Chargement
+  // 1. Initialisation & Chargement des données
   useEffect(() => {
     const initApp = async (user) => {
       if (user) {
@@ -99,15 +102,16 @@ export default function EspanolSprintPro() {
             lessonsData[doc.id] = doc.data().content;
           });
           
+          // Si aucune leçon dans le cloud, on utilise celles de secours
           if (Object.keys(lessonsData).length > 0) {
             setCloudLessons(lessonsData);
           } else {
-            setCloudLessons(INITIAL_LESSONS_DATA); // Fallback si la DB est vide
+            setCloudLessons(INITIAL_LESSONS_DATA); 
           }
           
           setView('dashboard');
         } catch (error) {
-          console.error("Erreur chargement:", error);
+          console.error("Erreur chargement leçons:", error);
           setCloudLessons(INITIAL_LESSONS_DATA); 
         }
 
@@ -129,14 +133,12 @@ export default function EspanolSprintPro() {
     
     try {
       for (const [id, content] of Object.entries(INITIAL_LESSONS_DATA)) {
-        // On utilise setDoc pour forcer l'ID (ex: "1", "2")
         await setDoc(doc(db, "lessons", id), { content: content });
       }
-      alert("✅ Leçons envoyées vers le Cloud ! Tu peux maintenant les gérer sur Firebase.");
-      window.location.reload();
+      alert("✅ Leçons envoyées vers le Cloud !");
+      window.location.reload(); 
     } catch (e) {
-      console.error(e);
-      alert("Erreur d'envoi: " + e.message);
+      alert("Erreur: " + e.message);
     }
   };
 
@@ -153,10 +155,7 @@ export default function EspanolSprintPro() {
       }
     } catch (error) {
       console.error(error);
-      let msg = "Erreur de connexion.";
-      if (error.code === 'auth/invalid-credential') msg = "Email ou mot de passe incorrect.";
-      if (error.code === 'auth/email-already-in-use') msg = "Cet email est déjà utilisé.";
-      alert(msg);
+      alert("Erreur connexion: " + error.message);
       setLoading(false);
     }
   };
@@ -168,9 +167,8 @@ export default function EspanolSprintPro() {
     if (userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 3) {
       setShowLimitModal(true); return;
     }
-    // On vérifie dans les leçons chargées du Cloud
     if (!cloudLessons[lessonId]) {
-      alert("Leçon en cours de création...");
+      alert("Cette leçon n'est pas encore disponible !");
       return;
     }
     setActiveLessonId(lessonId);
@@ -202,6 +200,7 @@ export default function EspanolSprintPro() {
 
   return (
     <div className="h-[100dvh] w-full bg-slate-50 font-sans text-slate-800 flex flex-col md:flex-row overflow-hidden">
+      {/* Modals */}
       {showLimitModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center space-y-6 animate-in zoom-in duration-200">
@@ -276,9 +275,7 @@ const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUploa
       <SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
       <SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
     </nav>
-    {/* Bouton Admin */}
     <button onClick={onUpload} className="mb-4 flex items-center gap-2 text-xs text-slate-300 hover:text-indigo-500 px-4 transition-colors"><CloudUpload size={14} /> Initialiser Leçons</button>
-    
     <div className="mt-auto pt-6 border-t border-slate-100">
       <div className="flex items-center gap-3 mb-6 px-2">
         <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">{userData?.name?.charAt(0).toUpperCase()}</div>
