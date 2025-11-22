@@ -1,9 +1,9 @@
 /*
  * Ces lignes sont essentielles pour activer Tailwind CSS
  */
-@tailwind base
-@tailwind components
-@tailwind utilities
+@tailwind base ;
+@tailwind components ;
+@tailwind utilities ;
 
 /* Styles globaux */
 body {
