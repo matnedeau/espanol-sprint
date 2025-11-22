@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
-// Décommente la ligne ci-dessous chez toi pour la police Google :
-// import { Inter } from "next/font/google"; 
-// Décommente la ligne ci-dessous pour charger tes styles CSS :
-// import "./globals.css";
+import { Inter } from "next/font/google"; // Ligne pour la police
+import "./globals.css"; // Ligne pour les styles Tailwind
 
-// Mock pour éviter l'erreur ici (tu peux utiliser la vraie fonction Inter chez toi)
-const inter = { className: "" }; 
-// const inter = Inter({ subsets: ["latin"] }); // Utilise ceci chez toi
+const inter = Inter({ subsets: ["latin"] });
 
+// Les métadonnées pour le titre de l'onglet et le référencement
 export const metadata: Metadata = {
-  title: "EspaSprint",
+  title: "Español Sprint - B2 en 90 Jours",
   description: "Apprends l'espagnol rapidement avec la méthode Pareto et la répétition espacée.",
 };
 
@@ -19,7 +16,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    // 'lang="fr"' indique au navigateur que le site est en français
     <html lang="fr">
+      {/* La classe inter.className applique la police Inter à tout le corps */}
       <body className={inter.className}>{children}</body>
     </html>
   );
