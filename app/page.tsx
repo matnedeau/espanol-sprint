@@ -13,10 +13,11 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, si
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, increment, collection, getDocs } from "firebase/firestore";
 
 // ---------------------------------------------------------
-// 🟢 ZONE DE CONFIGURATION
+// 🟢 ZONE DE CONFIGURATION (CORRECTION CLÉ)
+// J'ai mis le "C" MAJUSCULE à la fin de la clé
 // ---------------------------------------------------------
 const firebaseConfig = {
-  apiKey: "AIzaSyDPWOdxYtnvVrDB6wk68EF0Gz62fqVcwBE",
+  apiKey: "AIzaSyDPWOdxYtnvVrDB6wk68EF0Gz62fqVCwBE", // <--- C majuscule ici
   authDomain: "espanolsprint.firebaseapp.com",
   projectId: "espanolsprint",
   storageBucket: "espanolsprint.firebasestorage.app",
@@ -30,7 +31,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-/* --- DATASET DE SECOURS (Pour l'initialisation) --- */
+/* --- DATASET DE SECOURS --- */
 const INITIAL_LESSONS_DATA = {
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Hola, ¿qué tal?" },
@@ -71,20 +72,24 @@ export default function EspanolSprintPro() {
   const [loading, setLoading] = useState(true);
   const [activeLessonId, setActiveLessonId] = useState(1);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [cloudLessons, setCloudLessons] = useState({}); 
+  
+  // États DYNAMIQUES
+  const [allLessonsInfo, setAllLessonsInfo] = useState(ALL_LESSONS_INFO); // Fallback local
+  const [cloudLessonsContent, setCloudLessonsContent] = useState({});
 
   // 1. Initialisation & Chargement
   useEffect(() => {
     const initApp = async (user) => {
       if (user) {
         setCurrentUser(user);
+        
+        // A. Profil
         const userRef = doc(db, "users", user.uid);
         try {
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
             setUserData(userSnap.data());
           } else {
-            // Création auto si Google Login
             const name = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
             const newProfile = { 
               name: name, xp: 0, streak: 1, level: 1, vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 }
@@ -93,7 +98,15 @@ export default function EspanolSprintPro() {
             setUserData(newProfile);
           }
 
-          // Chargement Leçons Cloud
+          // B. Charger la LISTE des leçons
+          try {
+            const listSnap = await getDoc(doc(db, "meta", "lessons_list"));
+            if (listSnap.exists()) {
+              setAllLessonsInfo(listSnap.data().list);
+            }
+          } catch(e) { console.log("Utilisation liste locale"); }
+
+          // C. Charger le CONTENU des leçons
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
           const lessonsData = {};
           lessonsSnapshot.forEach((doc) => {
@@ -101,15 +114,15 @@ export default function EspanolSprintPro() {
           });
           
           if (Object.keys(lessonsData).length > 0) {
-            setCloudLessons(lessonsData);
+            setCloudLessonsContent(lessonsData);
           } else {
-            setCloudLessons(INITIAL_LESSONS_DATA); 
+            setCloudLessonsContent(INITIAL_LESSONS_DATA); 
           }
           
           setView('dashboard');
         } catch (error) {
           console.error("Erreur chargement:", error);
-          setCloudLessons(INITIAL_LESSONS_DATA); 
+          setCloudLessonsContent(INITIAL_LESSONS_DATA);
         }
       } else {
         setCurrentUser(null);
@@ -123,14 +136,15 @@ export default function EspanolSprintPro() {
     return () => unsubscribe();
   }, []);
 
-  // Fonction ADMIN
-  const uploadLessonsToCloud = async () => {
-    if (!confirm("Initialiser les leçons dans Firebase ?")) return;
+  // FONCTION ADMIN ULTIME
+  const uploadFullContentToCloud = async () => {
+    if (!confirm("ATTENTION ADMIN : Initialiser tout le contenu (Liste + Leçons) dans Firebase ?")) return;
     try {
+      await setDoc(doc(db, "meta", "lessons_list"), { list: ALL_LESSONS_INFO });
       for (const [id, content] of Object.entries(INITIAL_LESSONS_DATA)) {
         await setDoc(doc(db, "lessons", id), { content: content });
       }
-      alert("✅ Leçons envoyées !");
+      alert("✅ TOUT est dans le Cloud !");
       window.location.reload(); 
     } catch (e) {
       alert("Erreur: " + e.message);
@@ -150,7 +164,9 @@ export default function EspanolSprintPro() {
       }
     } catch (error) {
       console.error(error);
-      alert("Erreur : " + error.message);
+      let msg = "Erreur: " + error.message;
+      if (error.code === 'auth/invalid-credential') msg = "Email ou mot de passe incorrect.";
+      alert(msg);
       setLoading(false);
     }
   };
@@ -173,8 +189,8 @@ export default function EspanolSprintPro() {
     if (userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 3) {
       setShowLimitModal(true); return;
     }
-    if (!cloudLessons[lessonId]) {
-      alert("Cette leçon n'est pas encore disponible !");
+    if (!cloudLessonsContent[lessonId]) {
+      alert("Cette leçon arrive bientôt !");
       return;
     }
     setActiveLessonId(lessonId);
@@ -223,16 +239,14 @@ export default function EspanolSprintPro() {
         </div>
       ) : (
         <>
-          <SidebarDesktop userData={userData} currentView={view} onChangeView={setView} onLogout={handleLogout} onUpload={uploadLessonsToCloud} />
+          <SidebarDesktop userData={userData} currentView={view} onChangeView={setView} onLogout={handleLogout} onUpload={uploadFullContentToCloud} />
           <main className="flex-1 h-full overflow-hidden relative flex flex-col">
             <MobileHeader userData={userData} />
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
-              {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={ALL_LESSONS_INFO} onStartLesson={startLesson} />}
-              {view === 'notebook' && userData && <NotebookContent allContent={Object.values(cloudLessons).flat()} userVocab={userData.vocab} />}
+              {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={allLessonsInfo} onStartLesson={startLesson} />}
+              {view === 'notebook' && userData && <NotebookContent allContent={Object.values(cloudLessonsContent).flat()} userVocab={userData.vocab} />}
               {view === 'profile' && userData && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} />}
-              
-              {view === 'lesson' && cloudLessons[activeLessonId] && <LessonEngine content={cloudLessons[activeLessonId]} onComplete={(xp) => handleLessonComplete(xp, cloudLessons[activeLessonId], activeLessonId)} onExit={() => setView('dashboard')} />}
-              
+              {view === 'lesson' && cloudLessonsContent[activeLessonId] && <LessonEngine content={cloudLessonsContent[activeLessonId]} onComplete={(xp) => handleLessonComplete(xp, cloudLessonsContent[activeLessonId], activeLessonId)} onExit={() => setView('dashboard')} />}
               {view === 'complete' && <LessonComplete xp={100} onHome={() => setView('dashboard')} />}
             </div>
             {view !== 'lesson' && view !== 'complete' && <MobileBottomNav currentView={view} onChangeView={setView} />}
