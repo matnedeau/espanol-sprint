@@ -450,4 +450,4 @@ const LessonComplete = ({ xp, onHome }) => (
     <div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div>
     <button onClick={onHome} className="w-full max-w-sm bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">Continuer</button>
   </div>
-);
+); 
