@@ -13,7 +13,7 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, si
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, increment, collection, getDocs } from "firebase/firestore";
 
 // ---------------------------------------------------------
-// 🟢 CONFIGURATION FIREBASE
+// 🟢 CONFIGURATION FIREBASE (Clés intégrées)
 // ---------------------------------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyDPWOdxYtnvVrDB6wk68EF0Gz62fqVCwBE", 
@@ -30,7 +30,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-/* --- DONNÉES PAR DÉFAUT --- */
+/* --- DONNÉES PAR DÉFAUT (Pour l'initialisation de la DB) --- */
 const INITIAL_LESSONS_LIST = [
   { id: 1, title: "Hola!", level: "A1", desc: "Salutations & Verbe Être" },
   { id: 2, title: "La Famille", level: "A1", desc: "Possession & Verbe Avoir" },
@@ -75,12 +75,12 @@ export default function EspanolSprintPro() {
   const [dynamicLessonsList, setDynamicLessonsList] = useState(INITIAL_LESSONS_LIST);
   const [dynamicLessonsContent, setDynamicLessonsContent] = useState({});
 
-  // 1. Initialisation & Chargement
+  // 1. Initialisation & Chargement (Avec FIX Mobile Auth)
   useEffect(() => {
     const initApp = async (user) => {
-      // 🚨 NOUVEAU FIX MOBILE : Gérer le retour de redirection Google 🚨
+      // 🚨 FIX MOBILE 1/2 : Gérer le retour de redirection Google
       try {
-        await getRedirectResult(auth); // Tente de récupérer le résultat de la redirection
+        await getRedirectResult(auth); 
       } catch (e) {
         console.error("Erreur de redirection initiale:", e);
       }
@@ -91,7 +91,6 @@ export default function EspanolSprintPro() {
         const userRef = doc(db, "users", user.uid);
         try {
           const userSnap = await getDoc(userRef);
-          
           if (userSnap.exists()) {
             setUserData(userSnap.data());
           } else {
@@ -136,9 +135,10 @@ export default function EspanolSprintPro() {
     return () => unsubscribe();
   }, []);
 
-  // FONCTION ADMIN
+  // FONCTION ADMIN : Initialise TOUT (Carte + Contenu)
   const uploadFullContentToCloud = async () => {
     if (!confirm("ADMIN : Initialiser tout le contenu (Carte + Contenu) dans Firebase ?")) return;
+    
     try {
       await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST });
       for (const [id, content] of Object.entries(INITIAL_LESSONS_CONTENT)) {
@@ -174,7 +174,7 @@ export default function EspanolSprintPro() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      // 🚨 FIX MOBILE : Utiliser signInWithRedirect sur mobile pour éviter les blocages pop-up
+      // 🚨 FIX MOBILE 2/2 : Utiliser signInWithRedirect sur mobile pour éviter les blocages pop-up
       if (window.innerWidth < 768) { 
         await signInWithRedirect(auth, googleProvider);
       } else {
@@ -188,6 +188,7 @@ export default function EspanolSprintPro() {
   };
   
   const handleLogout = async () => { await signOut(auth); setView('landing'); };
+
   const startLesson = (lessonId) => {
     const today = new Date().toDateString();
     if (userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 3) {
@@ -265,7 +266,7 @@ export default function EspanolSprintPro() {
   );
 }
 
-/* --- COMPOSANTS UI --- */
+/* --- COMPOSANTS UI (Identiques) --- */
 const LandingPage = ({ onStart }) => (
   <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-400 relative overflow-hidden text-center">
     <div className="z-10 space-y-8 max-w-md">

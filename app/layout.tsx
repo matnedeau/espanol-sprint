@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google"; // Ligne pour la police
-import "./globals.css"; // Ligne pour les styles Tailwind
+import { Inter } from "next/font/google";
+import "./globals.css"; // Chargement des styles Tailwind
 
 const inter = Inter({ subsets: ["latin"] });
 
-// Les métadonnées pour le titre de l'onglet et le référencement
+// Les métadonnées pour le titre de l'onglet
 export const metadata: Metadata = {
   title: "Español Sprint - B2 en 90 Jours",
-  description: "Apprends l'espagnol rapidement avec la méthode Pareto et la répétition espacée.",
+  description: "L'application d'apprentissage de l'espagnol la plus rapide.",
 };
 
 export default function RootLayout({
@@ -16,9 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // 'lang="fr"' indique au navigateur que le site est en français
     <html lang="fr">
-      {/* La classe inter.className applique la police Inter à tout le corps */}
+      {/* Applique la police Inter à tout le corps de l'application */}
       <body className={inter.className}>{children}</body>
     </html>
   );

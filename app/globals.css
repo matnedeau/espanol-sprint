@@ -2,10 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Optionnel: Si tu as besoin de styles globaux */
+/* Styles globaux pour l'app */
 body {
     font-family: 'Inter', sans-serif;
     color: #333;
-    /* Cela permet à l'app de prendre 100% de la hauteur disponible */
     min-height: 100vh; 
+    margin: 0;
 }
