@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
+// Décommente la ligne ci-dessous chez toi pour la police Google :
+// import { Inter } from "next/font/google"; 
+// Décommente la ligne ci-dessous pour charger tes styles CSS :
+// import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+// Mock pour éviter l'erreur ici (tu peux utiliser la vraie fonction Inter chez toi)
+const inter = { className: "" }; 
+// const inter = Inter({ subsets: ["latin"] }); // Utilise ceci chez toi
 
 export const metadata: Metadata = {
   title: "EspaSprint",
