@@ -3,12 +3,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, Menu, LayoutDashboard
 } from 'lucide-react';
 
 /* --- DATASET (CONTENU) --- */
-
-// Métadonnées pour structurer le parcours jusqu'au niveau B2
 const ALL_LESSONS_INFO = [
   { id: 1, title: "Les Bases & Être", level: "A1", desc: "Salutations et identité", unlocked: true },
   { id: 2, title: "Avoir & La Famille", level: "A1", desc: "Possession et description", unlocked: false },
@@ -59,31 +57,32 @@ export default function EspanolSprintPro() {
   const [view, setView] = useState('landing'); 
   const [user, setUser] = useState(null); 
   const [userVocab, setUserVocab] = useState([]);
-  // Nouvel état : liste des ID de leçons terminées
   const [completedLessons, setCompletedLessons] = useState([]);
 
-  // Persistence (Sauvegarde)
+  // Persistence
   useEffect(() => {
-    if (user && user.name) {
+    if (typeof window !== 'undefined' && user && user.name) {
       const saveData = { user, userVocab, completedLessons };
       localStorage.setItem(`espanol_app_${user.name.toLowerCase()}`, JSON.stringify(saveData));
     }
   }, [user, userVocab, completedLessons]);
 
-  // Connexion
+  // Login
   const handleLogin = (name) => {
-    const savedData = localStorage.getItem(`espanol_app_${name.toLowerCase()}`);
-    if (savedData) {
-      const parsed = JSON.parse(savedData);
-      setUser(parsed.user);
-      setUserVocab(parsed.userVocab || []);
-      setCompletedLessons(parsed.completedLessons || []);
-      setView('dashboard');
-    } else {
-      setUser({ name, streak: 1, xp: 0, level: 1 });
-      setUserVocab([]);
-      setCompletedLessons([]);
-      setView('dashboard');
+    if (typeof window !== 'undefined') {
+      const savedData = localStorage.getItem(`espanol_app_${name.toLowerCase()}`);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        setUser(parsed.user);
+        setUserVocab(parsed.userVocab || []);
+        setCompletedLessons(parsed.completedLessons || []);
+        setView('dashboard');
+      } else {
+        setUser({ name, streak: 1, xp: 0, level: 1 });
+        setUserVocab([]);
+        setCompletedLessons([]);
+        setView('dashboard');
+      }
     }
   };
 
@@ -92,302 +91,268 @@ export default function EspanolSprintPro() {
     setView('landing');
   };
 
-  // Fin de leçon
   const handleLessonComplete = (xp, lessonContent, lessonId) => {
     setUser(prev => ({ ...prev, xp: prev.xp + xp, streak: prev.streak + 1 }));
-    
-    // Ajout Vocabulaire
     const newVocab = lessonContent.filter(item => item.type === 'swipe');
     setUserVocab(prev => {
       const existingIds = new Set(prev.map(item => item.id));
       const uniqueNewVocab = newVocab.filter(item => !existingIds.has(item.id));
       return [...prev, ...uniqueNewVocab];
     });
-
-    // Ajout Historique (si pas déjà fait)
     if (!completedLessons.includes(lessonId)) {
       setCompletedLessons(prev => [...prev, lessonId]);
     }
-
     setView('complete');
   };
 
+  // LAYOUT PRINCIPAL
+  // On utilise h-screen w-full pour prendre toute la place
+  // md:flex-row permet d'avoir la sidebar à côté du contenu sur PC
   return (
-    <div className="min-h-screen bg-stone-200 flex items-center justify-center font-sans text-slate-800 p-0 sm:p-8">
-      {/* Cadre style iPhone */}
-      <div className="w-full h-[100dvh] sm:h-[850px] sm:max-w-[400px] bg-white sm:rounded-[40px] shadow-none sm:shadow-2xl overflow-hidden relative flex flex-col border-0 sm:border-8 border-slate-900 transition-all duration-300">
-        
-        {view === 'landing' && <LandingPage onStart={() => setView('auth')} />}
-        
-        {view === 'auth' && <AuthScreen onLogin={handleLogin} onBack={() => setView('landing')} />}
-        
-        {view === 'dashboard' && user && (
-          <Dashboard 
+    <div className="h-[100dvh] w-full bg-slate-50 font-sans text-slate-800 flex flex-col md:flex-row overflow-hidden">
+      
+      {/* Écran Landing & Auth (Plein écran centré) */}
+      {(!user || view === 'landing' || view === 'auth') ? (
+        <div className="w-full h-full flex items-center justify-center bg-white">
+           {view === 'landing' && <LandingPage onStart={() => setView('auth')} />}
+           {view === 'auth' && <AuthScreen onLogin={handleLogin} onBack={() => setView('landing')} />}
+        </div>
+      ) : (
+        <>
+          {/* SIDEBAR (Uniquement sur PC - md:flex) */}
+          <SidebarDesktop 
             user={user} 
-            onStartLesson={() => setView('lesson')} 
-            onOpenNotebook={() => setView('notebook')} 
-            onOpenHistory={() => setView('history')}
-            onLogout={handleLogout}
+            currentView={view} 
+            onChangeView={setView} 
+            onLogout={handleLogout} 
           />
-        )}
-        
-        {view === 'notebook' && (
-          <Notebook 
-            grammarContent={DAY_1_CONTENT} 
-            userVocab={userVocab} 
-            onClose={() => setView('dashboard')} 
-          />
-        )}
 
-        {view === 'history' && (
-          <LessonHistory 
-            completedLessons={completedLessons}
-            allLessons={ALL_LESSONS_INFO}
-            onReplay={() => setView('lesson')} // Lance toujours leçon 1 pour ce MVP
-            onClose={() => setView('dashboard')}
-          />
-        )}
+          {/* CONTENU PRINCIPAL (Flexible) */}
+          <main className="flex-1 h-full overflow-hidden relative flex flex-col">
+            
+            {/* Header Mobile (Uniquement sur Mobile - md:hidden) */}
+            <MobileHeader user={user} />
 
-        {view === 'lesson' && (
-          <LessonEngine 
-            content={DAY_1_CONTENT} 
-            lessonId={1}
-            onComplete={(xp) => handleLessonComplete(xp, DAY_1_CONTENT, 1)} 
-            onExit={() => setView('dashboard')} 
-          />
-        )}
-        
-        {view === 'complete' && (
-          <LessonComplete xp={150} onHome={() => setView('dashboard')} />
-        )}
+            {/* Zone de contenu dynamique */}
+            <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
+              
+              {view === 'dashboard' && (
+                <DashboardContent 
+                  user={user} 
+                  onStartLesson={() => setView('lesson')} 
+                />
+              )}
 
-      </div>
+              {view === 'notebook' && (
+                <NotebookContent 
+                  grammarContent={DAY_1_CONTENT} 
+                  userVocab={userVocab} 
+                />
+              )}
+
+              {view === 'history' && (
+                <HistoryContent 
+                  completedLessons={completedLessons}
+                  allLessons={ALL_LESSONS_INFO}
+                  onReplay={() => setView('lesson')}
+                />
+              )}
+
+              {view === 'lesson' && (
+                <LessonEngine 
+                  content={DAY_1_CONTENT} 
+                  onComplete={(xp) => handleLessonComplete(xp, DAY_1_CONTENT, 1)} 
+                  onExit={() => setView('dashboard')} 
+                />
+              )}
+
+              {view === 'complete' && (
+                <LessonComplete xp={150} onHome={() => setView('dashboard')} />
+              )}
+            </div>
+
+            {/* Navigation Mobile (Uniquement sur Mobile - md:hidden) */}
+            {view !== 'lesson' && view !== 'complete' && (
+              <MobileBottomNav 
+                currentView={view} 
+                onChangeView={setView} 
+                onLogout={handleLogout} 
+              />
+            )}
+          </main>
+        </>
+      )}
     </div>
   );
 }
 
-/* --- COMPOSANTS UI --- */
+/* --- COMPOSANTS DE STRUCTURE (Desktop vs Mobile) --- */
 
-const LandingPage = ({ onStart }) => (
-  <div className="flex-1 flex flex-col items-center justify-center p-8 bg-yellow-400 relative overflow-hidden">
-    <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-yellow-300 rounded-full blur-3xl opacity-50"></div>
-    <div className="z-10 text-center space-y-6 w-full">
-      <div className="w-24 h-24 bg-white rounded-3xl shadow-xl mx-auto flex items-center justify-center rotate-3 transform transition-transform hover:rotate-6">
-        <span className="text-5xl">🇪🇸</span>
+const SidebarDesktop = ({ user, currentView, onChangeView, onLogout }) => (
+  <div className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200 h-full p-6">
+    <div className="flex items-center gap-2 mb-12 px-2">
+      <div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center shadow-md rotate-3">
+        <span className="text-2xl">🇪🇸</span>
       </div>
-      <div>
-        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 mb-2">
-          Español<span className="text-red-600">Sprint</span>
-        </h1>
-        <p className="text-slate-800 font-medium text-lg opacity-90">Objectif B2 en 90 jours.</p>
-      </div>
-      <button onClick={onStart} className="w-full bg-slate-900 text-white py-4 px-8 rounded-2xl font-bold text-lg shadow-lg flex items-center justify-center gap-2 mt-12 active:scale-95 transition-transform">
-        Commencer
-      </button>
+      <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
+        Español<span className="text-red-600">Sprint</span>
+      </h1>
     </div>
-  </div>
-);
 
-const AuthScreen = ({ onLogin, onBack }) => {
-  const [name, setName] = useState('');
-  return (
-    <div className="flex-1 flex flex-col p-8 bg-white">
-      <button onClick={onBack} className="self-start text-slate-400 mb-8"><X size={24} /></button>
-      <div className="flex-1 flex flex-col justify-center space-y-8">
-        <div>
-          <h2 className="text-3xl font-bold text-slate-900 mb-2">Bienvenue !</h2>
-          <p className="text-slate-500">Entre ton prénom pour charger ton historique.</p>
-        </div>
-        <input 
-          type="text" 
-          placeholder="Ton Prénom"
-          className="w-full text-2xl border-b-2 border-slate-200 py-3 focus:outline-none focus:border-yellow-400 bg-transparent placeholder-slate-300 font-bold"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          autoFocus
-        />
-        <button 
-          onClick={() => name.trim() && onLogin(name.trim())} 
-          disabled={!name.trim()} 
-          className="w-full bg-yellow-400 text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-md disabled:opacity-50 active:scale-95 transition-transform flex items-center justify-center gap-2"
-        >
-          <Save size={20} />
-          Connexion
-        </button>
-      </div>
-    </div>
-  );
-};
+    <nav className="flex-1 space-y-2">
+      <SidebarLink icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
+      <SidebarLink icon={GraduationCap} label="Mes Leçons" active={currentView === 'history'} onClick={() => onChangeView('history')} />
+      <SidebarLink icon={Book} label="Grimoire" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
+    </nav>
 
-const Dashboard = ({ user, onStartLesson, onOpenNotebook, onOpenHistory, onLogout }) => (
-  <div className="flex-1 flex flex-col bg-slate-50 relative">
-    {/* Header */}
-    <div className="bg-white px-6 py-4 flex justify-between items-center shadow-sm z-10 sticky top-0">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold border border-indigo-200">
-          {user.name.charAt(0).toUpperCase()}
+    <div className="mt-auto pt-6 border-t border-slate-100">
+      <div className="flex items-center gap-3 mb-6 px-2">
+        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
+           {user.name.charAt(0).toUpperCase()}
         </div>
-        <div>
+        <div className="flex-1">
           <p className="text-sm font-bold text-slate-900">{user.name}</p>
-          <p className="text-xs text-slate-400 font-bold uppercase">Niveau {user.level}</p>
+          <p className="text-xs text-slate-400">Niveau {user.level}</p>
+        </div>
+        <div className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-full">
+          <Flame size={14} className="text-orange-500 fill-orange-500" />
+          <span className="text-xs font-bold text-orange-600">{user.streak}</span>
         </div>
       </div>
-      <div className="flex items-center gap-1 bg-orange-50 px-3 py-1 rounded-full border border-orange-100">
-        <Flame size={16} className="text-orange-500 fill-orange-500" />
-        <span className="text-orange-700 font-bold">{user.streak}</span>
-      </div>
-    </div>
-
-    {/* Roadmap */}
-    <div className="flex-1 overflow-y-auto p-6 relative">
-      <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-slate-200 -translate-x-1/2 z-0"></div>
-      <div className="space-y-12 relative z-10 pt-8 pb-20">
-        
-        {/* Jour 1 - Actif */}
-        <div className="flex flex-col items-center group cursor-pointer" onClick={onStartLesson}>
-          <div className="relative">
-             <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center shadow-[0_6px_0_rgb(202,138,4)] border-4 border-white transition-transform active:translate-y-1 active:shadow-none hover:scale-105">
-               <Zap size={32} className="text-white fill-white" />
-             </div>
-             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-bounce">GO</div>
-          </div>
-          <p className="mt-3 font-bold text-slate-700 bg-white px-3 py-1 rounded-full shadow-sm text-sm">Jour 1</p>
-        </div>
-
-        {/* Jours suivants */}
-        {[2, 3, 4, 5].map(day => (
-          <div key={day} className="flex flex-col items-center opacity-40 grayscale">
-            <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center border-4 border-white shadow-sm">
-              <span className="font-bold text-slate-400">{day}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Menu Bas - 4 Icônes maintenant */}
-    <div className="bg-white border-t border-slate-100 p-2 pb-6 sm:pb-2 flex justify-around items-center text-slate-400 safe-area-bottom">
-      <button className="flex flex-col items-center text-yellow-600 p-2"><Zap size={24} fill="currentColor" /><span className="text-[10px] font-bold mt-1">Sprint</span></button>
-      
-      <button onClick={onOpenHistory} className="flex flex-col items-center hover:text-indigo-600 transition-colors p-2">
-        <GraduationCap size={24} />
-        <span className="text-[10px] font-bold mt-1">Leçons</span>
-      </button>
-
-      <button onClick={onOpenNotebook} className="flex flex-col items-center hover:text-indigo-600 transition-colors p-2">
-        <Book size={24} />
-        <span className="text-[10px] font-bold mt-1">Grimoire</span>
-      </button>
-      
-      <button onClick={onLogout} className="flex flex-col items-center hover:text-red-500 transition-colors p-2">
-        <LogOut size={24} />
-        <span className="text-[10px] font-bold mt-1">Sortir</span>
+      <button onClick={onLogout} className="flex items-center gap-3 text-slate-400 hover:text-red-500 transition-colors w-full px-2 py-2 rounded-xl hover:bg-red-50">
+        <LogOut size={20} />
+        <span className="font-bold text-sm">Déconnexion</span>
       </button>
     </div>
   </div>
 );
 
-// NOUVEL ÉCRAN : Historique des leçons
-const LessonHistory = ({ completedLessons, allLessons, onReplay, onClose }) => {
-  return (
-    <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
-      <div className="bg-white p-4 flex items-center gap-4 shadow-sm z-10 sticky top-0">
-        <button onClick={onClose}><X size={24} className="text-slate-400" /></button>
-        <h2 className="text-lg font-bold text-slate-800">Mes Leçons</h2>
-      </div>
-      
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {allLessons.map((lesson) => {
-          const isDone = completedLessons.includes(lesson.id);
-          // Pour la démo, on débloque le suivant si le précédent est fait, ou si c'est le jour 1
-          const isLocked = !isDone && lesson.id !== 1; 
+const SidebarLink = ({ icon: Icon, label, active, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${active ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+  >
+    <Icon size={22} strokeWidth={active ? 2.5 : 2} />
+    <span className="font-bold text-base">{label}</span>
+  </button>
+);
 
-          return (
-            <div key={lesson.id} className={`bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between ${isLocked ? 'opacity-60' : ''}`}>
-              <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${isDone ? 'bg-green-100 text-green-600' : isLocked ? 'bg-slate-100 text-slate-400' : 'bg-yellow-100 text-yellow-600'}`}>
-                  {isDone ? <Check size={20} /> : isLocked ? <Lock size={18} /> : lesson.id}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-slate-800">{lesson.title}</h4>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${lesson.level === 'A1' ? 'bg-blue-100 text-blue-600' : lesson.level === 'A2' ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600'}`}>
-                      {lesson.level}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500">{lesson.desc}</p>
-                </div>
-              </div>
-
-              {/* Action : Revoir ou Bloqué */}
-              {isLocked ? (
-                <Lock size={20} className="text-slate-300" />
-              ) : (
-                <button 
-                  onClick={() => onReplay(lesson.id)} 
-                  className={`p-2 rounded-full ${isDone ? 'bg-slate-50 text-indigo-600' : 'bg-yellow-400 text-slate-900'} active:scale-95`}
-                >
-                  <PlayCircle size={24} />
-                </button>
-              )}
-            </div>
-          );
-        })}
-        
-        <div className="text-center p-6 opacity-50">
-          <p className="text-xs text-slate-400">Termine les leçons pour débloquer le niveau B2 !</p>
-        </div>
+const MobileHeader = ({ user }) => (
+  <div className="md:hidden bg-white px-4 py-3 flex justify-between items-center shadow-sm z-20 sticky top-0">
+    <div className="flex items-center gap-2">
+      <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm border border-indigo-200">
+        {user.name.charAt(0).toUpperCase()}
       </div>
     </div>
-  );
-};
+    <div className="flex items-center gap-1 bg-orange-50 px-3 py-1 rounded-full border border-orange-100">
+      <Flame size={16} className="text-orange-500 fill-orange-500" />
+      <span className="text-orange-700 font-bold">{user.streak}</span>
+    </div>
+  </div>
+);
 
-const Notebook = ({ grammarContent, userVocab, onClose }) => {
+const MobileBottomNav = ({ currentView, onChangeView, onLogout }) => (
+  <div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30">
+    <NavBtn icon={LayoutDashboard} label="Sprint" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
+    <NavBtn icon={GraduationCap} label="Leçons" active={currentView === 'history'} onClick={() => onChangeView('history')} />
+    <NavBtn icon={Book} label="Grimoire" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
+    <button onClick={onLogout} className="flex flex-col items-center hover:text-red-500 transition-colors p-2"><LogOut size={24} /><span className="text-[10px] font-bold mt-1">Sortir</span></button>
+  </div>
+);
+const NavBtn = ({ icon: Icon, label, active, onClick }) => (
+  <button onClick={onClick} className={`flex flex-col items-center p-2 transition-colors ${active ? 'text-indigo-600' : 'hover:text-slate-600'}`}>
+    <Icon size={24} strokeWidth={active ? 2.5 : 2} />
+    <span className="text-[10px] font-bold mt-1">{label}</span>
+  </button>
+);
+
+/* --- CONTENU DES PAGES --- */
+
+const DashboardContent = ({ user, onStartLesson }) => (
+  <div className="max-w-2xl mx-auto w-full pb-20 pt-8 px-6">
+    <div className="text-center mb-12 hidden md:block">
+      <h2 className="text-3xl font-black text-slate-900">Parcours</h2>
+      <p className="text-slate-500">Niveau actuel : A1 (Débutant)</p>
+    </div>
+
+    <div className="space-y-12 relative z-10">
+       {/* Ligne verticale de progression */}
+       <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-slate-200 -translate-x-1/2 z-0"></div>
+
+      {/* Jour 1 - Actif */}
+      <div className="flex flex-col items-center group cursor-pointer relative z-10" onClick={onStartLesson}>
+        <div className="relative transform transition-transform hover:scale-110">
+           <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center shadow-[0_6px_0_rgb(202,138,4)] border-4 border-white active:translate-y-1 active:shadow-none">
+             <Zap size={40} className="text-white fill-white" />
+           </div>
+           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-bounce whitespace-nowrap">
+             C'est parti !
+           </div>
+        </div>
+        <p className="mt-4 font-bold text-slate-700 bg-white px-4 py-1 rounded-full shadow-sm border border-slate-100">Jour 1</p>
+      </div>
+
+      {[2, 3, 4, 5].map(day => (
+        <div key={day} className="flex flex-col items-center opacity-40 grayscale relative z-10">
+          <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center border-4 border-white shadow-sm">
+            <span className="font-bold text-2xl text-slate-400">{day}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const NotebookContent = ({ grammarContent, userVocab }) => {
   const grammarItems = grammarContent.filter(c => c.type === 'grammar');
   return (
-    <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
-      <div className="bg-white p-4 flex items-center gap-4 shadow-sm z-10 sticky top-0">
-        <button onClick={onClose}><X size={24} className="text-slate-400" /></button>
-        <h2 className="text-lg font-bold text-slate-800">Grimoire</h2>
+    <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl md:text-3xl font-black text-slate-900">Grimoire</h2>
+        <div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">
+          {userVocab.length} Mots appris
+        </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-8">
-        <div>
-          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 mt-2 flex items-center gap-2">
-            <Edit3 size={16} /> Vocabulaire Acquis ({userVocab.length})
-          </h3>
+      
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Vocabulaire */}
+        <div className="space-y-4">
+          <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Edit3 size={18} /> Vocabulaire</h3>
           {userVocab.length > 0 ? (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 divide-y divide-slate-100">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
               {userVocab.map((item, idx) => (
-                <div key={`${item.id}-${idx}`} className="p-3 flex justify-between items-center">
+                <div key={`${item.id}-${idx}`} className="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
                   <div>
-                    <p className="font-bold text-slate-700">{item.es}</p>
-                    <p className="text-xs text-slate-400 italic">{item.context}</p>
+                    <p className="font-bold text-slate-800">{item.es}</p>
+                    <p className="text-xs text-slate-400 italic mt-0.5">{item.context}</p>
                   </div>
-                  <span className="text-slate-500 text-sm font-medium">{item.en}</span>
+                  <span className="text-indigo-600 font-medium bg-indigo-50 px-3 py-1 rounded-full text-sm">{item.en}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="bg-white p-6 rounded-xl border-2 border-dashed border-slate-200 text-center text-slate-400">
-              <BookOpen size={32} className="mx-auto mb-2 opacity-50" />
-              <p className="font-medium">Ton grimoire est vide.</p>
-              <p className="text-sm">Termine une leçon pour y ajouter des mots !</p>
-            </div>
+            <EmptyState message="Ton vocabulaire est vide." />
           )}
         </div>
-        <div>
-          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <BookOpen size={16} /> Grammaire
-          </h3>
-          <div className="grid gap-4">
+
+        {/* Grammaire */}
+        <div className="space-y-4">
+          <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire</h3>
+          <div className="space-y-4">
             {grammarItems.map(item => (
-              <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <h4 className="font-bold text-indigo-600 mb-1">{item.title}</h4>
-                <div className="bg-slate-50 rounded-lg overflow-hidden text-sm mt-3">
+              <div key={item.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600"><Book size={20} /></div>
+                  <div>
+                    <h4 className="font-bold text-slate-900">{item.title}</h4>
+                    <p className="text-xs text-slate-500">{item.description}</p>
+                  </div>
+                </div>
+                <div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">
                   {item.conjugation.map((row, idx) => (
-                    <div key={idx} className={`flex justify-between p-2 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                    <div key={idx} className={`flex justify-between p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
                       <span className="text-slate-400 w-1/3">{row.pronoun}</span>
-                      <span className="font-bold text-slate-800 w-1/3">{row.verb}</span>
+                      <span className="font-bold text-slate-800 w-1/3 text-center">{row.verb}</span>
                       <span className="text-slate-400 text-xs w-1/3 text-right italic">{row.fr}</span>
                     </div>
                   ))}
@@ -397,6 +362,96 @@ const Notebook = ({ grammarContent, userVocab, onClose }) => {
           </div>
         </div>
       </div>
+    </div>
+  );
+};
+
+const HistoryContent = ({ completedLessons, allLessons, onReplay }) => (
+  <div className="max-w-3xl mx-auto w-full p-4 md:p-8 pb-24">
+    <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-8">Historique des Leçons</h2>
+    <div className="space-y-4">
+      {allLessons.map((lesson) => {
+        const isDone = completedLessons.includes(lesson.id);
+        const isLocked = !isDone && lesson.id !== 1;
+        return (
+          <div key={lesson.id} className={`bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between transition-all ${isLocked ? 'opacity-60' : 'hover:shadow-md hover:border-indigo-100'}`}>
+            <div className="flex items-center gap-5">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${isDone ? 'bg-green-100 text-green-600' : isLocked ? 'bg-slate-100 text-slate-400' : 'bg-yellow-100 text-yellow-600'}`}>
+                {isDone ? <Check size={24} /> : isLocked ? <Lock size={20} /> : lesson.id}
+              </div>
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <h4 className="font-bold text-lg text-slate-800">{lesson.title}</h4>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${lesson.level === 'A1' ? 'bg-blue-100 text-blue-600' : lesson.level === 'A2' ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600'}`}>
+                    {lesson.level}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-500">{lesson.desc}</p>
+              </div>
+            </div>
+            {!isLocked && (
+              <button onClick={() => onReplay(lesson.id)} className={`p-3 rounded-full transition-transform active:scale-95 ${isDone ? 'bg-slate-50 text-indigo-600 hover:bg-indigo-50' : 'bg-yellow-400 text-slate-900 hover:bg-yellow-300 shadow-md'}`}>
+                <PlayCircle size={28} />
+              </button>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </div>
+);
+
+/* --- ÉCRANS SPECIFIQUES (Landing, Auth, Jeu) --- */
+
+const LandingPage = ({ onStart }) => (
+  <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-400 relative overflow-hidden text-center">
+    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+    <div className="z-10 space-y-8 max-w-md">
+      <div className="w-32 h-32 bg-white rounded-[2rem] shadow-2xl mx-auto flex items-center justify-center rotate-6 hover:rotate-12 transition-transform duration-500">
+        <span className="text-6xl">🇪🇸</span>
+      </div>
+      <div>
+        <h1 className="text-5xl md:text-6xl font-black tracking-tighter text-slate-900 mb-4">
+          Español<span className="text-red-600">Sprint</span>
+        </h1>
+        <p className="text-slate-800 font-medium text-xl md:text-2xl opacity-90">
+          La méthode la plus rapide pour apprendre l'espagnol.
+        </p>
+      </div>
+      <button onClick={onStart} className="w-full bg-slate-900 text-white py-5 px-8 rounded-2xl font-bold text-xl shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all">
+        Commencer maintenant
+      </button>
+    </div>
+  </div>
+);
+
+const AuthScreen = ({ onLogin, onBack }) => {
+  const [name, setName] = useState('');
+  return (
+    <div className="w-full max-w-md p-8 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
+      <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors font-bold">
+        <X size={20} /> Annuler
+      </button>
+      <div>
+        <h2 className="text-4xl font-black text-slate-900 mb-3">Hola! 👋</h2>
+        <p className="text-lg text-slate-500">Comment t'appelles-tu ?</p>
+      </div>
+      <input 
+        type="text" 
+        placeholder="Ton Prénom"
+        className="w-full text-3xl border-b-4 border-slate-100 py-4 focus:outline-none focus:border-yellow-400 bg-transparent placeholder-slate-200 font-bold text-slate-800 transition-colors"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        autoFocus
+      />
+      <button 
+        onClick={() => name.trim() && onLogin(name.trim())} 
+        disabled={!name.trim()} 
+        className="w-full bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-300 active:scale-95 transition-all flex items-center justify-center gap-3"
+      >
+        <Save size={24} />
+        C'est parti
+      </button>
     </div>
   );
 };
@@ -417,15 +472,18 @@ const LessonEngine = ({ content, onComplete, onExit }) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden relative">
-      <div className="px-6 py-6 flex items-center gap-4 z-20 sticky top-0 bg-slate-50">
-        <button onClick={onExit} className="text-slate-400 hover:text-slate-600"><X size={24} /></button>
-        <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden">
-          <div className="h-full bg-teal-500 transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div>
+    <div className="h-full w-full flex flex-col bg-slate-50">
+      {/* Barre de progression */}
+      <div className="px-6 py-4 md:py-6 flex items-center gap-6 bg-white border-b border-slate-100 z-10">
+        <button onClick={onExit} className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-100 rounded-full"><X size={24} /></button>
+        <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+          <div className="h-full bg-teal-500 transition-all duration-500 ease-out rounded-full" style={{ width: `${progress}%` }}></div>
         </div>
       </div>
-      <div className="flex-1 flex flex-col justify-center items-center p-4 pb-20 overflow-y-auto">
-        <div className="w-full max-w-[340px] my-auto">
+
+      {/* Zone de jeu centrée */}
+      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+        <div className="w-full max-w-md aspect-[3/4] md:aspect-auto md:h-[600px] perspective-1000">
           {currentCard.type === 'swipe' && <SwipeCard key={currentCard.id} data={currentCard} onNext={handleNext} />}
           {currentCard.type === 'input' && <InputCard key={currentCard.id} data={currentCard} onNext={handleNext} />}
           {currentCard.type === 'grammar' && <GrammarCard key={currentCard.id} data={currentCard} onNext={handleNext} />}
@@ -442,17 +500,23 @@ const SwipeCard = ({ data, onNext }) => {
     setTimeout(onNext, 300);
   };
   return (
-    <div className={`w-full aspect-[3/4] bg-white rounded-[30px] shadow-2xl border-b-8 border-slate-100 flex flex-col relative transition-all duration-300 ${swiped === 'left' ? '-translate-x-[150%] rotate-[-15deg] opacity-0' : ''} ${swiped === 'right' ? 'translate-x-[150%] rotate-[15deg] opacity-0' : ''}`}>
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
-        <h2 className="text-4xl sm:text-5xl font-black text-slate-800">{data.es}</h2>
-        <div className="opacity-0 hover:opacity-100 transition-opacity cursor-pointer group">
-           <p className="text-xl sm:text-2xl font-medium text-slate-500 group-hover:text-slate-800 transition-colors">{data.en}</p>
+    <div className={`w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col relative transition-all duration-500 ${swiped === 'left' ? '-translate-x-[150%] rotate-[-20deg] opacity-0' : ''} ${swiped === 'right' ? 'translate-x-[150%] rotate-[20deg] opacity-0' : ''}`}>
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-8">
+        <h2 className="text-5xl md:text-6xl font-black text-slate-800">{data.es}</h2>
+        <div className="opacity-0 hover:opacity-100 transition-opacity duration-300 cursor-help group">
+           <p className="text-2xl md:text-3xl font-bold text-slate-400 group-hover:text-indigo-600 transition-colors">{data.en}</p>
+           <p className="text-sm text-slate-300 mt-2">{data.context}</p>
         </div>
-        <p className="text-xs text-slate-300 absolute bottom-8 animate-pulse">Toucher pour révéler</p>
+        <p className="text-xs font-bold text-slate-200 uppercase tracking-widest absolute bottom-32 animate-pulse">Survole ou touche</p>
       </div>
-      <div className="absolute -bottom-24 left-0 right-0 flex justify-center gap-8">
-        <button onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-white border-2 border-red-100 text-red-500 shadow-lg flex items-center justify-center active:scale-90 transition-transform"><X size={32} /></button>
-        <button onClick={() => handleSwipe('right')} className="w-16 h-16 rounded-full bg-teal-500 text-white shadow-lg flex items-center justify-center active:scale-90 transition-transform"><Check size={32} /></button>
+      
+      <div className="p-8 flex justify-center gap-12 bg-slate-50 rounded-b-[20px]">
+        <button onClick={() => handleSwipe('left')} className="w-20 h-20 rounded-full bg-white border-2 border-red-100 text-red-500 shadow-lg flex items-center justify-center hover:bg-red-50 hover:scale-110 active:scale-90 transition-all">
+          <X size={40} strokeWidth={3} />
+        </button>
+        <button onClick={() => handleSwipe('right')} className="w-20 h-20 rounded-full bg-teal-500 border-b-4 border-teal-700 text-white shadow-lg flex items-center justify-center hover:bg-teal-400 hover:scale-110 active:scale-90 active:border-b-0 active:translate-y-1 transition-all">
+          <Check size={40} strokeWidth={3} />
+        </button>
       </div>
     </div>
   );
@@ -464,36 +528,79 @@ const InputCard = ({ data, onNext }) => {
   const checkAnswer = () => {
     const isCorrect = data.answer.includes(val.trim().toLowerCase());
     setStatus(isCorrect ? 'success' : 'error');
-    if (isCorrect) setTimeout(onNext, 1200);
+    if (isCorrect) setTimeout(onNext, 1500);
   };
   return (
-    <div className="w-full bg-white rounded-[30px] shadow-xl p-8 flex flex-col space-y-6 animate-in fade-in slide-in-from-bottom-8">
-      <h3 className="text-xl sm:text-2xl font-bold text-slate-800 text-center">{data.question}</h3>
-      <input type="text" value={val} onChange={(e) => { setVal(e.target.value); setStatus('idle'); }} className={`w-full text-center text-xl p-4 rounded-xl border-2 outline-none ${status === 'error' ? 'border-red-400 bg-red-50' : status === 'success' ? 'border-green-400 bg-green-50' : 'border-slate-200 focus:border-indigo-400'}`} placeholder="Tape ta réponse..." />
-      <button onClick={checkAnswer} className={`w-full py-4 rounded-xl font-bold text-white shadow-lg ${status === 'success' ? 'bg-green-500' : 'bg-slate-900 active:scale-95 transition-transform'}`}>{status === 'success' ? 'Bravo !' : 'Vérifier'}</button>
+    <div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-8 md:p-12 justify-center space-y-8 animate-in zoom-in duration-300">
+      <div className="text-center space-y-2">
+        <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Challenge</span>
+        <h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3>
+      </div>
+      <input 
+        type="text" 
+        value={val} 
+        onChange={(e) => { setVal(e.target.value); setStatus('idle'); }} 
+        className={`w-full text-center text-2xl md:text-3xl font-bold p-6 rounded-2xl border-4 outline-none transition-all ${status === 'error' ? 'border-red-400 bg-red-50 text-red-500' : status === 'success' ? 'border-green-400 bg-green-50 text-green-600' : 'border-slate-100 focus:border-yellow-400 focus:bg-yellow-50'}`} 
+        placeholder="Ta réponse..." 
+      />
+      <button 
+        onClick={checkAnswer} 
+        className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl transition-all transform hover:scale-[1.02] active:scale-95 ${status === 'success' ? 'bg-green-500' : 'bg-slate-900'}`}
+      >
+        {status === 'success' ? 'Parfait ! 🎉' : 'Vérifier'}
+      </button>
+      {status === 'error' && <p className="text-center text-red-400 font-bold animate-shake">Essaie encore ! Indice : {data.hint}</p>}
     </div>
   );
 };
 
 const GrammarCard = ({ data, onNext }) => (
-  <div className="w-full bg-white rounded-[30px] shadow-xl overflow-hidden flex flex-col animate-in zoom-in duration-300">
-    <div className="bg-indigo-600 p-6 text-white text-center"><h3 className="text-xl sm:text-2xl font-black">{data.title}</h3></div>
-    <div className="p-6 space-y-4">
-      <div className="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden">
+  <div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500">
+    <div className="bg-indigo-600 p-8 md:p-10 text-white text-center relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+      <h3 className="text-3xl md:text-4xl font-black relative z-10">{data.title}</h3>
+      <p className="text-indigo-200 mt-2 relative z-10">{data.description}</p>
+    </div>
+    <div className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-slate-50">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {data.conjugation.map((row, idx) => (
-           <div key={idx} className="flex justify-between items-center p-3 border-b border-slate-200 last:border-0"><span className="text-slate-400 text-sm font-medium w-1/3">{row.pronoun}</span><span className="text-indigo-600 font-bold text-lg w-1/3 text-center">{row.verb}</span></div>
+           <div key={idx} className="flex justify-between items-center p-4 border-b border-slate-100 last:border-0 hover:bg-indigo-50 transition-colors">
+             <span className="text-slate-400 font-medium w-1/3">{row.pronoun}</span>
+             <span className="text-indigo-600 font-black text-xl w-1/3 text-center">{row.verb}</span>
+             <span className="text-slate-300 text-sm w-1/3 text-right italic">{row.fr}</span>
+           </div>
         ))}
       </div>
-      <button onClick={onNext} className="w-full bg-yellow-400 text-slate-900 py-4 rounded-xl font-bold shadow-md hover:bg-yellow-300 active:scale-95 transition-all">Continuer</button>
+      <button onClick={onNext} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg hover:bg-yellow-300 hover:scale-[1.02] active:scale-95 transition-all">
+        J'ai compris
+      </button>
     </div>
   </div>
 );
 
 const LessonComplete = ({ xp, onHome }) => (
-  <div className="flex-1 flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in duration-500">
-    <Trophy size={100} className="text-yellow-700 drop-shadow-md" />
-    <h2 className="text-4xl font-black text-slate-900">Increíble!</h2>
-    <p className="text-yellow-800 font-medium">Progression sauvegardée !</p>
-    <button onClick={onHome} className="w-full max-w-xs bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-all">Retour</button>
+  <div className="h-full w-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in duration-500">
+    <div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform">
+      <Trophy size={100} className="text-yellow-500 fill-yellow-500" />
+    </div>
+    <div>
+      <h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">Increíble!</h2>
+      <p className="text-xl text-yellow-900 font-bold opacity-80">Leçon terminée avec succès.</p>
+    </div>
+    <div className="flex gap-4">
+      <div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">
+        +{xp} XP
+      </div>
+    </div>
+    <button onClick={onHome} className="w-full max-w-sm bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">
+      Continuer
+    </button>
+  </div>
+);
+
+const EmptyState = ({ message }) => (
+  <div className="flex flex-col items-center justify-center p-12 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200 text-slate-400">
+    <BookOpen size={48} className="mb-4 opacity-20" />
+    <p className="font-medium text-lg">{message}</p>
   </div>
 );
