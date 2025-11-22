@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 // Les métadonnées pour le titre de l'onglet et le référencement
 export const metadata: Metadata = {
-  title: "Español Sprint - B2 en 90 Jours",
+  title: "EspaSprint",
   description: "Apprends l'espagnol rapidement avec la méthode Pareto et la répétition espacée.",
 };
 
