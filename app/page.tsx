@@ -102,6 +102,13 @@ const INITIAL_LESSONS_CONTENT = {
   ]
 };
 
+const SENTENCE_STRUCTURES = [
+  { id: 1, title: "La Phrase Simple", formula: "Sujet (Facultatif) + Verbe + Reste", example_es: "(Yo) como una manzana.", example_en: "Je mange une pomme.", explanation: "Le pronom personnel (Yo, Tú...) est souvent omis." },
+  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No hablo inglés.", example_en: "Je ne parle pas anglais.", explanation: "Le 'ne...pas' français se traduit simplement par 'No' placé juste avant le verbe." },
+  { id: 3, title: "L'Adjectif", formula: "Nom + Adjectif", example_es: "Un libro rojo.", example_en: "Un livre rouge.", explanation: "Comme en français, l'adjectif se place généralement après le nom." },
+  { id: 4, title: "La Question", formula: "¿ + Verbe + Sujet ?", example_es: "¿Tienes tú un coche?", example_en: "As-tu une voiture ?", explanation: "Point d'interrogation inversé au début." }
+];
+
 /* --- APPLICATION --- */
 export default function EspanolSprintPro() {
   const [view, setView] = useState('landing'); 
@@ -131,8 +138,6 @@ export default function EspanolSprintPro() {
             await setDoc(userRef, newProfile);
             setUserData(newProfile);
           }
-
-          // Chargement des données dynamiques
           const roadmapSnap = await getDoc(doc(db, "meta", "roadmap"));
           if (roadmapSnap.exists()) setDynamicLessonsList(roadmapSnap.data().lessons);
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
@@ -186,7 +191,6 @@ export default function EspanolSprintPro() {
 
   const startLesson = (lessonId) => {
     const today = new Date().toDateString();
-    // Limite 4 nouvelles leçons par jour, mais révisions illimitées
     const isNewLesson = !userData.completedLessons.includes(lessonId);
     if (isNewLesson && userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 4) { 
       setShowLimitModal(true); return; 
@@ -268,6 +272,7 @@ export default function EspanolSprintPro() {
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
               {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} />}
               {view === 'notebook' && userData && <NotebookContent userVocab={userData.vocab} />}
+              {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} />}
               {view === 'profile' && userData && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} />}
               {view === 'lesson' && dynamicLessonsContent[activeLessonId] && <LessonEngine content={dynamicLessonsContent[activeLessonId]} onComplete={(xp) => handleLessonComplete(xp, dynamicLessonsContent[activeLessonId], activeLessonId)} onExit={() => setView('dashboard')} />}
               {view === 'complete' && <LessonComplete xp={150} onHome={() => setView('dashboard')} onDownload={() => handlePrintPDF(activeLessonId)} />}
@@ -281,6 +286,22 @@ export default function EspanolSprintPro() {
 }
 
 /* --- UI COMPONENTS --- */
+
+const StructuresContent = ({ structures }) => (
+  <div className="max-w-3xl mx-auto w-full p-6 pb-24">
+    <h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2>
+    <div className="space-y-6">
+      {structures.map((struct) => (
+        <div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div>
+          <div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div>
+          <div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div>
+          <p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 const NotebookContent = ({ userVocab }) => {
   const vocabItems = userVocab.filter(c => c.type === 'swipe');
@@ -417,6 +438,7 @@ const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUploa
     <div className="flex items-center gap-2 mb-12 px-2"><div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center shadow-md rotate-3"><span className="text-2xl">🇪🇸</span></div><h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Español<span className="text-red-600">Sprint</span></h1></div>
     <nav className="flex-1 space-y-2">
       <SidebarLink icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
+      <SidebarLink icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} />
       <SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
       <SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
     </nav>
@@ -445,6 +467,7 @@ const MobileHeader = ({ userData }) => (
 const MobileBottomNav = ({ currentView, onChangeView }) => (
   <div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30">
     <NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
+    <NavBtn icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} />
     <NavBtn icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
     <NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
   </div>
