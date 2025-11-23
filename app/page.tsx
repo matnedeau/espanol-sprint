@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, Hammer, ArrowRight
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
@@ -29,39 +29,41 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-// --- FONCTION AUDIO INTELLIGENTE ---
+// Fonction Audio (Synthèse Vocale)
 const speak = (text) => {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
+    window.speechSynthesis.cancel(); // Arrête le son précédent
     const utterance = new SpeechSynthesisUtterance(text);
     
     // Essayer de trouver une voix native de meilleure qualité
     const voices = window.speechSynthesis.getVoices();
-    const esVoice = voices.find(v => v.lang.includes('es-ES') && v.name.includes('Google')) || voices.find(v => v.lang.includes('es'));
+    // Cherche une voix 'es-ES' (Espagne) ou 'es' tout court
+    const esVoice = voices.find(v => v.lang.includes('es-ES') || v.lang.includes('es'));
     
     if (esVoice) utterance.voice = esVoice;
-    
+
     utterance.lang = 'es-ES'; 
-    utterance.rate = 0.85; // Vitesse naturelle
-    utterance.pitch = 1;
+    utterance.rate = 0.85; // Vitesse légèrement ralentie pour l'apprentissage
     window.speechSynthesis.speak(utterance);
   }
 };
 
-/* --- NOUVEAU DATASET : LEÇONS LONGUES & STRUCTURES --- */
+/* --- DATASET ENRICHI (A1 - SEMAINE 1) --- */
 const INITIAL_LESSONS_LIST = [
   { id: 1, title: "Les Bases", level: "A1", desc: "Se présenter & Être (12 cartes)" },
   { id: 2, title: "Ma Famille", level: "A1", desc: "Possession & Avoir (15 cartes)" },
   { id: 3, title: "Au Quotidien", level: "A1", desc: "Verbes en -AR & Routine (14 cartes)" },
   { id: 4, title: "La Nourriture", level: "A1", desc: "Gustar & Manger" },
   { id: 5, title: "Voyage", level: "A1", desc: "Transports & Lieux" },
+  { id: 6, title: "En Ville", level: "A1", desc: "Directions & Verbe Aller" },
+  { id: 7, title: "Bilan Semaine 1", level: "A1", desc: "Grand Quiz Final" },
 ];
 
 const INITIAL_LESSONS_CONTENT = {
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Hola, ¿qué tal?" },
     { id: 102, type: "swipe", es: "Buenos días", en: "Bonjour (Matin)", context: "Buenos días, mamá" },
-    { id: 103, type: "grammar", title: "Grammaire : Être (Ser)", description: "Utilisé pour l'identité (je suis Paul) et l'origine.", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él/Ella", verb: "es", fr: "Il est" }] },
+    { id: 103, type: "grammar", title: "Grammaire : Être (Ser)", description: "Pour l'identité (je suis Paul) et l'origine (je suis français).", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él/Ella", verb: "es", fr: "Il est" }] },
     { id: 104, type: "input", question: "Traduis : 'Je suis'", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
     { id: 105, type: "swipe", es: "Yo soy francés", en: "Je suis français", context: "Yo soy francés de París" },
     { id: 106, type: "structure", title: "Structure : La Phrase Simple", formula: "Sujet (Optionnel) + Verbe + Adjectif", example: "Yo soy alto (Je suis grand)", note: "En espagnol, on peut dire 'Soy alto' sans le 'Yo'." },
@@ -74,23 +76,23 @@ const INITIAL_LESSONS_CONTENT = {
   ],
   2: [
     { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Amo a mi familia" },
-    { id: 202, type: "grammar", title: "Grammaire : Avoir (Tener)", description: "Possession et âge.", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él", verb: "tiene", fr: "Il a" }] },
+    { id: 202, type: "grammar", title: "Grammaire : Avoir (Tener)", description: "Utilisé pour la possession (j'ai un chien) et l'âge (j'ai 20 ans).", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él/Ella", verb: "tiene", fr: "Il a" }] },
     { id: 203, type: "input", question: "Traduis : 'J'ai'", answer: ["tengo", "yo tengo"], hint: "Verbe Tener" },
     { id: 204, type: "swipe", es: "El padre", en: "Le père", context: "Mi padre es alto" },
     { id: 205, type: "swipe", es: "La madre", en: "La mère", context: "Mi madre es guapa" },
-    { id: 206, type: "structure", title: "Structure : La Possession", formula: "Mi / Tu / Su + Nom", example: "Mi casa (Ma maison)", note: "Pas besoin d'article (le/la) devant 'Mi'." },
-    { id: 207, type: "swipe", es: "Mi hermano", en: "Mon frère", context: "Mi hermano se llama Juan" },
-    { id: 208, type: "swipe", es: "Tu hermana", en: "Ta soeur", context: "¿Cómo se llama tu hermana?" },
-    { id: 209, type: "swipe", es: "Tengo 20 años", en: "J'ai 20 ans", context: "Tengo 20 años" },
-    { id: 210, type: "input", question: "Traduis : 'J'ai un frère'", answer: ["tengo un hermano", "yo tengo un hermano"], hint: "Tengo un h..." },
+    { id: 206, type: "swipe", es: "El hermano", en: "Le frère", context: "Tengo un hermano" },
+    { id: 207, type: "swipe", es: "La hermana", en: "La soeur", context: "Mi hermana pequeña" },
+    { id: 208, type: "swipe", es: "Tengo 20 años", en: "J'ai 20 ans", context: "Tengo 20 años" },
+    { id: 209, type: "swipe", es: "La casa", en: "La maison", context: "Vivo en una casa" },
+    { id: 210, type: "input", question: "Traduis : 'La mère'", answer: ["la madre", "madre"], hint: "La m..." },
     { id: 211, type: "swipe", es: "El gato", en: "Le chat", context: "El gato negro" },
     { id: 212, type: "swipe", es: "El perro", en: "Le chien", context: "Mi perro es fiel" },
-    { id: 213, type: "swipe", es: "La casa", en: "La maison", context: "Vivo en una casa" },
-    { id: 214, type: "input", question: "Traduis : 'La mère'", answer: ["la madre", "madre"], hint: "La m..." }
+    { id: 213, type: "structure", title: "Structure : La Possession", formula: "Mi / Tu / Su + Nom", example: "Mi casa (Ma maison)", note: "Pas besoin d'article (le/la) devant 'Mi'." },
+    { id: 214, type: "input", question: "Traduis : 'J'ai un frère'", answer: ["tengo un hermano", "yo tengo un hermano"], hint: "Tengo un h..." }
   ],
   3: [
     { id: 301, type: "swipe", es: "Hablar", en: "Parler", context: "Hablo español" },
-    { id: 302, type: "grammar", title: "Verbes en -AR (Présent)", description: "Terminaisons régulières.", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }] },
+    { id: 302, type: "grammar", title: "Verbes en -AR (Présent)", description: "La majorité des verbes finissent en -AR. Voici les terminaisons.", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }] },
     { id: 303, type: "input", question: "Je parle (Hablar)", answer: ["hablo", "yo hablo"], hint: "Terminaison -o" },
     { id: 304, type: "swipe", es: "Trabajar", en: "Travailler", context: "Trabajo en Madrid" },
     { id: 305, type: "structure", title: "Structure : La Négation", formula: "No + Verbe", example: "No hablo inglés (Je ne parle pas anglais)", note: "Le 'ne... pas' français devient juste 'No' devant le verbe." },
@@ -113,7 +115,7 @@ const SENTENCE_STRUCTURES = [
   { id: 4, title: "La Question", formula: "¿ + Verbe + Sujet ?", example_es: "¿Tienes tú un coche?", example_en: "As-tu une voiture ?", explanation: "L'espagnol utilise un point d'interrogation inversé au début. L'ordre des mots est flexible." }
 ];
 
-/* --- APPLICATION --- */
+/* --- APPLICATION PRINCIPALE --- */
 export default function EspanolSprintPro() {
   const [view, setView] = useState('landing'); 
   const [currentUser, setCurrentUser] = useState(null); 
@@ -127,7 +129,7 @@ export default function EspanolSprintPro() {
 
   useEffect(() => {
     const initApp = async (user) => {
-      try { await getRedirectResult(auth); } catch (e) { console.error(e); }
+      try { await getRedirectResult(auth); } catch (e) { console.error("Redirect:", e); }
       
       if (user) {
         setCurrentUser(user);
@@ -138,11 +140,12 @@ export default function EspanolSprintPro() {
             setUserData(userSnap.data());
           } else {
             const name = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
-            const newProfile = { name, xp: 0, streak: 1, level: 1, vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 } };
+            const newProfile = { name: name, xp: 0, streak: 1, level: 1, vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 } };
             await setDoc(userRef, newProfile);
             setUserData(newProfile);
           }
 
+          // Chargement des données dynamiques
           const roadmapSnap = await getDoc(doc(db, "meta", "roadmap"));
           if (roadmapSnap.exists()) setDynamicLessonsList(roadmapSnap.data().lessons);
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
@@ -152,7 +155,7 @@ export default function EspanolSprintPro() {
           else setDynamicLessonsContent(INITIAL_LESSONS_CONTENT);
           
           setView('dashboard');
-        } catch (error) { console.error(error); }
+        } catch (error) { console.error("Erreur chargement:", error); }
       } else {
         setCurrentUser(null); setUserData(null); setView('landing');
       }
@@ -162,6 +165,7 @@ export default function EspanolSprintPro() {
     return () => unsubscribe();
   }, []);
 
+  // FONCTION ADMIN
   const uploadFullContentToCloud = async () => {
     if (!confirm("ADMIN : Mettre à jour tout le contenu dans Firebase ?")) return;
     try {
@@ -196,12 +200,16 @@ export default function EspanolSprintPro() {
 
   const startLesson = (lessonId) => {
     const today = new Date().toDateString();
-    // Limite 4 nouvelles leçons par jour, mais révisions illimitées
-    const isNew = !userData.completedLessons.includes(lessonId);
-    if (isNew && userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 4) { 
+    
+    // Vérification Limite : 4 Nouvelles par jour MAX
+    const isNewLesson = !userData.completedLessons.includes(lessonId);
+    if (isNewLesson && userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 4) { 
       setShowLimitModal(true); return; 
     }
-    if (!dynamicLessonsContent[lessonId]) { alert("Contenu manquant"); return; }
+
+    // Sécurité : Vérifier si la leçon existe
+    if (!dynamicLessonsContent[lessonId]) { alert("Leçon non disponible pour l'instant."); return; }
+    
     setActiveLessonId(lessonId);
     setView('lesson');
   };
@@ -211,8 +219,12 @@ export default function EspanolSprintPro() {
     const today = new Date().toDateString();
     if (currentUser) {
       const userRef = doc(db, "users", currentUser.uid);
+      // On ne compte que si c'est une NOUVELLE leçon
       const isNew = !userData.completedLessons.includes(lessonId);
-      const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
+      const newCount = isNew 
+        ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1)
+        : (userData.dailyLimit?.count || 0);
+
       const uniqueNewVocab = newVocab.filter(item => !userData.vocab.some(v => v.id === item.id));
 
       const updateData = {
@@ -234,7 +246,8 @@ export default function EspanolSprintPro() {
     if(!content) return;
     const printWindow = window.open('', '_blank');
     const vocabHTML = content.filter(c => c.type === 'swipe').map(c => `<div style="margin-bottom:10px; border-bottom:1px solid #eee;"><b>${c.es}</b> = ${c.en} <i style="color:gray">(${c.context})</i></div>`).join('');
-    printWindow.document.write(`<html><head><title>Leçon ${lessonId}</title></head><body style="font-family:sans-serif; padding:30px;"><h1>🇪🇸 Leçon ${lessonId}</h1><h3>Vocabulaire</h3>${vocabHTML}<script>window.print()</script></body></html>`);
+    const grammarHTML = content.filter(c => c.type === 'grammar').map(c => `<div style="margin-top:20px;"><h3>${c.title}</h3><p>${c.description}</p></div>`).join('');
+    printWindow.document.write(`<html><head><title>Leçon ${lessonId}</title></head><body style="font-family:sans-serif; padding:30px;"><h1>🇪🇸 Leçon ${lessonId}</h1><h3>Vocabulaire</h3>${vocabHTML}${grammarHTML}<script>window.print()</script></body></html>`);
     printWindow.document.close();
   };
 
@@ -443,8 +456,14 @@ const LessonEngine = ({ content, onComplete, onExit }) => {
     } else {
       setProgress(((currentIndex + 1) / content.length) * 100);
       setCurrentIndex(prev => prev + 1);
+      // L'audio automatique est désactivé, l'utilisateur doit cliquer
     }
   };
+
+  // Jouer le son UNIQUEMENT si c'est la première carte
+  useEffect(() => {
+    if (currentIndex === 0 && currentCard?.es) speak(currentCard.es);
+  }, []);
 
   return (
     <div className="h-full w-full flex flex-col bg-slate-50">
@@ -531,7 +550,8 @@ const GrammarCard = ({ data, onNext }) => (
 
 const StructureCard = ({ data, onNext }) => (
   <div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500 border-b-[12px] border-slate-100">
-    <div className="bg-amber-400 p-8 text-slate-900 text-center">
+    <div className="bg-amber-400 p-8 text-slate-900 text-center relative">
+       <button onClick={(e) => { e.stopPropagation(); speak(data.example); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-slate-900"><Volume2 size={20} /></button>
        <h3 className="text-2xl font-black uppercase tracking-wider">{data.title}</h3>
     </div>
     <div className="flex-1 p-8 flex flex-col justify-center items-center gap-6 bg-slate-50">
