@@ -4,20 +4,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, getRedirectResult, signInWithRedirect } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, increment, collection, getDocs } from "firebase/firestore";
 
 // ---------------------------------------------------------
-// 🟢 ZONE DE CONFIGURATION (CORRECTION CLÉ)
-// J'ai mis le "C" MAJUSCULE à la fin de la clé
+// 🟢 CONFIGURATION FIREBASE
 // ---------------------------------------------------------
 const firebaseConfig = {
-  apiKey: "AIzaSyDPWOdxYtnvVrDB6wk68EF0Gz62fqVCwBE", // <--- C majuscule ici
+  apiKey: "AIzaSyDPWOdxYtnvVrDB6wk68EF0Gz62fqVCwBE", 
   authDomain: "espanolsprint.firebaseapp.com",
   projectId: "espanolsprint",
   storageBucket: "espanolsprint.firebasestorage.app",
@@ -25,36 +24,13 @@ const firebaseConfig = {
   appId: "1:54612821418:web:7af8de5ad1545ec1ba57d3"
 };
 
-// Initialisation
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-/* --- DATASET DE SECOURS --- */
-const INITIAL_LESSONS_DATA = {
-  1: [
-    { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Hola, ¿qué tal?" },
-    { id: 102, type: "swipe", es: "Buenos días", en: "Bonjour (Matin)", context: "Buenos días, mamá" },
-    { id: 103, type: "grammar", title: "Le Verbe Être (Ser)", description: "Pour l'identité et l'origine.", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él/Ella", verb: "es", fr: "Il est" }] },
-    { id: 104, type: "input", question: "Traduis : 'Je suis'", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
-    { id: 105, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" },
-    { id: 106, type: "swipe", es: "Por favor", en: "S'il vous plaît", context: "Agua, por favor" }
-  ],
-  2: [
-    { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Amo a mi familia" },
-    { id: 203, type: "grammar", title: "Le Verbe Avoir (Tener)", description: "Possession et âge.", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él/Ella", verb: "tiene", fr: "Il a" }] },
-    { id: 204, type: "input", question: "Traduis : 'J'ai'", answer: ["tengo", "yo tengo"], hint: "Verbe Tener" },
-    { id: 205, type: "swipe", es: "La madre", en: "La mère", context: "Mi madre es guapa" }
-  ],
-  3: [
-    { id: 301, type: "swipe", es: "Hablar", en: "Parler", context: "Hablo español" },
-    { id: 303, type: "grammar", title: "Verbes en -AR", description: "Au présent, les terminaisons.", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }] },
-    { id: 304, type: "input", question: "Je parle (Hablar)", answer: ["hablo", "yo hablo"], hint: "Terminaison -o" }
-  ]
-};
-
-const ALL_LESSONS_INFO = [
+/* --- DATASET CORRIGÉ & ENRICHI --- */
+const INITIAL_LESSONS_LIST = [
   { id: 1, title: "Hola!", level: "A1", desc: "Salutations & Verbe Être" },
   { id: 2, title: "La Famille", level: "A1", desc: "Possession & Verbe Avoir" },
   { id: 3, title: "Actions", level: "A1", desc: "Verbes en -AR & Quotidien" },
@@ -64,7 +40,52 @@ const ALL_LESSONS_INFO = [
   { id: 7, title: "Bilan Semaine 1", level: "A1", desc: "Révision complète & Quiz" },
 ];
 
-/* --- APPLICATION PRINCIPALE --- */
+const INITIAL_LESSONS_CONTENT = {
+  1: [
+    { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Hola, ¿qué tal?" },
+    { id: 102, type: "swipe", es: "Buenos días", en: "Bonjour (Matin)", context: "Buenos días, mamá" },
+    { id: 103, type: "grammar", title: "Le Verbe Être (Ser)", description: "Pour l'identité et l'origine.", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él/Ella", verb: "es", fr: "Il est" }] },
+    { id: 104, type: "input", question: "Traduis : 'Je suis'", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
+    { id: 105, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" },
+    { id: 106, type: "swipe", es: "Por favor", en: "S'il vous plaît", context: "Agua, por favor" },
+    { id: 107, type: "swipe", es: "Mucho gusto", en: "Enchanté", context: "Hola, mucho gusto" },
+    { id: 108, type: "swipe", es: "Adiós", en: "Au revoir", context: "Adiós amigo" }
+  ],
+  2: [
+    { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Amo a mi familia" },
+    { id: 202, type: "swipe", es: "El padre", en: "Le père", context: "Es mi padre" }, // Corrigé: Ajouté ID manquant potentiellement
+    { id: 203, type: "grammar", title: "Le Verbe Avoir (Tener)", description: "Possession et âge.", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él/Ella", verb: "tiene", fr: "Il a" }] },
+    { id: 204, type: "input", question: "Traduis : 'J'ai'", answer: ["tengo", "yo tengo"], hint: "Verbe Tener" },
+    { id: 205, type: "swipe", es: "La madre", en: "La mère", context: "Mi madre es guapa" },
+    { id: 206, type: "swipe", es: "El hermano", en: "Le frère", context: "Tengo un hermano" },
+    { id: 207, type: "swipe", es: "La hermana", en: "La soeur", context: "Mi hermana pequeña" },
+    { id: 208, type: "swipe", es: "El abuelo", en: "Le grand-père", context: "Mi abuelo es viejo" },
+    { id: 209, type: "swipe", es: "La casa", en: "La maison", context: "Vivo en una casa" },
+    { id: 210, type: "input", question: "Traduis : 'La mère'", answer: ["la madre", "madre"], hint: "La m..." }
+  ],
+  3: [
+    { id: 301, type: "swipe", es: "Hablar", en: "Parler", context: "Hablo español" },
+    { id: 302, type: "swipe", es: "Trabajar", en: "Travailler", context: "Trabajo aquí" },
+    { id: 303, type: "grammar", title: "Verbes en -AR", description: "Au présent, les terminaisons.", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }] },
+    { id: 304, type: "input", question: "Je parle (Hablar)", answer: ["hablo", "yo hablo"], hint: "Terminaison -o" },
+    { id: 305, type: "swipe", es: "Escuchar", en: "Écouter", context: "Escucho música" },
+    { id: 306, type: "swipe", es: "Estudiar", en: "Étudier", context: "Estudio mucho" },
+    { id: 307, type: "swipe", es: "Bailar", en: "Danser", context: "Me gusta bailar" },
+    { id: 308, type: "swipe", es: "Caminar", en: "Marcher", context: "Camino en el parque" }
+  ]
+};
+
+// Fonction utilitaire pour l'audio (Text-to-Speech)
+const speak = (text) => {
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'es-ES'; // Espagnol d'Espagne
+    utterance.rate = 0.9; // Un peu plus lent pour bien comprendre
+    window.speechSynthesis.speak(utterance);
+  }
+};
+
+/* --- APPLICATION --- */
 export default function EspanolSprintPro() {
   const [view, setView] = useState('landing'); 
   const [currentUser, setCurrentUser] = useState(null); 
@@ -73,17 +94,15 @@ export default function EspanolSprintPro() {
   const [activeLessonId, setActiveLessonId] = useState(1);
   const [showLimitModal, setShowLimitModal] = useState(false);
   
-  // États DYNAMIQUES
-  const [allLessonsInfo, setAllLessonsInfo] = useState(ALL_LESSONS_INFO); // Fallback local
-  const [cloudLessonsContent, setCloudLessonsContent] = useState({});
+  const [dynamicLessonsList, setDynamicLessonsList] = useState(INITIAL_LESSONS_LIST);
+  const [dynamicLessonsContent, setDynamicLessonsContent] = useState({});
 
-  // 1. Initialisation & Chargement
   useEffect(() => {
     const initApp = async (user) => {
+      try { await getRedirectResult(auth); } catch (e) { console.error(e); }
+      
       if (user) {
         setCurrentUser(user);
-        
-        // A. Profil
         const userRef = doc(db, "users", user.uid);
         try {
           const userSnap = await getDoc(userRef);
@@ -91,64 +110,39 @@ export default function EspanolSprintPro() {
             setUserData(userSnap.data());
           } else {
             const name = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
-            const newProfile = { 
-              name: name, xp: 0, streak: 1, level: 1, vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 }
-            };
+            const newProfile = { name: name, xp: 0, streak: 1, level: 1, vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 } };
             await setDoc(userRef, newProfile);
             setUserData(newProfile);
           }
-
-          // B. Charger la LISTE des leçons
-          try {
-            const listSnap = await getDoc(doc(db, "meta", "lessons_list"));
-            if (listSnap.exists()) {
-              setAllLessonsInfo(listSnap.data().list);
-            }
-          } catch(e) { console.log("Utilisation liste locale"); }
-
-          // C. Charger le CONTENU des leçons
+          const roadmapSnap = await getDoc(doc(db, "meta", "roadmap"));
+          if (roadmapSnap.exists()) setDynamicLessonsList(roadmapSnap.data().lessons);
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
           const lessonsData = {};
-          lessonsSnapshot.forEach((doc) => {
-            lessonsData[doc.id] = doc.data().content;
-          });
-          
-          if (Object.keys(lessonsData).length > 0) {
-            setCloudLessonsContent(lessonsData);
-          } else {
-            setCloudLessonsContent(INITIAL_LESSONS_DATA); 
-          }
+          lessonsSnapshot.forEach((doc) => { lessonsData[doc.id] = doc.data().content; });
+          if (Object.keys(lessonsData).length > 0) setDynamicLessonsContent(lessonsData);
+          else setDynamicLessonsContent(INITIAL_LESSONS_CONTENT);
           
           setView('dashboard');
-        } catch (error) {
-          console.error("Erreur chargement:", error);
-          setCloudLessonsContent(INITIAL_LESSONS_DATA);
-        }
+        } catch (error) { console.error("Erreur chargement:", error); }
       } else {
-        setCurrentUser(null);
-        setUserData(null);
-        setView('landing');
+        setCurrentUser(null); setUserData(null); setView('landing');
       }
       setLoading(false);
     };
-
     const unsubscribe = onAuthStateChanged(auth, initApp);
     return () => unsubscribe();
   }, []);
 
-  // FONCTION ADMIN ULTIME
   const uploadFullContentToCloud = async () => {
-    if (!confirm("ATTENTION ADMIN : Initialiser tout le contenu (Liste + Leçons) dans Firebase ?")) return;
+    if (!confirm("ADMIN : Initialiser le contenu ?")) return;
     try {
-      await setDoc(doc(db, "meta", "lessons_list"), { list: ALL_LESSONS_INFO });
-      for (const [id, content] of Object.entries(INITIAL_LESSONS_DATA)) {
+      await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST });
+      for (const [id, content] of Object.entries(INITIAL_LESSONS_CONTENT)) {
         await setDoc(doc(db, "lessons", id), { content: content });
       }
-      alert("✅ TOUT est dans le Cloud !");
+      alert("✅ Synchronisation réussie !");
       window.location.reload(); 
-    } catch (e) {
-      alert("Erreur: " + e.message);
-    }
+    } catch (e) { alert("Erreur: " + e.message); }
   };
 
   const handleAuth = async (email, password, isSignUp) => {
@@ -156,43 +150,25 @@ export default function EspanolSprintPro() {
     try {
       if (isSignUp) {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, "users", cred.user.uid), {
-          name: email.split('@')[0], email, xp: 0, streak: 1, level: 1, vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 }
-        });
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-      }
-    } catch (error) {
-      console.error(error);
-      let msg = "Erreur: " + error.message;
-      if (error.code === 'auth/invalid-credential') msg = "Email ou mot de passe incorrect.";
-      alert(msg);
-      setLoading(false);
-    }
+        await setDoc(doc(db, "users", cred.user.uid), { name: email.split('@')[0], email, xp: 0, streak: 1, level: 1, vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 } });
+      } else { await signInWithEmailAndPassword(auth, email, password); }
+    } catch (error) { alert("Erreur: " + error.message); setLoading(false); }
   };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-      console.error(error);
-      alert("Erreur Google : " + error.message);
-      setLoading(false);
-    }
+      if (window.innerWidth < 768) await signInWithRedirect(auth, googleProvider);
+      else await signInWithPopup(auth, googleProvider);
+    } catch (error) { alert("Erreur Google: " + error.message); setLoading(false); }
   };
-
+  
   const handleLogout = async () => { await signOut(auth); setView('landing'); };
 
   const startLesson = (lessonId) => {
     const today = new Date().toDateString();
-    if (userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 3) {
-      setShowLimitModal(true); return;
-    }
-    if (!cloudLessonsContent[lessonId]) {
-      alert("Cette leçon arrive bientôt !");
-      return;
-    }
+    if (userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 3) { setShowLimitModal(true); return; }
+    if (!dynamicLessonsContent[lessonId]) { alert("Bientôt disponible !"); return; }
     setActiveLessonId(lessonId);
     setView('lesson');
   };
@@ -218,13 +194,41 @@ export default function EspanolSprintPro() {
     setView('complete');
   };
 
+  // Fonction pour générer le PDF (Impression simplifiée)
+  const handlePrintPDF = (lessonId) => {
+    const content = dynamicLessonsContent[lessonId];
+    if(!content) return;
+    
+    // On crée une fenêtre temporaire pour l'impression
+    const printWindow = window.open('', '_blank');
+    const vocabList = content.filter(c => c.type === 'swipe').map(c => `<li><b>${c.es}</b> : ${c.en} <i>(${c.context})</i></li>`).join('');
+    const grammarList = content.filter(c => c.type === 'grammar').map(c => `<h3>${c.title}</h3><p>${c.description}</p><ul>${c.conjugation.map(r => `<li>${r.pronoun} ${r.verb} (${r.fr})</li>`).join('')}</ul>`).join('');
+    
+    printWindow.document.write(`
+      <html>
+        <head><title>Español Sprint - Leçon ${lessonId}</title></head>
+        <body style="font-family: sans-serif; padding: 40px;">
+          <h1 style="color: #eab308;">Español Sprint 🇪🇸</h1>
+          <h2>Récapitulatif de la Leçon ${lessonId}</h2>
+          <hr/>
+          <h3>Vocabulaire</h3>
+          <ul>${vocabList}</ul>
+          ${grammarList}
+          <div style="margin-top: 50px; font-size: 12px; color: gray;">Généré par Español Sprint App</div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-yellow-400"><Loader2 size={48} className="animate-spin text-white" /></div>;
 
   return (
     <div className="h-[100dvh] w-full bg-slate-50 font-sans text-slate-800 flex flex-col md:flex-row overflow-hidden">
       {showLimitModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center space-y-6 animate-in zoom-in duration-200">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center space-y-6">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500"><AlertCircle size={40} /></div>
             <div><h3 className="text-2xl font-black text-slate-900">Pause ! 🧠</h3><p className="text-slate-500 mt-2">3 leçons par jour max.</p></div>
             <button onClick={() => setShowLimitModal(false)} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">À demain</button>
@@ -243,11 +247,11 @@ export default function EspanolSprintPro() {
           <main className="flex-1 h-full overflow-hidden relative flex flex-col">
             <MobileHeader userData={userData} />
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
-              {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={allLessonsInfo} onStartLesson={startLesson} />}
-              {view === 'notebook' && userData && <NotebookContent allContent={Object.values(cloudLessonsContent).flat()} userVocab={userData.vocab} />}
+              {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} />}
+              {view === 'notebook' && userData && <NotebookContent allContent={Object.values(dynamicLessonsContent).flat()} userVocab={userData.vocab} />}
               {view === 'profile' && userData && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} />}
-              {view === 'lesson' && cloudLessonsContent[activeLessonId] && <LessonEngine content={cloudLessonsContent[activeLessonId]} onComplete={(xp) => handleLessonComplete(xp, cloudLessonsContent[activeLessonId], activeLessonId)} onExit={() => setView('dashboard')} />}
-              {view === 'complete' && <LessonComplete xp={100} onHome={() => setView('dashboard')} />}
+              {view === 'lesson' && dynamicLessonsContent[activeLessonId] && <LessonEngine content={dynamicLessonsContent[activeLessonId]} onComplete={(xp) => handleLessonComplete(xp, dynamicLessonsContent[activeLessonId], activeLessonId)} onExit={() => setView('dashboard')} />}
+              {view === 'complete' && <LessonComplete xp={100} onHome={() => setView('dashboard')} onDownload={() => handlePrintPDF(activeLessonId)} />}
             </div>
             {view !== 'lesson' && view !== 'complete' && <MobileBottomNav currentView={view} onChangeView={setView} />}
           </main>
@@ -257,7 +261,11 @@ export default function EspanolSprintPro() {
   );
 }
 
-/* --- COMPOSANTS UI --- */
+/* --- UI COMPONENTS --- */
+
+// Landing, Auth, Sidebar, MobileHeader, MobileBottomNav, DashboardContent, NotebookContent, ProfileContent sont IDENTIQUES à la V11.
+// Je les réintègre pour que tu aies un fichier complet qui marche du premier coup.
+
 const LandingPage = ({ onStart }) => (
   <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-400 relative overflow-hidden text-center">
     <div className="z-10 space-y-8 max-w-md">
@@ -276,19 +284,9 @@ const AuthScreen = ({ onAuth, onGoogle, onBack }) => {
     <div className="w-full max-w-md p-8 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
       <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold"><X size={20} /> Retour</button>
       <div><h2 className="text-4xl font-black text-slate-900 mb-2">{isSignUp ? 'Créer un compte' : 'Bon retour !'}</h2><p className="text-slate-500">Sauvegarde ta progression ☁️</p></div>
-      
       <div className="space-y-4">
-        <button onClick={onGoogle} className="w-full bg-white border-2 border-slate-200 text-slate-800 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all">
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" />
-          Continuer avec Google
-        </button>
-        
-        <div className="flex items-center gap-4">
-          <div className="h-px bg-slate-200 flex-1"></div>
-          <span className="text-slate-400 text-sm font-bold">OU</span>
-          <div className="h-px bg-slate-200 flex-1"></div>
-        </div>
-
+        <button onClick={onGoogle} className="w-full bg-white border-2 border-slate-200 text-slate-800 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"><img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" /> Continuer avec Google</button>
+        <div className="flex items-center gap-4"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-sm font-bold">OU</span><div className="h-px bg-slate-200 flex-1"></div></div>
         <input type="email" placeholder="Email" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={email} onChange={(e) => setEmail(e.target.value)} />
         <input type="password" placeholder="Mot de passe" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
@@ -346,7 +344,7 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
     <div className="max-w-2xl mx-auto w-full pb-24 pt-8 px-6">
       <div className="text-center mb-8 md:mb-12">
         <h2 className="text-3xl font-black text-slate-900">Semaine 1</h2>
-        <p className="text-slate-500">Objectif A1 • {userData.completedLessons.length} / 7 leçons</p>
+        <p className="text-slate-500">Objectif A1 • {userData.completedLessons.length} / {allLessons.length} leçons</p>
         <div className="mt-4 inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Énergie du jour</span><div className="flex gap-1">{[1, 2, 3].map(i => (<div key={i} className={`w-3 h-8 rounded-full ${i <= (3 - dailyCount) ? 'bg-green-400' : 'bg-slate-200'}`}></div>))}</div></div>
       </div>
       <div className="space-y-8 relative z-10">
@@ -405,7 +403,24 @@ const LessonEngine = ({ content, onComplete, onExit }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const currentCard = content[currentIndex];
-  const handleNext = () => { if (currentIndex + 1 >= content.length) { setProgress(100); setTimeout(() => onComplete(150), 500); } else { setProgress(((currentIndex + 1) / content.length) * 100); setCurrentIndex(prev => prev + 1); } };
+
+  const handleNext = () => {
+    if (currentIndex + 1 >= content.length) {
+      setProgress(100);
+      setTimeout(() => onComplete(150), 500);
+    } else {
+      setProgress(((currentIndex + 1) / content.length) * 100);
+      setCurrentIndex(prev => prev + 1);
+      // Audio automatique à chaque nouvelle carte (optionnel)
+      if(content[currentIndex + 1]?.es) speak(content[currentIndex + 1].es);
+    }
+  };
+
+  // Jouer le son au chargement de la première carte
+  useEffect(() => {
+    if (currentCard?.es) speak(currentCard.es);
+  }, [currentCard]);
+
   return (
     <div className="h-full w-full flex flex-col bg-slate-50">
       <div className="px-6 py-4 md:py-6 flex items-center gap-6 bg-white border-b border-slate-100 z-10">
@@ -426,8 +441,14 @@ const LessonEngine = ({ content, onComplete, onExit }) => {
 const SwipeCard = ({ data, onNext }) => {
   const [swiped, setSwiped] = useState(null);
   const handleSwipe = (dir) => { setSwiped(dir); setTimeout(onNext, 250); };
+  
   return (
     <div className={`w-full h-full bg-white rounded-3xl shadow-xl border-b-8 border-slate-100 flex flex-col relative transition-all duration-300 ${swiped === 'left' ? '-translate-x-[150%] rotate-[-20deg] opacity-0' : ''} ${swiped === 'right' ? 'translate-x-[150%] rotate-[20deg] opacity-0' : ''}`}>
+      <div className="absolute top-4 right-4 z-10">
+         <button onClick={(e) => { e.stopPropagation(); speak(data.es); }} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 text-indigo-600 shadow-sm active:scale-95 transition-all">
+            <Volume2 size={24} />
+         </button>
+      </div>
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6">
         <h2 className="text-5xl md:text-6xl font-black text-slate-800">{data.es}</h2>
         <div className="w-16 h-1 bg-slate-100 rounded-full"></div>
@@ -448,7 +469,12 @@ const InputCard = ({ data, onNext }) => {
   const checkAnswer = () => {
     const isCorrect = data.answer.includes(val.trim().toLowerCase());
     setStatus(isCorrect ? 'success' : 'error');
-    if (isCorrect) setTimeout(onNext, 1500);
+    if (isCorrect) {
+        speak("¡Muy bien!");
+        setTimeout(onNext, 1500);
+    } else {
+        speak("Inténtalo de nuevo");
+    }
   };
   return (
     <div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-8 md:p-12 justify-center space-y-8 animate-in zoom-in duration-300">
@@ -462,7 +488,10 @@ const InputCard = ({ data, onNext }) => {
 
 const GrammarCard = ({ data, onNext }) => (
   <div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500">
-    <div className="bg-indigo-600 p-8 md:p-10 text-white text-center"><h3 className="text-3xl md:text-4xl font-black">{data.title}</h3><p className="text-indigo-200 mt-2">{data.description}</p></div>
+    <div className="bg-indigo-600 p-8 md:p-10 text-white text-center relative">
+       <button onClick={(e) => { e.stopPropagation(); speak(data.title); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-white"><Volume2 size={20} /></button>
+       <h3 className="text-3xl md:text-4xl font-black">{data.title}</h3><p className="text-indigo-200 mt-2">{data.description}</p>
+    </div>
     <div className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-slate-50">
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {data.conjugation.map((row, idx) => (
@@ -474,11 +503,19 @@ const GrammarCard = ({ data, onNext }) => (
   </div>
 );
 
-const LessonComplete = ({ xp, onHome }) => (
+const LessonComplete = ({ xp, onHome, onDownload }) => (
   <div className="h-full w-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in duration-500">
     <div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform"><Trophy size={100} className="text-yellow-500 fill-yellow-500" /></div>
     <div><h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">Increíble!</h2><p className="text-xl text-yellow-900 font-bold opacity-80">Leçon terminée et sauvegardée.</p></div>
     <div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div>
-    <button onClick={onHome} className="w-full max-w-sm bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">Continuer</button>
+    
+    <div className="flex flex-col gap-4 w-full max-w-sm">
+        <button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all">
+            <Download size={20} /> Télécharger le PDF
+        </button>
+        <button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">
+            Continuer
+        </button>
+    </div>
   </div>
 );
