@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table, Map
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table, Map, CheckCircle
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
@@ -43,32 +43,42 @@ const speak = (text) => {
   }
 };
 
-/* --- DATASET INITIAL (Structure A1 -> C1) --- */
-const INITIAL_LESSONS_LIST = [
-  // A1
-  { id: 1, title: "Les Bases", level: "A1", desc: "Se présenter" },
-  { id: 2, title: "Ma Famille", level: "A1", desc: "Possession" },
-  { id: 3, title: "Au Quotidien", level: "A1", desc: "Routine" },
-  { id: 4, title: "Nourriture", level: "A1", desc: "Gustar" },
-  { id: 5, title: "Voyage", level: "A1", desc: "Lieux" },
-  { id: 6, title: "Ville", level: "A1", desc: "Directions" },
-  { id: 7, title: "Bilan A1", level: "A1", desc: "Examen" },
-  
-  // A2
-  { id: 21, title: "Passé Composé", level: "A2", desc: "Raconter hier" },
-  { id: 22, title: "Imparfait", level: "A2", desc: "Souvenirs" },
-  { id: 23, title: "Futur Proche", level: "A2", desc: "Projets" },
-  { id: 24, title: "Comparaisons", level: "A2", desc: "Plus/Moins" },
-  { id: 25, title: "Santé", level: "A2", desc: "Corps" },
-  { id: 26, title: "Bilan A2", level: "A2", desc: "Examen" },
-
-  // B1
-  { id: 41, title: "Futur Simple", level: "B1", desc: "Avenir" },
-  { id: 42, title: "Subjonctif", level: "B1", desc: "Doute" },
-  { id: 43, title: "Impératif", level: "B1", desc: "Ordres" },
+/* --- GÉNÉRATEUR DE 100 LEÇONS (A1 -> C1) --- */
+const LEVELS_CONFIG = [
+  { name: "A1", count: 20, title: "Débutant", desc: "Les bases essentielles" },
+  { name: "A2", count: 20, title: "Élémentaire", desc: "Raconter et décrire" },
+  { name: "B1", count: 20, title: "Intermédiaire", desc: "Opinions et projets" },
+  { name: "B2", count: 20, title: "Avancé", desc: "Débat et argumentation" },
+  { name: "C1", count: 20, title: "Expert", desc: "Nuances et maîtrise" }
 ];
 
-const INITIAL_LESSONS_CONTENT = {
+const generateLessonList = () => {
+  const list = [];
+  let idCounter = 1;
+  
+  // Titres personnalisés pour le début
+  const customTitles = {
+    1: "Hola! (Salutations)", 2: "La Famille", 3: "Au Quotidien", 4: "La Nourriture", 5: "Nombres & Heure", 6: "En Ville", 7: "Bilan Semaine 1"
+  };
+
+  LEVELS_CONFIG.forEach(lvl => {
+    for (let i = 0; i < lvl.count; i++) {
+      list.push({ 
+        id: idCounter, 
+        title: customTitles[idCounter] || `Leçon ${idCounter}`, 
+        level: lvl.name, 
+        desc: `${lvl.desc} - Partie ${i + 1}` 
+      });
+      idCounter++;
+    }
+  });
+  return list;
+};
+
+const INITIAL_LESSONS_LIST = generateLessonList();
+
+// Contenu détaillé (Début A1 + Générique pour la suite)
+const MANUAL_CONTENT = {
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Hola, ¿qué tal?" },
     { id: 102, type: "swipe", es: "Buenos días", en: "Bonjour (Matin)", context: "Buenos días, mamá" },
@@ -76,8 +86,29 @@ const INITIAL_LESSONS_CONTENT = {
     { id: 104, type: "input", question: "Traduis : 'Je suis'", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
     { id: 105, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" }
   ],
-  // ... Les autres leçons sont générées ou ajoutées via Firebase
+  2: [
+    { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Amo a mi familia" },
+    { id: 202, type: "grammar", title: "Avoir (Tener)", description: "Possession", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }] },
+    { id: 203, type: "input", question: "J'ai (Tener)", answer: ["tengo"], hint: "T..." }
+  ],
+  3: [
+    { id: 301, type: "swipe", es: "Hablar", en: "Parler", context: "Hablo español" },
+    { id: 302, type: "grammar", title: "Verbes -AR", description: "Présent", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "o" }, { pronoun: "Tú", verb: "-as", fr: "as" }] }
+  ]
 };
+
+const generateAllContent = () => {
+  const content = { ...MANUAL_CONTENT };
+  for (let i = 4; i <= 100; i++) {
+    content[i] = [
+      { id: i * 100 + 1, type: "structure", title: `Structure Leçon ${i}`, formula: "Sujet + Verbe", example: "Practico español", note: "Entraînement" },
+      { id: i * 100 + 2, type: "swipe", es: `Palabra ${i}`, en: `Mot ${i}`, context: "Contexto de ejemplo" },
+      { id: i * 100 + 3, type: "input", question: "Écris 'Hola'", answer: ["hola"], hint: "H..." }
+    ];
+  }
+  return content;
+};
+const INITIAL_LESSONS_CONTENT = generateAllContent();
 
 const SENTENCE_STRUCTURES = [
   { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe + Complément", example_es: "Yo como una manzana.", example_en: "Je mange une pomme.", explanation: "Comme en français." },
@@ -115,9 +146,12 @@ export default function EspanolSprintPro() {
           }
           const roadmapSnap = await getDoc(doc(db, "meta", "roadmap"));
           if (roadmapSnap.exists()) setDynamicLessonsList(roadmapSnap.data().lessons);
+          
+          // Chargement partiel ou total (ici total pour simplifier la démo)
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
           const lessonsData = {};
           lessonsSnapshot.forEach((doc) => { lessonsData[doc.id] = doc.data().content; });
+          
           if (Object.keys(lessonsData).length > 0) setDynamicLessonsContent(lessonsData);
           else setDynamicLessonsContent(INITIAL_LESSONS_CONTENT);
           
@@ -133,13 +167,15 @@ export default function EspanolSprintPro() {
   }, []);
 
   const uploadFullContentToCloud = async () => {
-    if (!confirm("ADMIN : Mettre à jour tout le contenu dans Firebase ?")) return;
+    if (!confirm("ADMIN : Initialiser les 100 leçons dans Firebase ? (Cela peut prendre quelques secondes)")) return;
     try {
       await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST });
+      let count = 0;
       for (const [id, content] of Object.entries(INITIAL_LESSONS_CONTENT)) {
         await setDoc(doc(db, "lessons", id), { content: content });
+        count++;
       }
-      alert("✅ Contenu mis à jour !");
+      alert(`✅ ${count} Leçons (A1->C1) mises à jour dans le Cloud !`);
       window.location.reload(); 
     } catch (e) { alert("Erreur: " + e.message); }
   };
@@ -167,10 +203,13 @@ export default function EspanolSprintPro() {
   const startLesson = (lessonId) => {
     const today = new Date().toDateString();
     const isNewLesson = !userData.completedLessons.includes(lessonId);
+    
+    // Limite 4 leçons/jour
     if (isNewLesson && userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 4) { 
       setShowLimitModal(true); return; 
     }
     if (!dynamicLessonsContent[lessonId]) { alert("Leçon non disponible."); return; }
+    
     setActiveLessonId(lessonId);
     setView('lesson');
   };
@@ -184,12 +223,14 @@ export default function EspanolSprintPro() {
       const isNew = !userData.completedLessons.includes(lessonId);
       const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
       
-      // Vérification du Level Up (Passage A1 -> A2)
-      // Logique simple : Si l'utilisateur a fini 7 leçons et était A1, il passe A2
+      // Calcul du niveau
       let newLevel = userData.level;
       const totalDone = userData.completedLessons.length + (isNew ? 1 : 0);
-      if (userData.level === "A1" && totalDone >= 7) newLevel = "A2";
-      if (userData.level === "A2" && totalDone >= 20) newLevel = "B1";
+      // Seuils arbitraires pour l'exemple (20 leçons par niveau)
+      if (totalDone >= 20) newLevel = "A2";
+      if (totalDone >= 40) newLevel = "B1";
+      if (totalDone >= 60) newLevel = "B2";
+      if (totalDone >= 80) newLevel = "C1";
 
       const updateData = {
         xp: increment(xp),
@@ -206,7 +247,6 @@ export default function EspanolSprintPro() {
     setView('complete');
   };
 
-  // Fonction PDF
   const handlePrintPDF = (lessonId) => {
     const content = dynamicLessonsContent[lessonId];
     if(!content) return;
@@ -258,11 +298,11 @@ export default function EspanolSprintPro() {
 
 /* --- UI COMPONENTS --- */
 
-// NOUVEAU DASHBOARD HORIZONTAL
+// NOUVEAU DASHBOARD HORIZONTAL PAR NIVEAUX
 const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
   const levels = ["A1", "A2", "B1", "B2", "C1"];
   
-  // Calcul du niveau actuel et de la progression
+  // On détermine l'index du niveau actuel de l'utilisateur
   const currentLevelIndex = levels.indexOf(userData.level || "A1");
   
   return (
@@ -276,6 +316,7 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
       <div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-10 snap-x snap-mandatory flex gap-8">
         
         {levels.map((level, index) => {
+          // Logique de verrouillage des Niveaux
           const isLocked = index > currentLevelIndex;
           const isCurrent = index === currentLevelIndex;
           const isCompleted = index < currentLevelIndex;
@@ -288,22 +329,38 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
                
                {/* Header du Niveau */}
                <div className="flex justify-between items-center mb-8">
-                 <h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3>
+                 <div>
+                    <h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3>
+                    <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p>
+                 </div>
                  {isLocked && <Lock size={24} className="text-slate-400" />}
                  {isCompleted && <div className="bg-green-500 text-white p-1 rounded-full"><Check size={16} /></div>}
                </div>
 
-               {/* Liste des leçons du niveau */}
+               {/* Liste des leçons */}
                <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-2 custom-scrollbar">
                  {levelLessons.map((lesson) => {
                    const isLessonDone = userData.completedLessons.includes(lesson.id);
-                   // La leçon est accessible si : le niveau est complété OU (c'est le niveau actuel ET c'est la prochaine leçon)
-                   const isAccessible = isCompleted || (isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id));
                    
+                   // Logique : Si niveau terminé, leçons verrouillées (Archivées)
+                   // Si niveau en cours, on débloque la suivante
+                   const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id);
+                   
+                   // Si le niveau est fini, on affiche un style "Archivé"
+                   if (isCompleted) {
+                     return (
+                       <div key={lesson.id} className="w-full p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-4 opacity-70 cursor-not-allowed">
+                          <CheckCircle size={16} />
+                          <span className="text-sm font-bold truncate flex-1">{lesson.title}</span>
+                          <span className="text-xs uppercase font-bold">Acquis</span>
+                       </div>
+                     );
+                   }
+
                    return (
                      <button 
                         key={lesson.id} 
-                        disabled={!isAccessible && !isLessonDone}
+                        disabled={!isAccessible}
                         onClick={() => onStartLesson(lesson.id)}
                         className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all
                           ${isLessonDone ? 'bg-green-500 text-white shadow-md' : 
@@ -323,10 +380,13 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
                </div>
 
                {isLocked && (
-                 <div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[2px] flex items-center justify-center">
-                    <div className="bg-white p-4 rounded-xl shadow-lg text-center">
-                      <Lock size={32} className="mx-auto text-slate-300 mb-2" />
-                      <p className="text-xs font-bold text-slate-400">Termine le niveau {levels[index-1]}</p>
+                 <div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[2px] flex items-center justify-center z-10">
+                    <div className="bg-white p-6 rounded-2xl shadow-xl text-center border border-slate-100">
+                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Lock size={32} className="text-slate-400" />
+                      </div>
+                      <h4 className="font-bold text-slate-800">Niveau Bloqué</h4>
+                      <p className="text-xs text-slate-500 mt-2">Termine le niveau {levels[index-1]} pour accéder à la suite.</p>
                     </div>
                  </div>
                )}
@@ -334,18 +394,11 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
           );
         })}
         
-        {/* Espace vide à la fin pour le scroll */}
         <div className="w-6 shrink-0"></div>
       </div>
     </div>
   );
 };
-
-// ... (Le reste des composants StructuresContent, NotebookContent, etc. reste identique à la V15)
-// Pour économiser de l'espace ici, assure-toi de copier-coller les composants UI de la V15 en dessous
-// (StructuresContent, NotebookContent, LandingPage, AuthScreen, SidebarDesktop, MobileHeader, MobileBottomNav, ProfileContent, LessonEngine, SwipeCard, InputCard, GrammarCard, StructureCard, LessonComplete)
-
-/* --- UI COMPONENTS (Suite) --- */
 
 const StructuresContent = ({ structures }) => (
   <div className="max-w-3xl mx-auto w-full p-6 pb-24">
@@ -372,13 +425,68 @@ const NotebookContent = ({ userVocab }) => {
     { title: "Verbes en -ER", endings: ["-o", "-es", "-e", "-emos", "-en"], ex: "Comer" },
     { title: "Verbes en -IR", endings: ["-o", "-es", "-e", "-imos", "-en"], ex: "Vivir" },
   ];
+  
   return (
     <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
-      <div className="flex items-center justify-between mb-8"><h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique</h2><div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Éléments</div></div>
-      <div className="mb-8"><button onClick={() => setShowReference(!showReference)} className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors"><Table size={20} /> {showReference ? "Masquer" : "Voir les terminaisons"}</button>{showReference && (<div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 fade-in duration-300">{REFERENCE_VERBS.map((v, i) => (<div key={i} className="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm"><h4 className="font-bold text-center mb-2 text-indigo-600">{v.title}</h4><p className="text-xs text-center text-gray-400 italic mb-2">{v.ex}</p><div className="space-y-1 text-sm text-center">{v.endings.map(e => <div key={e} className="bg-slate-50 py-1 rounded">{e}</div>)}</div></div>))}</div>)}</div>
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique</h2>
+        <div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Éléments</div>
+      </div>
+
+      <div className="mb-8">
+         <button onClick={() => setShowReference(!showReference)} className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors">
+           <Table size={20} /> {showReference ? "Masquer les terminaisons" : "Voir les terminaisons (-AR, -ER, -IR)"}
+         </button>
+         {showReference && (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 fade-in duration-300">
+               {REFERENCE_VERBS.map((v, i) => (
+                 <div key={i} className="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm">
+                    <h4 className="font-bold text-center mb-2 text-indigo-600">{v.title}</h4>
+                    <p className="text-xs text-center text-gray-400 italic mb-2">{v.ex}</p>
+                    <div className="space-y-1 text-sm text-center">
+                       {v.endings.map(e => <div key={e} className="bg-slate-50 py-1 rounded">{e}</div>)}
+                    </div>
+                 </div>
+               ))}
+            </div>
+         )}
+      </div>
+
       <div className="grid md:grid-cols-2 gap-8">
-        <div className="space-y-4"><h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Edit3 size={18} /> Vocabulaire Acquis</h3>{vocabItems.length > 0 ? (<div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[500px] overflow-y-auto">{vocabItems.map((item, idx) => (<div key={`vocab-${idx}`} className="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 hover:bg-slate-50"><div><p className="font-bold text-slate-800">{item.es}</p><p className="text-xs text-slate-400 italic mt-0.5">{item.context}</p></div><span className="text-indigo-600 font-medium bg-indigo-50 px-3 py-1 rounded-full text-sm">{item.en}</span></div>))}</div>) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}</div>
-        <div className="space-y-4"><h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire Apprise</h3><div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">{grammarItems.map((item, index) => (<div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200"><h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4><div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">{item.conjugation && item.conjugation.map((row, idx) => (<div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}><span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span><span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span><span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span></div>))}</div></div>))}</div></div>
+        <div className="space-y-4">
+          <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Edit3 size={18} /> Vocabulaire Acquis</h3>
+          {vocabItems.length > 0 ? (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[500px] overflow-y-auto">
+              {vocabItems.map((item, idx) => (
+                <div key={`vocab-${idx}`} className="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                  <div><p className="font-bold text-slate-800">{item.es}</p><p className="text-xs text-slate-400 italic mt-0.5">{item.context}</p></div>
+                  <span className="text-indigo-600 font-medium bg-indigo-50 px-3 py-1 rounded-full text-sm">{item.en}</span>
+                </div>
+              ))}
+            </div>
+          ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire Apprise</h3>
+          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+            {grammarItems.map((item, index) => (
+              <div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4>
+                <div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">
+                  {item.conjugation && item.conjugation.map((row, idx) => (
+                    <div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                      <span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span>
+                      <span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span>
+                      <span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {grammarItems.length === 0 && <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
+          </div>
+        </div>
       </div>
     </div>
   );
