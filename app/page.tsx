@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
@@ -102,13 +102,6 @@ const INITIAL_LESSONS_CONTENT = {
   ]
 };
 
-const SENTENCE_STRUCTURES = [
-  { id: 1, title: "La Phrase Simple", formula: "Sujet (Facultatif) + Verbe + Reste", example_es: "(Yo) como una manzana.", example_en: "Je mange une pomme.", explanation: "Le pronom personnel (Yo, Tú...) est souvent omis." },
-  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No hablo inglés.", example_en: "Je ne parle pas anglais.", explanation: "Le 'ne...pas' français se traduit simplement par 'No' placé juste avant le verbe." },
-  { id: 3, title: "L'Adjectif", formula: "Nom + Adjectif", example_es: "Un libro rojo.", example_en: "Un livre rouge.", explanation: "Comme en français, l'adjectif se place généralement après le nom." },
-  { id: 4, title: "La Question", formula: "¿ + Verbe + Sujet ?", example_es: "¿Tienes tú un coche?", example_en: "As-tu une voiture ?", explanation: "Point d'interrogation inversé au début." }
-];
-
 /* --- APPLICATION --- */
 export default function EspanolSprintPro() {
   const [view, setView] = useState('landing'); 
@@ -138,6 +131,8 @@ export default function EspanolSprintPro() {
             await setDoc(userRef, newProfile);
             setUserData(newProfile);
           }
+
+          // Chargement des données dynamiques
           const roadmapSnap = await getDoc(doc(db, "meta", "roadmap"));
           if (roadmapSnap.exists()) setDynamicLessonsList(roadmapSnap.data().lessons);
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
@@ -191,6 +186,7 @@ export default function EspanolSprintPro() {
 
   const startLesson = (lessonId) => {
     const today = new Date().toDateString();
+    // Limite 4 nouvelles leçons par jour, mais révisions illimitées
     const isNewLesson = !userData.completedLessons.includes(lessonId);
     if (isNewLesson && userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 4) { 
       setShowLimitModal(true); return; 
@@ -201,7 +197,7 @@ export default function EspanolSprintPro() {
   };
 
   const handleLessonComplete = async (xp, lessonContent, lessonId) => {
-    // Capture TOUS les types importants : Swipe (vocab), Grammaire, Structure
+    // Capture TOUS les types importants : Swipe, Grammaire, Structure
     const newItems = lessonContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
     const today = new Date().toDateString();
     if (currentUser) {
@@ -272,7 +268,6 @@ export default function EspanolSprintPro() {
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
               {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} />}
               {view === 'notebook' && userData && <NotebookContent userVocab={userData.vocab} />}
-              {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} />}
               {view === 'profile' && userData && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} />}
               {view === 'lesson' && dynamicLessonsContent[activeLessonId] && <LessonEngine content={dynamicLessonsContent[activeLessonId]} onComplete={(xp) => handleLessonComplete(xp, dynamicLessonsContent[activeLessonId], activeLessonId)} onExit={() => setView('dashboard')} />}
               {view === 'complete' && <LessonComplete xp={150} onHome={() => setView('dashboard')} onDownload={() => handlePrintPDF(activeLessonId)} />}
@@ -287,29 +282,46 @@ export default function EspanolSprintPro() {
 
 /* --- UI COMPONENTS --- */
 
-const StructuresContent = ({ structures }) => (
-  <div className="max-w-3xl mx-auto w-full p-6 pb-24">
-    <h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2>
-    <div className="space-y-6">
-      {structures.map((struct) => (
-        <div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-          <div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div>
-          <div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div>
-          <div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div>
-          <p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
 const NotebookContent = ({ userVocab }) => {
   const vocabItems = userVocab.filter(c => c.type === 'swipe');
   const grammarItems = userVocab.filter(c => c.type === 'grammar');
+  const structureItems = userVocab.filter(c => c.type === 'structure');
+  
+  const [showReference, setShowReference] = useState(false);
+
+  // Tableaux de référence statiques
+  const REFERENCE_VERBS = [
+    { title: "Verbes en -AR", endings: ["-o", "-as", "-a", "-amos", "-an"], ex: "Hablar (Parler)" },
+    { title: "Verbes en -ER", endings: ["-o", "-es", "-e", "-emos", "-en"], ex: "Comer (Manger)" },
+    { title: "Verbes en -IR", endings: ["-o", "-es", "-e", "-imos", "-en"], ex: "Vivir (Vivre)" },
+  ];
   
   return (
     <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
-      <div className="flex items-center justify-between mb-8"><h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique & Savoir</h2><div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Éléments</div></div>
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique</h2>
+        <div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Éléments</div>
+      </div>
+
+      <div className="mb-8">
+         <button onClick={() => setShowReference(!showReference)} className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors">
+           <Table size={20} /> {showReference ? "Masquer les terminaisons" : "Voir les terminaisons (-AR, -ER, -IR)"}
+         </button>
+         {showReference && (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 fade-in duration-300">
+               {REFERENCE_VERBS.map((v, i) => (
+                 <div key={i} className="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm">
+                    <h4 className="font-bold text-center mb-2 text-indigo-600">{v.title}</h4>
+                    <p className="text-xs text-center text-gray-400 italic mb-2">{v.ex}</p>
+                    <div className="space-y-1 text-sm text-center">
+                       {v.endings.map(e => <div key={e} className="bg-slate-50 py-1 rounded">{e}</div>)}
+                    </div>
+                 </div>
+               ))}
+            </div>
+         )}
+      </div>
+
       <div className="grid md:grid-cols-2 gap-8">
         
         {/* VOCABULAIRE */}
@@ -327,25 +339,41 @@ const NotebookContent = ({ userVocab }) => {
           ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
         </div>
 
-        {/* GRAMMAIRE CORRIGÉE AVEC COLONNES FLEXIBLES */}
-        <div className="space-y-4">
-          <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire Apprise</h3>
-          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
-            {grammarItems.map((item, index) => (
-              <div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4>
-                <div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">
-                  {item.conjugation && item.conjugation.map((row, idx) => (
-                    <div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
-                      <span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span>
-                      <span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span>
-                      <span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span>
-                    </div>
-                  ))}
+        {/* GRAMMAIRE & STRUCTURES */}
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire & Verbes</h3>
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
+              {grammarItems.map((item, index) => (
+                <div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                  <h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4>
+                  <div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">
+                    {item.conjugation && item.conjugation.map((row, idx) => (
+                      <div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                        <span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span>
+                        <span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span>
+                        <span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-            {grammarItems.length === 0 && <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
+              ))}
+              {grammarItems.length === 0 && <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+             <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Hammer size={18} /> Structures</h3>
+             <div className="space-y-4">
+               {structureItems.map((item, index) => (
+                 <div key={`struct-${index}`} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-yellow-400">
+                    <h4 className="font-bold text-slate-900">{item.title}</h4>
+                    <p className="font-mono text-xs text-indigo-600 bg-indigo-50 p-2 rounded mt-2 mb-2">{item.formula}</p>
+                    <p className="text-sm text-slate-600 italic">Ex: {item.example}</p>
+                 </div>
+               ))}
+               {structureItems.length === 0 && <div className="p-4 text-center text-slate-400 border-2 border-dashed rounded-xl text-sm">Pas encore de structures apprises</div>}
+             </div>
           </div>
         </div>
 
@@ -389,7 +417,6 @@ const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUploa
     <div className="flex items-center gap-2 mb-12 px-2"><div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center shadow-md rotate-3"><span className="text-2xl">🇪🇸</span></div><h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Español<span className="text-red-600">Sprint</span></h1></div>
     <nav className="flex-1 space-y-2">
       <SidebarLink icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
-      <SidebarLink icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} />
       <SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
       <SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
     </nav>
@@ -418,7 +445,6 @@ const MobileHeader = ({ userData }) => (
 const MobileBottomNav = ({ currentView, onChangeView }) => (
   <div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30">
     <NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
-    <NavBtn icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} />
     <NavBtn icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
     <NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
   </div>
@@ -544,13 +570,7 @@ const SwipeCard = ({ data, onNext, onPrev }) => {
         <p className="text-sm text-slate-400 italic">"{data.context}"</p>
       </div>
       <div className="p-6 pb-8 flex justify-center gap-8">
-        <button onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-red-50 border-2 border-red-100 text-red-500 flex items-center justify-center hover:bg-red-100 active:scale-95 transition-all"><X size={32} strokeWidth={3} /></button>
-        
-        {/* Bouton Retour (Optionnel au milieu) */}
-        <button onClick={() => handleSwipe('left')} className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all md:hidden">
-           <RotateCcw size={20} />
-        </button>
-
+        <button onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-red-50 border-2 border-red-100 text-red-500 flex items-center justify-center hover:bg-red-100 active:scale-95 transition-all"><RotateCcw size={32} strokeWidth={3} /></button>
         <button onClick={() => handleSwipe('right')} className="w-16 h-16 rounded-full bg-teal-500 border-b-4 border-teal-700 text-white flex items-center justify-center hover:bg-teal-400 hover:scale-105 active:scale-95 active:border-b-0 active:translate-y-1 transition-all"><Check size={32} strokeWidth={3} /></button>
       </div>
     </div>
