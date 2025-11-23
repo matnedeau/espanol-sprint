@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
@@ -201,7 +201,7 @@ export default function EspanolSprintPro() {
   };
 
   const handleLessonComplete = async (xp, lessonContent, lessonId) => {
-    // Capture TOUS les types importants : Swipe, Grammaire, Structure
+    // Capture TOUS les types importants : Swipe (vocab), Grammaire, Structure
     const newItems = lessonContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
     const today = new Date().toDateString();
     if (currentUser) {
@@ -306,43 +306,10 @@ const StructuresContent = ({ structures }) => (
 const NotebookContent = ({ userVocab }) => {
   const vocabItems = userVocab.filter(c => c.type === 'swipe');
   const grammarItems = userVocab.filter(c => c.type === 'grammar');
-  const structureItems = userVocab.filter(c => c.type === 'structure');
-  
-  const [showReference, setShowReference] = useState(false);
-
-  // Tableaux de référence statiques
-  const REFERENCE_VERBS = [
-    { title: "Verbes en -AR", endings: ["-o", "-as", "-a", "-amos", "-an"], ex: "Hablar (Parler)" },
-    { title: "Verbes en -ER", endings: ["-o", "-es", "-e", "-emos", "-en"], ex: "Comer (Manger)" },
-    { title: "Verbes en -IR", endings: ["-o", "-es", "-e", "-imos", "-en"], ex: "Vivir (Vivre)" },
-  ];
   
   return (
     <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique</h2>
-        <div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Éléments</div>
-      </div>
-
-      <div className="mb-8">
-         <button onClick={() => setShowReference(!showReference)} className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors">
-           <Table size={20} /> {showReference ? "Masquer les terminaisons" : "Voir les terminaisons (-AR, -ER, -IR)"}
-         </button>
-         {showReference && (
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 fade-in duration-300">
-               {REFERENCE_VERBS.map((v, i) => (
-                 <div key={i} className="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm">
-                    <h4 className="font-bold text-center mb-2 text-indigo-600">{v.title}</h4>
-                    <p className="text-xs text-center text-gray-400 italic mb-2">{v.ex}</p>
-                    <div className="space-y-1 text-sm text-center">
-                       {v.endings.map(e => <div key={e} className="bg-slate-50 py-1 rounded">{e}</div>)}
-                    </div>
-                 </div>
-               ))}
-            </div>
-         )}
-      </div>
-
+      <div className="flex items-center justify-between mb-8"><h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique & Savoir</h2><div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Éléments</div></div>
       <div className="grid md:grid-cols-2 gap-8">
         
         {/* VOCABULAIRE */}
@@ -360,41 +327,25 @@ const NotebookContent = ({ userVocab }) => {
           ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
         </div>
 
-        {/* GRAMMAIRE & STRUCTURES */}
-        <div className="space-y-8">
-          <div className="space-y-4">
-            <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire & Verbes</h3>
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
-              {grammarItems.map((item, index) => (
-                <div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                  <h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4>
-                  <div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">
-                    {item.conjugation && item.conjugation.map((row, idx) => (
-                      <div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
-                        <span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span>
-                        <span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span>
-                        <span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span>
-                      </div>
-                    ))}
-                  </div>
+        {/* GRAMMAIRE CORRIGÉE AVEC COLONNES FLEXIBLES */}
+        <div className="space-y-4">
+          <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire Apprise</h3>
+          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+            {grammarItems.map((item, index) => (
+              <div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4>
+                <div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">
+                  {item.conjugation && item.conjugation.map((row, idx) => (
+                    <div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                      <span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span>
+                      <span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span>
+                      <span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              {grammarItems.length === 0 && <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-             <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Hammer size={18} /> Structures</h3>
-             <div className="space-y-4">
-               {structureItems.map((item, index) => (
-                 <div key={`struct-${index}`} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-yellow-400">
-                    <h4 className="font-bold text-slate-900">{item.title}</h4>
-                    <p className="font-mono text-xs text-indigo-600 bg-indigo-50 p-2 rounded mt-2 mb-2">{item.formula}</p>
-                    <p className="text-sm text-slate-600 italic">Ex: {item.example}</p>
-                 </div>
-               ))}
-               {structureItems.length === 0 && <div className="p-4 text-center text-slate-400 border-2 border-dashed rounded-xl text-sm">Pas encore de structures apprises</div>}
-             </div>
+              </div>
+            ))}
+            {grammarItems.length === 0 && <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
           </div>
         </div>
 
@@ -593,7 +544,13 @@ const SwipeCard = ({ data, onNext, onPrev }) => {
         <p className="text-sm text-slate-400 italic">"{data.context}"</p>
       </div>
       <div className="p-6 pb-8 flex justify-center gap-8">
-        <button onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-red-50 border-2 border-red-100 text-red-500 flex items-center justify-center hover:bg-red-100 active:scale-95 transition-all"><RotateCcw size={32} strokeWidth={3} /></button>
+        <button onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-red-50 border-2 border-red-100 text-red-500 flex items-center justify-center hover:bg-red-100 active:scale-95 transition-all"><X size={32} strokeWidth={3} /></button>
+        
+        {/* Bouton Retour (Optionnel au milieu) */}
+        <button onClick={() => handleSwipe('left')} className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all md:hidden">
+           <RotateCcw size={20} />
+        </button>
+
         <button onClick={() => handleSwipe('right')} className="w-16 h-16 rounded-full bg-teal-500 border-b-4 border-teal-700 text-white flex items-center justify-center hover:bg-teal-400 hover:scale-105 active:scale-95 active:border-b-0 active:translate-y-1 transition-all"><Check size={32} strokeWidth={3} /></button>
       </div>
     </div>
