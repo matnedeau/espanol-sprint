@@ -2,14 +2,15 @@
 // @ts-nocheck
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table, Map, CheckCircle, Star
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, getRedirectResult, signInWithRedirect } from "firebase/auth";
+// Note : On utilise uniquement signInWithPopup maintenant (plus stable)
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, getRedirectResult } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, increment, collection, getDocs } from "firebase/firestore";
 
 // ---------------------------------------------------------
@@ -43,30 +44,34 @@ const speak = (text) => {
   }
 };
 
-/* --- GÉNÉRATEUR DE 100 LEÇONS (A1 -> C1) --- */
+/* --- GÉNÉRATEUR DE CURRICULUM (A1 -> C1) --- */
 const LEVELS_CONFIG = [
   { name: "A1", count: 20, title: "Débutant", desc: "Les bases de survie" },
-  { name: "A2", count: 20, title: "Élémentaire", desc: "Le passé et le futur" },
-  { name: "B1", count: 20, title: "Intermédiaire", desc: "Le subjonctif et l'opinion" },
-  { name: "B2", count: 20, title: "Avancé", desc: "Débats et fluidité" },
+  { name: "A2", count: 20, title: "Élémentaire", desc: "Raconter et décrire" },
+  { name: "B1", count: 20, title: "Intermédiaire", desc: "Opinions et projets" },
+  { name: "B2", count: 20, title: "Avancé", desc: "Débat et argumentation" },
   { name: "C1", count: 20, title: "Expert", desc: "Nuances et maîtrise native" }
 ];
+
+const LESSON_TOPICS = {
+  1: "Hola! (Salutations)", 2: "Être & Avoir", 3: "La Famille", 4: "Au Quotidien", 5: "Nourriture",
+  6: "Nombres & Heure", 7: "Vêtements", 8: "La Ville", 9: "La Maison", 10: "Le Corps",
+  11: "Les Animaux", 12: "La Météo", 13: "L'École", 14: "Les Loisirs", 15: "Les Amis",
+  16: "Sentiments Simples", 17: "Les Saisons", 18: "La Nature", 19: "Questions de base", 20: "Bilan A1",
+  21: "Le Passé Composé", 22: "L'Imparfait", 23: "Futur Proche", 24: "Comparaisons", 25: "Obligation",
+  41: "Futur Simple", 61: "Subjonctif Imparfait", 81: "Nuances de Style"
+};
 
 const generateLessonList = () => {
   const list = [];
   let idCounter = 1;
-  
-  const customTitles = {
-    1: "Hola! (Salutations)", 2: "La Famille", 3: "Au Quotidien", 4: "La Nourriture", 5: "Nombres & Heure", 6: "En Ville", 7: "Bilan Semaine 1"
-  };
-
   LEVELS_CONFIG.forEach(lvl => {
     for (let i = 0; i < lvl.count; i++) {
       list.push({ 
         id: idCounter, 
-        title: customTitles[idCounter] || `Leçon ${idCounter}`, 
+        title: LESSON_TOPICS[idCounter] || `Leçon ${idCounter}`, 
         level: lvl.name, 
-        desc: `${lvl.desc} - Partie ${i + 1}` 
+        desc: `${lvl.desc}` 
       });
       idCounter++;
     }
@@ -76,90 +81,37 @@ const generateLessonList = () => {
 
 const INITIAL_LESSONS_LIST = generateLessonList();
 
-/* --- CONTENU ENRICHI & ALLONGÉ --- */
 const MANUAL_CONTENT = {
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Hola, ¿qué tal?" },
-    { id: 102, type: "swipe", es: "Buenos días", en: "Bonjour (Matin)", context: "Buenos días, mamá" },
-    { id: 103, type: "grammar", title: "Être (Ser)", description: "Pour l'identité (Je suis Paul) et l'origine (Je suis Français).", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él/Ella", verb: "es", fr: "Il est" }] },
+    { id: 103, type: "grammar", title: "Être (Ser)", description: "Identité", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }] },
     { id: 104, type: "input", question: "Traduis : 'Je suis'", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
-    { id: 105, type: "swipe", es: "Soy español", en: "Je suis espagnol", context: "Soy español de Madrid" },
-    { id: 106, type: "structure", title: "La Phrase Simple", formula: "Sujet (Optionnel) + Verbe + Adjectif", example: "Soy alto (Je suis grand)", note: "En espagnol, on omet souvent 'Yo' ou 'Tú' car la fin du verbe indique qui parle." },
-    { id: 107, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" },
-    { id: 108, type: "swipe", es: "Por favor", en: "S'il vous plaît", context: "Agua, por favor" },
-    { id: 109, type: "swipe", es: "Mucho gusto", en: "Enchanté", context: "Hola, mucho gusto" },
-    { id: 110, type: "input", question: "Traduis : 'Merci'", answer: ["gracias"], hint: "G..." },
-    { id: 111, type: "swipe", es: "¿Cómo estás?", en: "Comment ça va ?", context: "Hola, ¿cómo estás?" },
-    { id: 112, type: "swipe", es: "Muy bien", en: "Très bien", context: "Estoy muy bien, gracias" },
-    { id: 113, type: "swipe", es: "Me llamo", en: "Je m'appelle", context: "Me llamo Pedro" },
-    { id: 114, type: "structure", title: "Se Présenter", formula: "Me llamo + Prénom", example: "Me llamo Maria", note: "Littéralement : Je m'appelle moi-même..." },
-    { id: 115, type: "input", question: "Je m'appelle...", answer: ["me llamo"], hint: "M... Ll..." },
-    { id: 116, type: "swipe", es: "Adiós", en: "Au revoir", context: "Adiós amigos" }
-  ],
-  2: [
-    { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Amo a mi familia" },
-    { id: 202, type: "grammar", title: "Avoir (Tener)", description: "Pour la possession (J'ai un chien) et l'âge (J'ai 20 ans).", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él/Ella", verb: "tiene", fr: "Il a" }] },
-    { id: 203, type: "input", question: "J'ai (Tener)", answer: ["tengo", "yo tengo"], hint: "T..." },
-    { id: 204, type: "swipe", es: "El padre", en: "Le père", context: "Mi padre es alto" },
-    { id: 205, type: "structure", title: "La Possession", formula: "Mi / Tu / Su + Nom", example: "Mi casa (Ma maison)", note: "Attention : on ne met PAS d'article (le/la) devant 'Mi' ou 'Tu'." },
-    { id: 206, type: "swipe", es: "Mi madre", en: "Ma mère", context: "Mi madre es guapa" },
-    { id: 207, type: "swipe", es: "El hermano", en: "Le frère", context: "Tengo un hermano" },
-    { id: 208, type: "swipe", es: "Tu hermana", en: "Ta soeur", context: "¿Tienes una hermana?" },
-    { id: 209, type: "input", question: "Traduis : 'Ma mère'", answer: ["mi madre"], hint: "Possessif 'Mi'" },
-    { id: 210, type: "swipe", es: "Tener hambre", en: "Avoir faim", context: "Tengo mucha hambre" },
-    { id: 211, type: "swipe", es: "La casa", en: "La maison", context: "Vivo en una casa" },
-    { id: 212, type: "swipe", es: "El perro", en: "Le chien", context: "Mi perro es fiel" },
-    { id: 213, type: "swipe", es: "El gato", en: "Le chat", context: "El gato duerme" },
-    { id: 214, type: "structure", title: "L'Âge", formula: "Tener + Nombre + Años", example: "Tengo 20 años", note: "En espagnol on 'possède' les années (Avoir), on ne 'est' pas (Être)." },
-    { id: 215, type: "input", question: "J'ai un frère", answer: ["tengo un hermano"], hint: "Tengo..." }
-  ],
-  3: [
-    { id: 301, type: "swipe", es: "Hablar", en: "Parler", context: "Hablo español" },
-    { id: 302, type: "grammar", title: "Verbes en -AR (Présent)", description: "Ce sont les verbes les plus courants. On enlève -AR et on ajoute :", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }, { pronoun: "Nosotros", verb: "-amos", fr: "habl(amos)" }] },
-    { id: 303, type: "input", question: "Je parle (Hablar)", answer: ["hablo", "yo hablo"], hint: "Terminaison -o" },
-    { id: 304, type: "swipe", es: "Trabajar", en: "Travailler", context: "Trabajo en Madrid" },
-    { id: 305, type: "structure", title: "La Négation", formula: "No + Verbe", example: "No hablo inglés (Je ne parle pas anglais)", note: "C'est simple : mets juste 'No' devant le verbe conjugué." },
-    { id: 306, type: "swipe", es: "No trabajo", en: "Je ne travaille pas", context: "Hoy no trabajo" },
-    { id: 307, type: "swipe", es: "Estudiar", en: "Étudier", context: "Estudio mucho" },
-    { id: 308, type: "swipe", es: "Escuchar", en: "Écouter", context: "Escucho música" },
-    { id: 309, type: "input", question: "Tu étudies (Estudiar)", answer: ["estudias", "tú estudias"], hint: "Terminaison -as" },
-    { id: 310, type: "swipe", es: "Caminar", en: "Marcher", context: "Camino en el parque" },
-    { id: 311, type: "swipe", es: "Comprar", en: "Acheter", context: "Compro pan" },
-    { id: 312, type: "swipe", es: "Bailar", en: "Danser", context: "Me gusta bailar" },
-    { id: 313, type: "swipe", es: "Cocinar", en: "Cuisiner", context: "Cocino la cena" },
-    { id: 314, type: "swipe", es: "Viajar", en: "Voyager", context: "Me gusta viajar" },
-    { id: 315, type: "structure", title: "La Question", formula: "¿ + Verbe + Sujet ?", example: "¿Hablas tú español?", note: "L'intonation monte à la fin." },
-    { id: 316, type: "input", question: "Traduis : 'Je ne danse pas'", answer: ["no bailo", "yo no bailo"], hint: "No + Verbe" }
+    { id: 105, type: "structure", title: "La Phrase Simple", formula: "Sujet + Verbe", example: "Soy Pablo", note: "Sujet omis." },
+    { id: 106, type: "swipe", es: "Adiós", en: "Au revoir", context: "Adiós amigo" },
+    { id: 108, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" }
   ]
 };
 
-// Générateur amélioré pour le reste des leçons (4-100)
-// Crée 10 cartes par leçon au lieu de 3
 const generateAllContent = () => {
   const content = { ...MANUAL_CONTENT };
-  for (let i = 4; i <= 100; i++) {
-    const level = i <= 20 ? 'A1' : i <= 40 ? 'A2' : i <= 60 ? 'B1' : i <= 80 ? 'B2' : 'C1';
-    content[i] = [
-      { id: i * 100 + 1, type: "structure", title: `Grammaire ${level} - Leçon ${i}`, formula: "Concept + Règle", example: `Exemple du niveau ${level}`, note: "Point de grammaire important." },
-      { id: i * 100 + 2, type: "swipe", es: `Palabra ${i}A`, en: `Mot ${level} A`, context: `Contexte leçon ${i}` },
-      { id: i * 100 + 3, type: "swipe", es: `Palabra ${i}B`, en: `Mot ${level} B`, context: `Contexte leçon ${i}` },
-      { id: i * 100 + 4, type: "grammar", title: `Verbe Clé ${i}`, description: "Conjugaison essentielle", conjugation: [{ pronoun: "Yo", verb: `verbo${i}o`, fr: "je..." }, { pronoun: "Tú", verb: `verbo${i}as`, fr: "tu..." }, { pronoun: "Él", verb: `verbo${i}a`, fr: "il..." }] },
-      { id: i * 100 + 5, type: "input", question: `Écris le mot A`, answer: [`Palabra ${i}A`], hint: "P..." },
-      { id: i * 100 + 6, type: "swipe", es: `Frase ${i}C`, en: `Phrase ${level} C`, context: `Phrase complète` },
-      { id: i * 100 + 7, type: "swipe", es: `Frase ${i}D`, en: `Phrase ${level} D`, context: `Phrase complète` },
-      { id: i * 100 + 8, type: "structure", title: `Expression ${level}`, formula: "Idiome + Sens", example: "Expression typique", note: "À utiliser à l'oral." },
-      { id: i * 100 + 9, type: "swipe", es: `Verbo ${i}E`, en: `Verbe ${level} E`, context: `Action` },
-      { id: i * 100 + 10, type: "input", question: `Traduis la phrase C`, answer: [`Phrase ${level} C`], hint: "..." }
-    ];
+  for (let i = 1; i <= 100; i++) { 
+    if (!content[i]) {
+      const level = i <= 20 ? 'A1' : i <= 40 ? 'A2' : i <= 60 ? 'B1' : i <= 80 ? 'B2' : 'C1';
+      const title = LESSON_TOPICS[i] || `Leçon ${i}`;
+      content[i] = [
+        { id: i * 100 + 1, type: "structure", title: `Concept : ${title}`, formula: "Sujet + Verbe", example: `Práctica ${level}`, note: "Focus fluidité" },
+        { id: i * 100 + 2, type: "swipe", es: `Palabra ${i}`, en: `Mot ${level}`, context: `Contexto` },
+        { id: i * 100 + 3, type: "input", question: `Traduis le mot`, answer: [`mot`], hint: "..." }
+      ];
+    }
   }
   return content;
 };
 const INITIAL_LESSONS_CONTENT = generateAllContent();
 
 const SENTENCE_STRUCTURES = [
-  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe + Complément", example_es: "Yo como una manzana.", example_en: "Je mange une pomme.", explanation: "Comme en français." },
-  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No hablo inglés.", example_en: "Je ne parle pas anglais.", explanation: "Juste 'No' avant." },
-  { id: 3, title: "Le Futur Proche", formula: "Ir + a + Infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Très courant à l'oral." },
+  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe", example_es: "Yo como.", example_en: "Je mange.", explanation: "Sujet souvent omis." },
+  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No como.", example_en: "Je ne mange pas.", explanation: "Simple 'No' devant." }
 ];
 
 /* --- APPLICATION --- */
@@ -170,14 +122,13 @@ export default function EspanolSprintPro() {
   const [loading, setLoading] = useState(true);
   const [activeLessonId, setActiveLessonId] = useState(1);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [authError, setAuthError] = useState(""); 
   
   const [dynamicLessonsList, setDynamicLessonsList] = useState(INITIAL_LESSONS_LIST);
   const [dynamicLessonsContent, setDynamicLessonsContent] = useState({});
 
   useEffect(() => {
     const initApp = async (user) => {
-      try { await getRedirectResult(auth); } catch (e) { console.error("Redirect:", e); }
-      
       if (user) {
         setCurrentUser(user);
         const userRef = doc(db, "users", user.uid);
@@ -191,10 +142,10 @@ export default function EspanolSprintPro() {
             await setDoc(userRef, newProfile);
             setUserData(newProfile);
           }
+          
           const roadmapSnap = await getDoc(doc(db, "meta", "roadmap"));
           if (roadmapSnap.exists()) setDynamicLessonsList(roadmapSnap.data().lessons);
           
-          // Chargement optimisé
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
           const lessonsData = {};
           lessonsSnapshot.forEach((doc) => { lessonsData[doc.id] = doc.data().content; });
@@ -214,7 +165,7 @@ export default function EspanolSprintPro() {
   }, []);
 
   const uploadFullContentToCloud = async () => {
-    if (!confirm("ADMIN : Initialiser les 100 leçons dans Firebase ? (Cela peut prendre quelques secondes)")) return;
+    if (!confirm("ADMIN : Initialiser les 100 leçons ?")) return;
     try {
       await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST });
       let count = 0;
@@ -222,27 +173,45 @@ export default function EspanolSprintPro() {
         await setDoc(doc(db, "lessons", id), { content: content });
         count++;
       }
-      alert(`✅ ${count} Leçons (A1->C1) mises à jour dans le Cloud !`);
+      alert(`✅ ${count} Leçons mises à jour !`);
       window.location.reload(); 
     } catch (e) { alert("Erreur: " + e.message); }
   };
 
   const handleAuth = async (email, password, isSignUp) => {
     setLoading(true);
+    setAuthError("");
+    // Nettoyage email
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !password) {
+        setAuthError("Email ou mot de passe vide.");
+        setLoading(false);
+        return;
+    }
     try {
       if (isSignUp) {
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, "users", cred.user.uid), { name: email.split('@')[0], email, xp: 0, streak: 1, level: "A1", vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 } });
-      } else { await signInWithEmailAndPassword(auth, email, password); }
-    } catch (error) { alert("Erreur: " + error.message); setLoading(false); }
+        const cred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+        await setDoc(doc(db, "users", cred.user.uid), { name: cleanEmail.split('@')[0], email: cleanEmail, xp: 0, streak: 1, level: "A1", vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 } });
+      } else { await signInWithEmailAndPassword(auth, cleanEmail, password); }
+    } catch (error) { 
+        let msg = "Erreur inconnue";
+        if (error.code === 'auth/invalid-email') msg = "Format d'email invalide.";
+        if (error.code === 'auth/invalid-credential') msg = "Identifiants incorrects.";
+        setAuthError(msg); 
+        setLoading(false); 
+    }
   };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
+    setAuthError("");
     try {
-      if (window.innerWidth < 768) await signInWithRedirect(auth, googleProvider);
-      else await signInWithPopup(auth, googleProvider);
-    } catch (error) { alert("Erreur Google: " + error.message); setLoading(false); }
+      // FORCE POPUP : Plus fiable sur mobile avec les navigateurs modernes que la redirection
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) { 
+      setAuthError("Erreur Google : " + error.message); 
+      setLoading(false); 
+    }
   };
   
   const handleLogout = async () => { await signOut(auth); setView('landing'); };
@@ -250,13 +219,10 @@ export default function EspanolSprintPro() {
   const startLesson = (lessonId) => {
     const today = new Date().toDateString();
     const isNewLesson = !userData.completedLessons.includes(lessonId);
-    
-    // Limite 4 leçons/jour
     if (isNewLesson && userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 4) { 
       setShowLimitModal(true); return; 
     }
     if (!dynamicLessonsContent[lessonId]) { alert("Leçon non disponible."); return; }
-    
     setActiveLessonId(lessonId);
     setView('lesson');
   };
@@ -270,7 +236,6 @@ export default function EspanolSprintPro() {
       const isNew = !userData.completedLessons.includes(lessonId);
       const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
       
-      // Calcul du niveau
       const totalDone = userData.completedLessons.length + (isNew ? 1 : 0);
       let newLevel = "A1";
       if (totalDone >= 20) newLevel = "A2";
@@ -319,7 +284,7 @@ export default function EspanolSprintPro() {
       {(!currentUser || view === 'landing' || view === 'auth') ? (
         <div className="w-full h-full flex items-center justify-center bg-white">
            {view === 'landing' && <LandingPage onStart={() => setView('auth')} />}
-           {view === 'auth' && <AuthScreen onAuth={handleAuth} onGoogle={handleGoogleLogin} onBack={() => setView('landing')} />}
+           {view === 'auth' && <AuthScreen onAuth={handleAuth} onGoogle={handleGoogleLogin} onBack={() => setView('landing')} error={authError} />}
         </div>
       ) : (
         <>
@@ -346,8 +311,6 @@ export default function EspanolSprintPro() {
 
 const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
   const levels = ["A1", "A2", "B1", "B2", "C1"];
-  
-  // FIX: Force A1 si le niveau est inconnu
   const safeLevel = (userData.level && levels.includes(userData.level)) ? userData.level : "A1";
   const currentLevelIndex = levels.indexOf(safeLevel);
   
@@ -432,7 +395,7 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
 const StructuresContent = ({ structures }) => (<div className="max-w-3xl mx-auto w-full p-6 pb-24"><h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2><div className="space-y-6">{structures.map((struct) => (<div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p></div>))}</div></div>);
 const NotebookContent = ({ userVocab }) => { const vocabItems = userVocab.filter(c => c.type === 'swipe'); const grammarItems = userVocab.filter(c => c.type === 'grammar'); const [showReference, setShowReference] = useState(false); const REFERENCE_VERBS = [{ title: "Verbes en -AR", endings: ["-o", "-as", "-a", "-amos", "-an"], ex: "Hablar" }, { title: "Verbes en -ER", endings: ["-o", "-es", "-e", "-emos", "-en"], ex: "Comer" }, { title: "Verbes en -IR", endings: ["-o", "-es", "-e", "-imos", "-en"], ex: "Vivir" }]; return (<div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24"><div className="flex items-center justify-between mb-8"><h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique</h2><div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Éléments</div></div><div className="mb-8"><button onClick={() => setShowReference(!showReference)} className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors"><Table size={20} /> {showReference ? "Masquer" : "Voir les terminaisons"}</button>{showReference && (<div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 fade-in duration-300">{REFERENCE_VERBS.map((v, i) => (<div key={i} className="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm"><h4 className="font-bold text-center mb-2 text-indigo-600">{v.title}</h4><p className="text-xs text-center text-gray-400 italic mb-2">{v.ex}</p><div className="space-y-1 text-sm text-center">{v.endings.map(e => <div key={e} className="bg-slate-50 py-1 rounded">{e}</div>)}</div></div>))}</div>)}</div><div className="grid md:grid-cols-2 gap-8"><div className="space-y-4"><h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Edit3 size={18} /> Vocabulaire Acquis</h3>{vocabItems.length > 0 ? (<div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[500px] overflow-y-auto">{vocabItems.map((item, idx) => (<div key={`vocab-${idx}`} className="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 hover:bg-slate-50"><div><p className="font-bold text-slate-800">{item.es}</p><p className="text-xs text-slate-400 italic mt-0.5">{item.context}</p></div><span className="text-indigo-600 font-medium bg-indigo-50 px-3 py-1 rounded-full text-sm">{item.en}</span></div>))}</div>) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}</div><div className="space-y-4"><h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire Apprise</h3><div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">{grammarItems.map((item, index) => (<div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200"><h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4><div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">{item.conjugation && item.conjugation.map((row, idx) => (<div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}><span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span><span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span><span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span></div>))}</div></div>))}</div></div></div></div>); };
 const LandingPage = ({ onStart }) => (<div className="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-400 relative overflow-hidden text-center"><div className="z-10 space-y-8 max-w-md"><div className="w-32 h-32 bg-white rounded-[2rem] shadow-2xl mx-auto flex items-center justify-center rotate-6 hover:rotate-12 transition-transform duration-500"><span className="text-6xl">🇪🇸</span></div><div><h1 className="text-5xl md:text-6xl font-black tracking-tighter text-slate-900 mb-4">Español<span className="text-red-600">Sprint</span></h1><p className="text-slate-800 font-medium text-xl md:text-2xl opacity-90">La méthode la plus rapide.</p></div><button onClick={onStart} className="w-full bg-slate-900 text-white py-5 px-8 rounded-2xl font-bold text-xl shadow-xl hover:scale-105 active:scale-95 transition-all">Commencer</button></div></div>);
-const AuthScreen = ({ onAuth, onGoogle, onBack }) => { const [isSignUp, setIsSignUp] = useState(false); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); return (<div className="w-full max-w-md p-8 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500"><button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold"><X size={20} /> Retour</button><div><h2 className="text-4xl font-black text-slate-900 mb-2">{isSignUp ? 'Créer un compte' : 'Bon retour !'}</h2><p className="text-slate-500">Sauvegarde ta progression ☁️</p></div><div className="space-y-4"><button onClick={onGoogle} className="w-full bg-white border-2 border-slate-200 text-slate-800 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"><img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" /> Continuer avec Google</button><div className="flex items-center gap-4"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-sm font-bold">OU</span><div className="h-px bg-slate-200 flex-1"></div></div><input type="email" placeholder="Email" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={email} onChange={(e) => setEmail(e.target.value)} /><input type="password" placeholder="Mot de passe" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={password} onChange={(e) => setPassword(e.target.value)} /></div><button onClick={() => onAuth(email, password, isSignUp)} className="w-full bg-yellow-400 text-slate-900 py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all">{isSignUp ? "S'inscrire" : "Se connecter"}</button><div className="text-center"><button onClick={() => setIsSignUp(!isSignUp)} className="text-indigo-600 font-bold text-sm hover:underline">{isSignUp ? "J'ai déjà un compte" : "Je n'ai pas de compte"}</button></div></div>); };
+const AuthScreen = ({ onAuth, onGoogle, onBack, error }) => { const [isSignUp, setIsSignUp] = useState(false); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); return (<div className="w-full max-w-md p-8 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500"><button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold"><X size={20} /> Retour</button><div><h2 className="text-4xl font-black text-slate-900 mb-2">{isSignUp ? 'Créer un compte' : 'Bon retour !'}</h2><p className="text-slate-500">Sauvegarde ta progression ☁️</p></div>{error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold mb-4">{error}</div>}<div className="space-y-4"><button onClick={onGoogle} className="w-full bg-white border-2 border-slate-200 text-slate-800 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"><img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" /> Continuer avec Google</button><div className="flex items-center gap-4"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-sm font-bold">OU</span><div className="h-px bg-slate-200 flex-1"></div></div><input type="email" placeholder="Email" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={email} onChange={(e) => setEmail(e.target.value)} /><input type="password" placeholder="Mot de passe" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={password} onChange={(e) => setPassword(e.target.value)} /></div><button onClick={() => onAuth(email, password, isSignUp)} className="w-full bg-yellow-400 text-slate-900 py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all">{isSignUp ? "S'inscrire" : "Se connecter"}</button><div className="text-center"><button onClick={() => setIsSignUp(!isSignUp)} className="text-indigo-600 font-bold text-sm hover:underline">{isSignUp ? "J'ai déjà un compte" : "Je n'ai pas de compte"}</button></div></div>); };
 const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUpload }) => (<div className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200 h-full p-6"><div className="flex items-center gap-2 mb-12 px-2"><div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center shadow-md rotate-3"><span className="text-2xl">🇪🇸</span></div><h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Español<span className="text-red-600">Sprint</span></h1></div><nav className="flex-1 space-y-2"><SidebarLink icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} /><SidebarLink icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} /><SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} /><SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} /></nav><button onClick={onUpload} className="mb-4 flex items-center gap-2 text-xs text-slate-300 hover:text-indigo-500 px-4 transition-colors"><CloudUpload size={14} /> Initialiser Leçons</button><div className="mt-auto pt-6 border-t border-slate-100"><div className="flex items-center gap-3 mb-6 px-2"><div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">{userData?.name?.charAt(0).toUpperCase()}</div><div className="flex-1"><p className="text-sm font-bold text-slate-900 truncate w-24">{userData?.name}</p><p className="text-xs text-slate-400">Niveau {userData?.level}</p></div><div className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-full"><Flame size={14} className="text-orange-500 fill-orange-500" /><span className="text-xs font-bold text-orange-600">{userData?.streak}</span></div></div></div></div>);
 const SidebarLink = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${active ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}><Icon size={22} strokeWidth={active ? 2.5 : 2} /><span className="font-bold text-base">{label}</span></button>);
 const MobileHeader = ({ userData }) => (<div className="md:hidden bg-white px-4 py-3 flex justify-between items-center shadow-sm z-20 sticky top-0"><div className="flex items-center gap-2"><div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm border border-indigo-200">{userData?.name?.charAt(0).toUpperCase()}</div></div><div className="flex items-center gap-1 bg-orange-50 px-3 py-1 rounded-full border border-orange-100"><Flame size={16} className="text-orange-500 fill-orange-500" /><span className="text-orange-700 font-bold">{userData?.streak}</span></div></div>);
