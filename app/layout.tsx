@@ -5,8 +5,10 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Español Sprint",
+  title: "Español Sprint - B2 en 90 Jours",
   description: "L'application d'apprentissage de l'espagnol la plus rapide.",
+  // Note : Next.js détecte automatiquement le fichier icon.png dans le dossier app/
+  // On n'a rien à ajouter ici !
 };
 
 export default function RootLayout({
@@ -16,10 +18,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <head>
-        {/* J'ai changé v=3 en v=4 pour forcer la mise à jour */}
-        <link rel="icon" href="/icon.png?v=4" />
-      </head>
       <body className={inter.className}>{children}</body>
     </html>
   );
