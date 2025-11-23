@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table, Map, CheckCircle
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table, Map, CheckCircle, Star
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
@@ -76,32 +76,66 @@ const generateLessonList = () => {
 
 const INITIAL_LESSONS_LIST = generateLessonList();
 
+// --- CONTENU ENRICHI & ALLONGÉ ---
 const MANUAL_CONTENT = {
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Hola, ¿qué tal?" },
     { id: 102, type: "swipe", es: "Buenos días", en: "Bonjour (Matin)", context: "Buenos días, mamá" },
-    { id: 103, type: "grammar", title: "Être (Ser)", description: "Identité & Origine", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }] },
+    { id: 103, type: "grammar", title: "Être (Ser)", description: "Pour l'identité (Je suis Paul) et l'origine (Je suis Français).", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él/Ella", verb: "es", fr: "Il est" }] },
     { id: 104, type: "input", question: "Traduis : 'Je suis'", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
-    { id: 105, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" }
+    { id: 105, type: "swipe", es: "Soy español", en: "Je suis espagnol", context: "Soy español de Madrid" },
+    { id: 106, type: "structure", title: "La Phrase Simple", formula: "Sujet (Optionnel) + Verbe + Adjectif", example: "Soy alto (Je suis grand)", note: "En espagnol, on omet souvent 'Yo' ou 'Tú' car la fin du verbe indique qui parle." },
+    { id: 107, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" },
+    { id: 108, type: "swipe", es: "Por favor", en: "S'il vous plaît", context: "Agua, por favor" },
+    { id: 109, type: "swipe", es: "Mucho gusto", en: "Enchanté", context: "Hola, mucho gusto" },
+    { id: 110, type: "input", question: "Traduis : 'Merci'", answer: ["gracias"], hint: "G..." },
+    { id: 111, type: "swipe", es: "¿Cómo estás?", en: "Comment ça va ?", context: "Hola, ¿cómo estás?" },
+    { id: 112, type: "swipe", es: "Muy bien", en: "Très bien", context: "Estoy muy bien, gracias" }
   ],
   2: [
     { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Amo a mi familia" },
-    { id: 202, type: "grammar", title: "Avoir (Tener)", description: "Possession", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }] },
-    { id: 203, type: "input", question: "J'ai (Tener)", answer: ["tengo"], hint: "T..." }
+    { id: 202, type: "grammar", title: "Avoir (Tener)", description: "Pour la possession (J'ai un chien) et l'âge (J'ai 20 ans).", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él/Ella", verb: "tiene", fr: "Il a" }] },
+    { id: 203, type: "input", question: "J'ai (Tener)", answer: ["tengo", "yo tengo"], hint: "T..." },
+    { id: 204, type: "swipe", es: "El padre", en: "Le père", context: "Mi padre es alto" },
+    { id: 205, type: "structure", title: "La Possession", formula: "Mi / Tu / Su + Nom", example: "Mi casa (Ma maison)", note: "Attention : on ne met PAS d'article (le/la) devant 'Mi' ou 'Tu'." },
+    { id: 206, type: "swipe", es: "Mi madre", en: "Ma mère", context: "Mi madre es guapa" },
+    { id: 207, type: "swipe", es: "El hermano", en: "Le frère", context: "Tengo un hermano" },
+    { id: 208, type: "swipe", es: "Tu hermana", en: "Ta soeur", context: "¿Tienes una hermana?" },
+    { id: 209, type: "input", question: "Traduis : 'Ma mère'", answer: ["mi madre"], hint: "Possessif 'Mi'" },
+    { id: 210, type: "swipe", es: "Tener hambre", en: "Avoir faim", context: "Tengo mucha hambre" },
+    { id: 211, type: "swipe", es: "La casa", en: "La maison", context: "Vivo en una casa" },
+    { id: 212, type: "swipe", es: "El perro", en: "Le chien", context: "Mi perro es fiel" }
   ],
   3: [
     { id: 301, type: "swipe", es: "Hablar", en: "Parler", context: "Hablo español" },
-    { id: 302, type: "grammar", title: "Verbes -AR", description: "Présent", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "o" }, { pronoun: "Tú", verb: "-as", fr: "as" }] }
+    { id: 302, type: "grammar", title: "Verbes en -AR (Présent)", description: "Ce sont les verbes les plus courants. On enlève -AR et on ajoute :", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }, { pronoun: "Nosotros", verb: "-amos", fr: "habl(amos)" }] },
+    { id: 303, type: "input", question: "Je parle (Hablar)", answer: ["hablo", "yo hablo"], hint: "Terminaison -o" },
+    { id: 304, type: "swipe", es: "Trabajar", en: "Travailler", context: "Trabajo en Madrid" },
+    { id: 305, type: "structure", title: "La Négation", formula: "No + Verbe", example: "No hablo inglés (Je ne parle pas anglais)", note: "C'est simple : mets juste 'No' devant le verbe conjugué." },
+    { id: 306, type: "swipe", es: "No trabajo", en: "Je ne travaille pas", context: "Hoy no trabajo" },
+    { id: 307, type: "swipe", es: "Estudiar", en: "Étudier", context: "Estudio mucho" },
+    { id: 308, type: "swipe", es: "Escuchar", en: "Écouter", context: "Escucho música" },
+    { id: 309, type: "input", question: "Tu étudies (Estudiar)", answer: ["estudias", "tú estudias"], hint: "Terminaison -as" },
+    { id: 310, type: "swipe", es: "Caminar", en: "Marcher", context: "Camino en el parque" },
+    { id: 311, type: "swipe", es: "Comprar", en: "Acheter", context: "Compro pan" },
+    { id: 312, type: "swipe", es: "Bailar", en: "Danser", context: "Me gusta bailar" },
+    { id: 313, type: "input", question: "Traduis : 'Je ne danse pas'", answer: ["no bailo", "yo no bailo"], hint: "No + Verbe" }
   ]
 };
 
 const generateAllContent = () => {
   const content = { ...MANUAL_CONTENT };
   for (let i = 4; i <= 100; i++) {
+    // Génération de contenu "Placeholder" mais RICHE (8 cartes min) pour tester
     content[i] = [
-      { id: i * 100 + 1, type: "structure", title: `Structure Leçon ${i}`, formula: "Sujet + Verbe", example: "Practico español", note: "Entraînement" },
-      { id: i * 100 + 2, type: "swipe", es: `Palabra ${i}`, en: `Mot ${i}`, context: "Contexto de ejemplo" },
-      { id: i * 100 + 3, type: "input", question: "Écris 'Hola'", answer: ["hola"], hint: "H..." }
+      { id: i * 100 + 1, type: "structure", title: `Structure Leçon ${i}`, formula: "Sujet + Verbe", example: "Practico español", note: "Entraînement de structure" },
+      { id: i * 100 + 2, type: "swipe", es: `Palabra ${i}A`, en: `Mot A`, context: "Contexto A" },
+      { id: i * 100 + 3, type: "swipe", es: `Palabra ${i}B`, en: `Mot B`, context: "Contexto B" },
+      { id: i * 100 + 4, type: "grammar", title: `Verbe ${i}`, description: "Conjugaison", conjugation: [{ pronoun: "Yo", verb: "hago", fr: "je fais" }, { pronoun: "Tú", verb: "haces", fr: "tu fais" }] },
+      { id: i * 100 + 5, type: "input", question: `Écris le mot A`, answer: [`Palabra ${i}A`], hint: "P..." },
+      { id: i * 100 + 6, type: "swipe", es: `Palabra ${i}C`, en: `Mot C`, context: "Contexto C" },
+      { id: i * 100 + 7, type: "swipe", es: `Palabra ${i}D`, en: `Mot D`, context: "Contexto D" },
+      { id: i * 100 + 8, type: "input", question: `Traduis le mot B`, answer: [`Mot B`], hint: "..." }
     ];
   }
   return content;
@@ -111,6 +145,7 @@ const INITIAL_LESSONS_CONTENT = generateAllContent();
 const SENTENCE_STRUCTURES = [
   { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe + Complément", example_es: "Yo como una manzana.", example_en: "Je mange une pomme.", explanation: "Comme en français." },
   { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No hablo inglés.", example_en: "Je ne parle pas anglais.", explanation: "Juste 'No' avant." },
+  { id: 3, title: "L'Adjectif", formula: "Nom + Adjectif", example_es: "Un libro rojo.", example_en: "Un livre rouge.", explanation: "L'adjectif est après le nom." }
 ];
 
 /* --- APPLICATION --- */
@@ -144,7 +179,6 @@ export default function EspanolSprintPro() {
           }
           const roadmapSnap = await getDoc(doc(db, "meta", "roadmap"));
           if (roadmapSnap.exists()) setDynamicLessonsList(roadmapSnap.data().lessons);
-          
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
           const lessonsData = {};
           lessonsSnapshot.forEach((doc) => { lessonsData[doc.id] = doc.data().content; });
@@ -166,12 +200,10 @@ export default function EspanolSprintPro() {
     if (!confirm("ADMIN : Mettre à jour tout le contenu dans Firebase ?")) return;
     try {
       await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST });
-      let count = 0;
       for (const [id, content] of Object.entries(INITIAL_LESSONS_CONTENT)) {
         await setDoc(doc(db, "lessons", id), { content: content });
-        count++;
       }
-      alert(`✅ ${count} Leçons (A1->C1) mises à jour dans le Cloud !`);
+      alert("✅ Contenu mis à jour !");
       window.location.reload(); 
     } catch (e) { alert("Erreur: " + e.message); }
   };
@@ -215,8 +247,7 @@ export default function EspanolSprintPro() {
       const uniqueNewItems = newItems.filter(item => !userData.vocab.some(v => v.id === item.id));
       const isNew = !userData.completedLessons.includes(lessonId);
       const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
-
-      // FIX LEVEL UP: Recalculer le niveau basé sur le total terminé
+      
       const totalDone = userData.completedLessons.length + (isNew ? 1 : 0);
       let newLevel = "A1";
       if (totalDone >= 20) newLevel = "A2";
@@ -227,7 +258,7 @@ export default function EspanolSprintPro() {
       const updateData = {
         xp: increment(xp),
         streak: increment(1),
-        level: newLevel, // Mise à jour du niveau
+        level: newLevel,
         vocab: arrayUnion(...uniqueNewItems), 
         completedLessons: arrayUnion(lessonId),
         dailyLimit: { date: today, count: newCount }
@@ -293,7 +324,7 @@ export default function EspanolSprintPro() {
 const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
   const levels = ["A1", "A2", "B1", "B2", "C1"];
   
-  // FIX: On s'assure que le niveau est valide, sinon on force A1 (pour les anciens comptes)
+  // FIX: On s'assure que le niveau est valide, sinon on force A1
   const safeLevel = (userData.level && levels.includes(userData.level)) ? userData.level : "A1";
   const currentLevelIndex = levels.indexOf(safeLevel);
   
@@ -325,8 +356,6 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
                <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-2 custom-scrollbar">
                  {levelLessons.map((lesson) => {
                    const isLessonDone = userData.completedLessons.includes(lesson.id);
-                   
-                   // Leçon accessible si niveau actuel et précédente finie (ou c'est la 1ere)
                    const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id);
                    
                    if (isCompleted) {
@@ -376,15 +405,19 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
   );
 };
 
-/* --- LES AUTRES COMPOSANTS RESTENT IDENTIQUES A LA VERSION PRECEDENTE --- */
-// (Je ne répète pas NotebookContent, StructuresContent, AuthScreen... 
-// car ils sont déjà dans le fichier que tu avais, mais pour que le fichier 
-// soit complet et sans erreur de copier-coller, je les réinclus ci-dessous)
-
 const StructuresContent = ({ structures }) => (
   <div className="max-w-3xl mx-auto w-full p-6 pb-24">
     <h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2>
-    <div className="space-y-6">{structures.map((struct) => (<div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p></div>))}</div>
+    <div className="space-y-6">
+      {structures.map((struct) => (
+        <div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div>
+          <div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div>
+          <div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div>
+          <p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p>
+        </div>
+      ))}
+    </div>
   </div>
 );
 
@@ -396,26 +429,249 @@ const NotebookContent = ({ userVocab }) => {
   return (
     <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
       <div className="flex items-center justify-between mb-8"><h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique</h2><div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Éléments</div></div>
-      <div className="mb-8"><button onClick={() => setShowReference(!showReference)} className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors"><Table size={20} /> {showReference ? "Masquer" : "Voir terminaisons"}</button>{showReference && (<div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 fade-in duration-300">{REFERENCE_VERBS.map((v, i) => (<div key={i} className="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm"><h4 className="font-bold text-center mb-2 text-indigo-600">{v.title}</h4><p className="text-xs text-center text-gray-400 italic mb-2">{v.ex}</p><div className="space-y-1 text-sm text-center">{v.endings.map(e => <div key={e} className="bg-slate-50 py-1 rounded">{e}</div>)}</div></div>))}</div>)}</div>
+      <div className="mb-8"><button onClick={() => setShowReference(!showReference)} className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors"><Table size={20} /> {showReference ? "Masquer" : "Voir les terminaisons"}</button>{showReference && (<div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 fade-in duration-300">{REFERENCE_VERBS.map((v, i) => (<div key={i} className="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm"><h4 className="font-bold text-center mb-2 text-indigo-600">{v.title}</h4><p className="text-xs text-center text-gray-400 italic mb-2">{v.ex}</p><div className="space-y-1 text-sm text-center">{v.endings.map(e => <div key={e} className="bg-slate-50 py-1 rounded">{e}</div>)}</div></div>))}</div>)}</div>
       <div className="grid md:grid-cols-2 gap-8">
-        <div className="space-y-4"><h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Edit3 size={18} /> Vocabulaire</h3>{vocabItems.length > 0 ? (<div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[500px] overflow-y-auto">{vocabItems.map((item, idx) => (<div key={`vocab-${idx}`} className="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 hover:bg-slate-50"><div><p className="font-bold text-slate-800">{item.es}</p><p className="text-xs text-slate-400 italic mt-0.5">{item.context}</p></div><span className="text-indigo-600 font-medium bg-indigo-50 px-3 py-1 rounded-full text-sm">{item.en}</span></div>))}</div>) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}</div>
-        <div className="space-y-4"><h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire</h3><div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">{grammarItems.map((item, index) => (<div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200"><h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4><div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">{item.conjugation && item.conjugation.map((row, idx) => (<div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}><span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span><span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span><span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span></div>))}</div></div>))}</div></div>
+        <div className="space-y-4"><h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Edit3 size={18} /> Vocabulaire Acquis</h3>{vocabItems.length > 0 ? (<div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[500px] overflow-y-auto">{vocabItems.map((item, idx) => (<div key={`vocab-${idx}`} className="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 hover:bg-slate-50"><div><p className="font-bold text-slate-800">{item.es}</p><p className="text-xs text-slate-400 italic mt-0.5">{item.context}</p></div><span className="text-indigo-600 font-medium bg-indigo-50 px-3 py-1 rounded-full text-sm">{item.en}</span></div>))}</div>) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}</div>
+        <div className="space-y-4"><h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire Apprise</h3><div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">{grammarItems.map((item, index) => (<div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200"><h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4><div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">{item.conjugation && item.conjugation.map((row, idx) => (<div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}><span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span><span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span><span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span></div>))}</div></div>))}</div></div>
       </div>
     </div>
   );
 };
 
-const LandingPage = ({ onStart }) => (<div className="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-400 relative overflow-hidden text-center"><div className="z-10 space-y-8 max-w-md"><div className="w-32 h-32 bg-white rounded-[2rem] shadow-2xl mx-auto flex items-center justify-center rotate-6 hover:rotate-12 transition-transform duration-500"><span className="text-6xl">🇪🇸</span></div><div><h1 className="text-5xl md:text-6xl font-black tracking-tighter text-slate-900 mb-4">Español<span className="text-red-600">Sprint</span></h1><p className="text-slate-800 font-medium text-xl md:text-2xl opacity-90">La méthode la plus rapide.</p></div><button onClick={onStart} className="w-full bg-slate-900 text-white py-5 px-8 rounded-2xl font-bold text-xl shadow-xl hover:scale-105 active:scale-95 transition-all">Commencer</button></div></div>);
-const AuthScreen = ({ onAuth, onGoogle, onBack }) => { const [isSignUp, setIsSignUp] = useState(false); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); return (<div className="w-full max-w-md p-8 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500"><button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold"><X size={20} /> Retour</button><div><h2 className="text-4xl font-black text-slate-900 mb-2">{isSignUp ? 'Créer un compte' : 'Bon retour !'}</h2><p className="text-slate-500">Sauvegarde ta progression ☁️</p></div><div className="space-y-4"><button onClick={onGoogle} className="w-full bg-white border-2 border-slate-200 text-slate-800 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"><img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" /> Continuer avec Google</button><div className="flex items-center gap-4"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-sm font-bold">OU</span><div className="h-px bg-slate-200 flex-1"></div></div><input type="email" placeholder="Email" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={email} onChange={(e) => setEmail(e.target.value)} /><input type="password" placeholder="Mot de passe" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={password} onChange={(e) => setPassword(e.target.value)} /></div><button onClick={() => onAuth(email, password, isSignUp)} className="w-full bg-yellow-400 text-slate-900 py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all">{isSignUp ? "S'inscrire" : "Se connecter"}</button><div className="text-center"><button onClick={() => setIsSignUp(!isSignUp)} className="text-indigo-600 font-bold text-sm hover:underline">{isSignUp ? "J'ai déjà un compte" : "Je n'ai pas de compte"}</button></div></div>); };
-const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUpload }) => (<div className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200 h-full p-6"><div className="flex items-center gap-2 mb-12 px-2"><div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center shadow-md rotate-3"><span className="text-2xl">🇪🇸</span></div><h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Español<span className="text-red-600">Sprint</span></h1></div><nav className="flex-1 space-y-2"><SidebarLink icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} /><SidebarLink icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} /><SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} /><SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} /></nav><button onClick={onUpload} className="mb-4 flex items-center gap-2 text-xs text-slate-300 hover:text-indigo-500 px-4 transition-colors"><CloudUpload size={14} /> Initialiser Leçons</button><div className="mt-auto pt-6 border-t border-slate-100"><div className="flex items-center gap-3 mb-6 px-2"><div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">{userData?.name?.charAt(0).toUpperCase()}</div><div className="flex-1"><p className="text-sm font-bold text-slate-900 truncate w-24">{userData?.name}</p><p className="text-xs text-slate-400">Niveau {userData?.level}</p></div><div className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-full"><Flame size={14} className="text-orange-500 fill-orange-500" /><span className="text-xs font-bold text-orange-600">{userData?.streak}</span></div></div></div></div>);
-const SidebarLink = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${active ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}><Icon size={22} strokeWidth={active ? 2.5 : 2} /><span className="font-bold text-base">{label}</span></button>);
-const MobileHeader = ({ userData }) => (<div className="md:hidden bg-white px-4 py-3 flex justify-between items-center shadow-sm z-20 sticky top-0"><div className="flex items-center gap-2"><div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm border border-indigo-200">{userData?.name?.charAt(0).toUpperCase()}</div></div><div className="flex items-center gap-1 bg-orange-50 px-3 py-1 rounded-full border border-orange-100"><Flame size={16} className="text-orange-500 fill-orange-500" /><span className="text-orange-700 font-bold">{userData?.streak}</span></div></div>);
-const MobileBottomNav = ({ currentView, onChangeView }) => (<div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30"><NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} /><NavBtn icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} /><NavBtn icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} /><NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} /></div>);
-const NavBtn = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex flex-col items-center p-2 transition-colors ${active ? 'text-indigo-600' : 'hover:text-slate-600'}`}><Icon size={24} strokeWidth={active ? 2.5 : 2} /><span className="text-[10px] font-bold mt-1">{label}</span></button>);
-const ProfileContent = ({ userData, email, onLogout }) => (<div className="max-w-2xl mx-auto w-full p-6 md:p-12 space-y-8"><h2 className="text-3xl font-black text-slate-900">Mon Compte</h2><div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6"><div className="flex items-center gap-4"><div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center text-2xl font-bold text-indigo-600">{userData?.name?.charAt(0).toUpperCase()}</div><div><p className="font-bold text-slate-900 text-lg">{userData?.name}</p><p className="text-slate-400 text-sm">{email}</p></div></div><div className="grid grid-cols-3 gap-4 text-center py-4 border-y border-slate-100"><div><p className="text-2xl font-black text-slate-900">{userData?.xp}</p><p className="text-xs text-slate-400 uppercase font-bold">XP Total</p></div><div><p className="text-2xl font-black text-slate-900">{userData?.streak}</p><p className="text-xs text-slate-400 uppercase font-bold">Série</p></div><div><p className="text-2xl font-black text-slate-900">{userData?.level}</p><p className="text-xs text-slate-400 uppercase font-bold">Niveau</p></div></div><button onClick={onLogout} className="w-full text-red-500 font-bold py-3 rounded-xl hover:bg-red-50 transition-colors flex items-center justify-center gap-2"><LogOut size={20} /> Se déconnecter</button></div></div>);
-const LessonEngine = ({ content, onComplete, onExit }) => { const [currentIndex, setCurrentIndex] = useState(0); const [progress, setProgress] = useState(0); const currentCard = content[currentIndex]; const handleNext = () => { if (currentIndex + 1 >= content.length) { setProgress(100); setTimeout(() => onComplete(150), 500); } else { setProgress(((currentIndex + 1) / content.length) * 100); setCurrentIndex(prev => prev + 1); } }; const handlePrev = () => { if (currentIndex > 0) { setCurrentIndex(prev => prev - 1); setProgress(((currentIndex - 1) / content.length) * 100); } }; useEffect(() => { if (currentIndex === 0 && currentCard?.es) speak(currentCard.es); }, []); return (<div className="h-full w-full flex flex-col bg-slate-50"><div className="px-6 py-4 md:py-6 flex items-center gap-6 bg-white border-b border-slate-100 z-10"><button onClick={onExit} className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-100 rounded-full"><X size={24} /></button><div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-teal-500 transition-all duration-500 ease-out rounded-full" style={{ width: `${progress}%` }}></div></div></div><div className="flex-1 flex items-center justify-center p-4 overflow-hidden"><div className="w-full max-w-md aspect-[3/4] md:aspect-auto md:h-[600px] perspective-1000">{currentCard.type === 'swipe' && <SwipeCard key={currentCard.id} data={currentCard} onNext={handleNext} onPrev={handlePrev} />}{currentCard.type === 'input' && <InputCard key={currentCard.id} data={currentCard} onNext={handleNext} />}{currentCard.type === 'grammar' && <GrammarCard key={currentCard.id} data={currentCard} onNext={handleNext} />}{currentCard.type === 'structure' && <StructureCard key={currentCard.id} data={currentCard} onNext={handleNext} />}</div></div></div>); };
-const SwipeCard = ({ data, onNext, onPrev }) => { const [swiped, setSwiped] = useState(null); const handleSwipe = (dir) => { setSwiped(dir); setTimeout(() => { if (dir === 'left') onPrev(); else onNext(); }, 250); }; return (<div className={`w-full h-full bg-white rounded-3xl shadow-xl border-b-8 border-slate-100 flex flex-col relative transition-all duration-300 ${swiped === 'left' ? '-translate-x-[150%] rotate-[-20deg] opacity-0' : ''} ${swiped === 'right' ? 'translate-x-[150%] rotate-[20deg] opacity-0' : ''}`}><div className="absolute top-4 right-4 z-10"><button onClick={(e) => { e.stopPropagation(); speak(data.es); }} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 text-indigo-600 shadow-sm active:scale-95 transition-all"><Volume2 size={24} /></button></div><div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6"><h2 className="text-5xl md:text-6xl font-black text-slate-800">{data.es}</h2><div className="w-16 h-1 bg-slate-100 rounded-full"></div><div className="bg-indigo-50 px-6 py-3 rounded-2xl border border-indigo-100"><p className="text-xl md:text-2xl font-bold text-indigo-600">{data.en}</p></div><p className="text-sm text-slate-400 italic">"{data.context}"</p></div><div className="p-6 pb-8 flex justify-center gap-8"><button onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-red-50 border-2 border-red-100 text-red-500 flex items-center justify-center hover:bg-red-100 active:scale-95 transition-all"><RotateCcw size={32} strokeWidth={3} /></button><button onClick={() => handleSwipe('right')} className="w-16 h-16 rounded-full bg-teal-500 border-b-4 border-teal-700 text-white flex items-center justify-center hover:bg-teal-400 hover:scale-105 active:scale-95 active:border-b-0 active:translate-y-1 transition-all"><Check size={32} strokeWidth={3} /></button></div></div>); };
-const InputCard = ({ data, onNext }) => { const [val, setVal] = useState(''); const [status, setStatus] = useState('idle'); const checkAnswer = () => { const isCorrect = data.answer.includes(val.trim().toLowerCase()); setStatus(isCorrect ? 'success' : 'error'); if (isCorrect) { speak("¡Muy bien!"); setTimeout(onNext, 1500); } else { speak("Inténtalo de nuevo"); } }; return (<div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-8 md:p-12 justify-center space-y-8 animate-in zoom-in duration-300"><div className="text-center space-y-2"><span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Challenge</span><h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3></div><input type="text" value={val} onChange={(e) => { setVal(e.target.value); setStatus('idle'); }} className={`w-full text-center text-2xl md:text-3xl font-bold p-6 rounded-2xl border-4 outline-none transition-all ${status === 'error' ? 'border-red-400 bg-red-50 text-red-500' : status === 'success' ? 'border-green-400 bg-green-50 text-green-600' : 'border-slate-100 focus:border-yellow-400 focus:bg-yellow-50'}`} placeholder="Ta réponse..." /><button onClick={checkAnswer} className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl transition-all transform hover:scale-[1.02] active:scale-95 ${status === 'success' ? 'bg-green-500' : 'bg-slate-900'}`}>{status === 'success' ? 'Parfait ! 🎉' : 'Vérifier'}</button>{status === 'error' && <p className="text-center text-red-400 font-bold animate-shake">Essaie encore ! Indice : {data.hint}</p>}</div>); };
-const GrammarCard = ({ data, onNext }) => (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500"><div className="bg-indigo-600 p-8 md:p-10 text-white text-center relative"><button onClick={(e) => { e.stopPropagation(); speak(data.title); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-white"><Volume2 size={20} /></button><h3 className="text-3xl md:text-4xl font-black">{data.title}</h3><p className="text-indigo-200 mt-2">{data.description}</p></div><div className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-slate-50"><div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">{data.conjugation.map((row, idx) => (<div key={idx} className="flex justify-between items-center p-4 border-b border-slate-100 last:border-0"><span className="text-slate-400 font-medium w-1/3">{row.pronoun}</span><span className="text-indigo-600 font-black text-xl w-1/3 text-center">{row.verb}</span><span className="text-slate-300 text-sm w-1/3 text-right italic">{row.fr}</span></div>))}</div><button onClick={onNext} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg hover:bg-yellow-300 active:scale-95 transition-all">J'ai compris</button></div></div>);
-const StructureCard = ({ data, onNext }) => (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500 border-b-[12px] border-slate-100"><div className="bg-amber-400 p-8 text-slate-900 text-center relative"><button onClick={(e) => { e.stopPropagation(); speak(data.example); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-slate-900"><Volume2 size={20} /></button><h3 className="text-2xl font-black uppercase tracking-wider">{data.title}</h3></div><div className="flex-1 p-8 flex flex-col justify-center items-center gap-6 bg-slate-50"><div className="bg-white p-6 rounded-xl border-2 border-slate-200 w-full text-center"><p className="font-mono text-indigo-600 font-bold text-lg mb-2">{data.formula}</p><p className="text-slate-500 text-sm">{data.note}</p></div><div className="text-center"><p className="text-2xl font-bold text-slate-800 mb-1">{data.example}</p><p className="text-sm text-slate-400 italic">Exemple</p></div><button onClick={onNext} className="w-full mt-auto bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-lg active:scale-95 transition-all">C'est noté !</button></div></div>);
-const LessonComplete = ({ xp, onHome, onDownload }) => (<div className="h-full w-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in duration-500"><div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform"><Trophy size={100} className="text-yellow-500 fill-yellow-500" /></div><div><h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">Increíble!</h2><p className="text-xl text-yellow-900 font-bold opacity-80">Leçon terminée et sauvegardée.</p></div><div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div><div className="flex flex-col gap-4 w-full max-w-sm"><button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all"><Download size={20} /> Télécharger le PDF</button><button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">Continuer</button></div></div>);
+const LandingPage = ({ onStart }) => (
+  <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-400 relative overflow-hidden text-center">
+    <div className="z-10 space-y-8 max-w-md">
+      <div className="w-32 h-32 bg-white rounded-[2rem] shadow-2xl mx-auto flex items-center justify-center rotate-6 hover:rotate-12 transition-transform duration-500"><span className="text-6xl">🇪🇸</span></div>
+      <div><h1 className="text-5xl md:text-6xl font-black tracking-tighter text-slate-900 mb-4">Español<span className="text-red-600">Sprint</span></h1><p className="text-slate-800 font-medium text-xl md:text-2xl opacity-90">La méthode la plus rapide.</p></div>
+      <button onClick={onStart} className="w-full bg-slate-900 text-white py-5 px-8 rounded-2xl font-bold text-xl shadow-xl hover:scale-105 active:scale-95 transition-all">Commencer</button>
+    </div>
+  </div>
+);
+
+const AuthScreen = ({ onAuth, onGoogle, onBack }) => {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  return (
+    <div className="w-full max-w-md p-8 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
+      <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold"><X size={20} /> Retour</button>
+      <div><h2 className="text-4xl font-black text-slate-900 mb-2">{isSignUp ? 'Créer un compte' : 'Bon retour !'}</h2><p className="text-slate-500">Sauvegarde ta progression ☁️</p></div>
+      <div className="space-y-4">
+        <button onClick={onGoogle} className="w-full bg-white border-2 border-slate-200 text-slate-800 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"><img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" /> Continuer avec Google</button>
+        <div className="flex items-center gap-4"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-sm font-bold">OU</span><div className="h-px bg-slate-200 flex-1"></div></div>
+        <input type="email" placeholder="Email" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input type="password" placeholder="Mot de passe" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={password} onChange={(e) => setPassword(e.target.value)} />
+      </div>
+      <button onClick={() => onAuth(email, password, isSignUp)} className="w-full bg-yellow-400 text-slate-900 py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all">{isSignUp ? "S'inscrire" : "Se connecter"}</button>
+      <div className="text-center"><button onClick={() => setIsSignUp(!isSignUp)} className="text-indigo-600 font-bold text-sm hover:underline">{isSignUp ? "J'ai déjà un compte" : "Je n'ai pas de compte"}</button></div>
+    </div>
+  );
+};
+
+const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUpload }) => (
+  <div className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200 h-full p-6">
+    <div className="flex items-center gap-2 mb-12 px-2"><div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center shadow-md rotate-3"><span className="text-2xl">🇪🇸</span></div><h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Español<span className="text-red-600">Sprint</span></h1></div>
+    <nav className="flex-1 space-y-2">
+      <SidebarLink icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
+      <SidebarLink icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} />
+      <SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
+      <SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
+    </nav>
+    <button onClick={onUpload} className="mb-4 flex items-center gap-2 text-xs text-slate-300 hover:text-indigo-500 px-4 transition-colors"><CloudUpload size={14} /> Initialiser Leçons</button>
+    <div className="mt-auto pt-6 border-t border-slate-100">
+      <div className="flex items-center gap-3 mb-6 px-2">
+        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">{userData?.name?.charAt(0).toUpperCase()}</div>
+        <div className="flex-1"><p className="text-sm font-bold text-slate-900 truncate w-24">{userData?.name}</p><p className="text-xs text-slate-400">Niveau {userData?.level}</p></div>
+        <div className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-full"><Flame size={14} className="text-orange-500 fill-orange-500" /><span className="text-xs font-bold text-orange-600">{userData?.streak}</span></div>
+      </div>
+    </div>
+  </div>
+);
+
+const SidebarLink = ({ icon: Icon, label, active, onClick }) => (
+  <button onClick={onClick} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${active ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}><Icon size={22} strokeWidth={active ? 2.5 : 2} /><span className="font-bold text-base">{label}</span></button>
+);
+
+const MobileHeader = ({ userData }) => (
+  <div className="md:hidden bg-white px-4 py-3 flex justify-between items-center shadow-sm z-20 sticky top-0">
+    <div className="flex items-center gap-2"><div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm border border-indigo-200">{userData?.name?.charAt(0).toUpperCase()}</div></div>
+    <div className="flex items-center gap-1 bg-orange-50 px-3 py-1 rounded-full border border-orange-100"><Flame size={16} className="text-orange-500 fill-orange-500" /><span className="text-orange-700 font-bold">{userData?.streak}</span></div>
+  </div>
+);
+
+const MobileBottomNav = ({ currentView, onChangeView }) => (
+  <div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30">
+    <NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
+    <NavBtn icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} />
+    <NavBtn icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
+    <NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
+  </div>
+);
+const NavBtn = ({ icon: Icon, label, active, onClick }) => (
+  <button onClick={onClick} className={`flex flex-col items-center p-2 transition-colors ${active ? 'text-indigo-600' : 'hover:text-slate-600'}`}><Icon size={24} strokeWidth={active ? 2.5 : 2} /><span className="text-[10px] font-bold mt-1">{label}</span></button>
+);
+
+const ProfileContent = ({ userData, email, onLogout }) => (
+  <div className="max-w-2xl mx-auto w-full p-6 md:p-12 space-y-8">
+    <h2 className="text-3xl font-black text-slate-900">Mon Compte</h2>
+    <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center text-2xl font-bold text-indigo-600">{userData?.name?.charAt(0).toUpperCase()}</div>
+        <div><p className="font-bold text-slate-900 text-lg">{userData?.name}</p><p className="text-slate-400 text-sm">{email}</p></div>
+      </div>
+      <div className="grid grid-cols-3 gap-4 text-center py-4 border-y border-slate-100">
+        <div><p className="text-2xl font-black text-slate-900">{userData?.xp}</p><p className="text-xs text-slate-400 uppercase font-bold">XP Total</p></div>
+        <div><p className="text-2xl font-black text-slate-900">{userData?.streak}</p><p className="text-xs text-slate-400 uppercase font-bold">Série</p></div>
+        <div><p className="text-2xl font-black text-slate-900">{userData?.level}</p><p className="text-xs text-slate-400 uppercase font-bold">Niveau</p></div>
+      </div>
+      <button onClick={onLogout} className="w-full text-red-500 font-bold py-3 rounded-xl hover:bg-red-50 transition-colors flex items-center justify-center gap-2"><LogOut size={20} /> Se déconnecter</button>
+    </div>
+  </div>
+);
+
+const LessonEngine = ({ content, onComplete, onExit }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const currentCard = content[currentIndex];
+
+  const handleNext = () => {
+    if (currentIndex + 1 >= content.length) {
+      setProgress(100);
+      setTimeout(() => onComplete(150), 500);
+    } else {
+      setProgress(((currentIndex + 1) / content.length) * 100);
+      setCurrentIndex(prev => prev + 1);
+    }
+  };
+  
+  const handlePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+      setProgress(((currentIndex - 1) / content.length) * 100);
+    }
+  };
+
+  useEffect(() => {
+    if (currentIndex === 0 && currentCard?.es) speak(currentCard.es);
+  }, []);
+
+  return (
+    <div className="h-full w-full flex flex-col bg-slate-50">
+      <div className="px-6 py-4 md:py-6 flex items-center gap-6 bg-white border-b border-slate-100 z-10">
+        <button onClick={onExit} className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-100 rounded-full"><X size={24} /></button>
+        <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-teal-500 transition-all duration-500 ease-out rounded-full" style={{ width: `${progress}%` }}></div></div>
+      </div>
+      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+        <div className="w-full max-w-md aspect-[3/4] md:aspect-auto md:h-[600px] perspective-1000">
+          {currentCard.type === 'swipe' && <SwipeCard key={currentCard.id} data={currentCard} onNext={handleNext} onPrev={handlePrev} />}
+          {currentCard.type === 'input' && <InputCard key={currentCard.id} data={currentCard} onNext={handleNext} />}
+          {currentCard.type === 'grammar' && <GrammarCard key={currentCard.id} data={currentCard} onNext={handleNext} />}
+          {currentCard.type === 'structure' && <StructureCard key={currentCard.id} data={currentCard} onNext={handleNext} />}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SwipeCard = ({ data, onNext, onPrev }) => {
+  const [swiped, setSwiped] = useState(null);
+  const handleSwipe = (dir) => {
+    setSwiped(dir);
+    setTimeout(() => {
+      if (dir === 'left') onPrev();
+      else onNext();
+    }, 250);
+  };
+  
+  return (
+    <div className={`w-full h-full bg-white rounded-3xl shadow-xl border-b-8 border-slate-100 flex flex-col relative transition-all duration-300 ${swiped === 'left' ? '-translate-x-[150%] rotate-[-20deg] opacity-0' : ''} ${swiped === 'right' ? 'translate-x-[150%] rotate-[20deg] opacity-0' : ''}`}>
+      <div className="absolute top-4 right-4 z-10">
+         <button onClick={(e) => { e.stopPropagation(); speak(data.es); }} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 text-indigo-600 shadow-sm active:scale-95 transition-all">
+            <Volume2 size={24} />
+         </button>
+      </div>
+      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6">
+        <h2 className="text-5xl md:text-6xl font-black text-slate-800">{data.es}</h2>
+        <div className="w-16 h-1 bg-slate-100 rounded-full"></div>
+        <div className="bg-indigo-50 px-6 py-3 rounded-2xl border border-indigo-100"><p className="text-xl md:text-2xl font-bold text-indigo-600">{data.en}</p></div>
+        <p className="text-sm text-slate-400 italic">"{data.context}"</p>
+      </div>
+      <div className="p-6 pb-8 flex justify-center gap-8">
+        <button onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-red-50 border-2 border-red-100 text-red-500 flex items-center justify-center hover:bg-red-100 active:scale-95 transition-all"><RotateCcw size={32} strokeWidth={3} /></button>
+        <button onClick={() => handleSwipe('right')} className="w-16 h-16 rounded-full bg-teal-500 border-b-4 border-teal-700 text-white flex items-center justify-center hover:bg-teal-400 hover:scale-105 active:scale-95 active:border-b-0 active:translate-y-1 transition-all"><Check size={32} strokeWidth={3} /></button>
+      </div>
+    </div>
+  );
+};
+
+const InputCard = ({ data, onNext }) => {
+  const [val, setVal] = useState('');
+  const [status, setStatus] = useState('idle');
+  const checkAnswer = () => {
+    const isCorrect = data.answer.includes(val.trim().toLowerCase());
+    setStatus(isCorrect ? 'success' : 'error');
+    if (isCorrect) {
+        speak("¡Muy bien!");
+        setTimeout(onNext, 1500);
+    } else {
+        speak("Inténtalo de nuevo");
+    }
+  };
+  return (
+    <div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-8 md:p-12 justify-center space-y-8 animate-in zoom-in duration-300">
+      <div className="text-center space-y-2"><span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Challenge</span><h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3></div>
+      <input type="text" value={val} onChange={(e) => { setVal(e.target.value); setStatus('idle'); }} className={`w-full text-center text-2xl md:text-3xl font-bold p-6 rounded-2xl border-4 outline-none transition-all ${status === 'error' ? 'border-red-400 bg-red-50 text-red-500' : status === 'success' ? 'border-green-400 bg-green-50 text-green-600' : 'border-slate-100 focus:border-yellow-400 focus:bg-yellow-50'}`} placeholder="Ta réponse..." />
+      <button onClick={checkAnswer} className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl transition-all transform hover:scale-[1.02] active:scale-95 ${status === 'success' ? 'bg-green-500' : 'bg-slate-900'}`}>{status === 'success' ? 'Parfait ! 🎉' : 'Vérifier'}</button>
+      {status === 'error' && <p className="text-center text-red-400 font-bold animate-shake">Essaie encore ! Indice : {data.hint}</p>}
+    </div>
+  );
+};
+
+const GrammarCard = ({ data, onNext }) => (
+  <div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500">
+    <div className="bg-indigo-600 p-8 md:p-10 text-white text-center relative">
+       <button onClick={(e) => { e.stopPropagation(); speak(data.title); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-white"><Volume2 size={20} /></button>
+       <h3 className="text-3xl md:text-4xl font-black">{data.title}</h3><p className="text-indigo-200 mt-2">{data.description}</p>
+    </div>
+    <div className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-slate-50">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        {data.conjugation.map((row, idx) => (
+           <div key={idx} className="flex justify-between items-center p-4 border-b border-slate-100 last:border-0"><span className="text-slate-400 font-medium w-1/3">{row.pronoun}</span><span className="text-indigo-600 font-black text-xl w-1/3 text-center">{row.verb}</span><span className="text-slate-300 text-sm w-1/3 text-right italic">{row.fr}</span></div>
+        ))}
+      </div>
+      <button onClick={onNext} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg hover:bg-yellow-300 active:scale-95 transition-all">J'ai compris</button>
+    </div>
+  </div>
+);
+
+const StructureCard = ({ data, onNext }) => (
+  <div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500 border-b-[12px] border-slate-100">
+    <div className="bg-amber-400 p-8 text-slate-900 text-center relative">
+       <button onClick={(e) => { e.stopPropagation(); speak(data.example); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-slate-900"><Volume2 size={20} /></button>
+       <h3 className="text-2xl font-black uppercase tracking-wider">{data.title}</h3>
+    </div>
+    <div className="flex-1 p-8 flex flex-col justify-center items-center gap-6 bg-slate-50">
+       <div className="bg-white p-6 rounded-xl border-2 border-slate-200 w-full text-center">
+          <p className="font-mono text-indigo-600 font-bold text-lg mb-2">{data.formula}</p>
+          <p className="text-slate-500 text-sm">{data.note}</p>
+       </div>
+       <div className="text-center">
+          <p className="text-2xl font-bold text-slate-800 mb-1">{data.example}</p>
+          <p className="text-sm text-slate-400 italic">Exemple</p>
+       </div>
+       <button onClick={onNext} className="w-full mt-auto bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-lg active:scale-95 transition-all">C'est noté !</button>
+    </div>
+  </div>
+);
+
+const LessonComplete = ({ xp, onHome, onDownload }) => (
+  <div className="h-full w-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in duration-500">
+    <div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform"><Trophy size={100} className="text-yellow-500 fill-yellow-500" /></div>
+    <div><h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">Increíble!</h2><p className="text-xl text-yellow-900 font-bold opacity-80">Leçon terminée et sauvegardée.</p></div>
+    <div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div>
+    <div className="flex flex-col gap-4 w-full max-w-sm">
+        <button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all"><Download size={20} /> Télécharger le PDF</button>
+        <button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">Continuer</button>
+    </div>
+  </div>
+);
