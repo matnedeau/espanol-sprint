@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
@@ -43,70 +43,97 @@ const speak = (text) => {
   }
 };
 
-/* --- DATASET INITIAL --- */
+/* --- DATASET COMPLET (A1 -> C1) --- */
 const INITIAL_LESSONS_LIST = [
+  // NIVEAU A1 (Débutant)
   { id: 1, title: "Les Bases", level: "A1", desc: "Se présenter & Être" },
   { id: 2, title: "Ma Famille", level: "A1", desc: "Possession & Avoir" },
   { id: 3, title: "Au Quotidien", level: "A1", desc: "Verbes en -AR & Routine" },
-  { id: 4, title: "La Nourriture", level: "A1", desc: "Gustar & Manger" },
-  { id: 5, title: "Voyage", level: "A1", desc: "Transports & Lieux" },
-  { id: 6, title: "En Ville", level: "A1", desc: "Directions & Verbe Aller" },
-  { id: 7, title: "Bilan Semaine 1", level: "A1", desc: "Grand Quiz Final" },
+  { id: 4, title: "Nourriture", level: "A1", desc: "Gustar & Manger" },
+  
+  // NIVEAU A2 (Élémentaire)
+  { id: 5, title: "Le Passé (I)", level: "A2", desc: "Passé Composé (Haber)" },
+  { id: 6, title: "Voyage & Ville", level: "A2", desc: "Directions & Futur Proche" },
+  { id: 7, title: "L'Imparfait", level: "A2", desc: "Souvenirs & Descriptions" },
+
+  // NIVEAU B1 (Intermédiaire)
+  { id: 8, title: "Le Futur Simple", level: "B1", desc: "Projets & Avenir" },
+  { id: 9, title: "Le Subjonctif (I)", level: "B1", desc: "Doute & Souhaits" },
+  { id: 10, title: "Impératif", level: "B1", desc: "Ordres & Conseils" },
+
+  // NIVEAU B2 (Avancé)
+  { id: 11, title: "Débat & Opinion", level: "B2", desc: "Argumenter & Connecteurs" },
+  { id: 12, title: "Conditionnel", level: "B2", desc: "Hypothèses & Politesse" },
+  
+  // NIVEAU C1 (Expert)
+  { id: 13, title: "Nuances & Style", level: "C1", desc: "Vocabulaire Abstrait" },
+  { id: 14, title: "Subjonctif Passé", level: "C1", desc: "Si j'avais su..." },
+  { id: 15, title: "Maîtrise Totale", level: "C1", desc: "Idiomes Natifs" },
 ];
 
 const INITIAL_LESSONS_CONTENT = {
+  // --- A1 : LES BASES ---
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Hola, ¿qué tal?" },
-    { id: 102, type: "swipe", es: "Buenos días", en: "Bonjour (Matin)", context: "Buenos días, mamá" },
-    { id: 103, type: "grammar", title: "Être (Ser)", description: "Identité & Origine", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él/Ella", verb: "es", fr: "Il est" }, { pronoun: "Nosotros", verb: "somos", fr: "Nous sommes" }, { pronoun: "Ellos", verb: "son", fr: "Ils sont" }] },
+    { id: 103, type: "grammar", title: "Être (Ser)", description: "Identité & Origine", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él", verb: "es", fr: "Il est" }] },
     { id: 104, type: "input", question: "Traduis : 'Je suis'", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
-    { id: 105, type: "swipe", es: "Yo soy francés", en: "Je suis français", context: "Yo soy francés de París" },
-    { id: 106, type: "structure", title: "Phrase Simple", formula: "Sujet (Optionnel) + Verbe + Adjectif", example: "Soy alto (Je suis grand)", note: "On omet souvent le 'Yo'." },
+    { id: 106, type: "structure", title: "Phrase Simple", formula: "Sujet + Verbe + Adjectif", example: "Soy alto (Je suis grand)", note: "On omet souvent le 'Yo'." },
     { id: 107, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" },
-    { id: 108, type: "swipe", es: "Por favor", en: "S'il vous plaît", context: "Agua, por favor" },
-    { id: 109, type: "swipe", es: "Me llamo", en: "Je m'appelle", context: "Me llamo Sofia" },
-    { id: 110, type: "input", question: "Traduis : 'Merci'", answer: ["gracias"], hint: "Gra..." },
-    { id: 111, type: "swipe", es: "¿Cómo estás?", en: "Comment ça va ?", context: "Hola, ¿cómo estás?" },
-    { id: 112, type: "swipe", es: "Muy bien", en: "Très bien", context: "Estoy muy bien, gracias" }
+    { id: 108, type: "swipe", es: "Por favor", en: "S'il vous plaît", context: "Agua, por favor" }
   ],
+  // --- A1 : FAMILLE ---
   2: [
     { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Amo a mi familia" },
-    { id: 202, type: "grammar", title: "Avoir (Tener)", description: "Possession & Âge", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él/Ella", verb: "tiene", fr: "Il a" }, { pronoun: "Nosotros", verb: "tenemos", fr: "Nous avons" }, { pronoun: "Ellos", verb: "tienen", fr: "Ils ont" }] },
+    { id: 202, type: "grammar", title: "Avoir (Tener)", description: "Possession & Âge", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él", verb: "tiene", fr: "Il a" }] },
     { id: 203, type: "input", question: "Traduis : 'J'ai'", answer: ["tengo", "yo tengo"], hint: "Verbe Tener" },
     { id: 204, type: "swipe", es: "El padre", en: "Le père", context: "Mi padre es alto" },
-    { id: 205, type: "swipe", es: "La madre", en: "La mère", context: "Mi madre es guapa" },
     { id: 206, type: "structure", title: "Possession", formula: "Mi / Tu / Su + Nom", example: "Mi casa (Ma maison)", note: "Pas d'article devant le possessif." },
-    { id: 207, type: "swipe", es: "Mi hermano", en: "Mon frère", context: "Mi hermano se llama Juan" },
-    { id: 208, type: "swipe", es: "Tu hermana", en: "Ta soeur", context: "¿Cómo se llama tu hermana?" },
-    { id: 209, type: "swipe", es: "Tengo 20 años", en: "J'ai 20 ans", context: "Tengo 20 años" },
-    { id: 210, type: "input", question: "Traduis : 'J'ai un frère'", answer: ["tengo un hermano", "yo tengo un hermano"], hint: "Tengo un h..." },
-    { id: 211, type: "swipe", es: "El gato", en: "Le chat", context: "El gato negro" },
-    { id: 212, type: "swipe", es: "El perro", en: "Le chien", context: "Mi perro es fiel" },
-    { id: 213, type: "swipe", es: "La casa", en: "La maison", context: "Vivo en una casa" }
+    { id: 207, type: "swipe", es: "El hermano", en: "Le frère", context: "Tengo un hermano" }
   ],
+  // --- A1 : QUOTIDIEN ---
   3: [
     { id: 301, type: "swipe", es: "Hablar", en: "Parler", context: "Hablo español" },
-    { id: 302, type: "grammar", title: "Verbes en -AR", description: "Terminaisons du présent", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }, { pronoun: "Nosotros", verb: "-amos", fr: "habl(amos)" }, { pronoun: "Ellos", verb: "-an", fr: "habl(an)" }] },
-    { id: 303, type: "input", question: "Je parle (Hablar)", answer: ["hablo", "yo hablo"], hint: "Terminaison -o" },
+    { id: 302, type: "grammar", title: "Verbes en -AR", description: "Terminaisons du présent", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }] },
     { id: 304, type: "swipe", es: "Trabajar", en: "Travailler", context: "Trabajo en Madrid" },
     { id: 305, type: "structure", title: "Négation", formula: "No + Verbe", example: "No hablo inglés", note: "Juste 'No' avant le verbe." },
-    { id: 306, type: "swipe", es: "No trabajo", en: "Je ne travaille pas", context: "Hoy no trabajo" },
-    { id: 307, type: "swipe", es: "Escuchar", en: "Écouter", context: "Escucho música" },
-    { id: 308, type: "swipe", es: "Estudiar", en: "Étudier", context: "Estudio mucho" },
-    { id: 309, type: "input", question: "Tu étudies (Estudiar)", answer: ["estudias", "tú estudias"], hint: "Terminaison -as" },
-    { id: 310, type: "swipe", es: "Bailar", en: "Danser", context: "Me gusta bailar" },
-    { id: 311, type: "swipe", es: "Caminar", en: "Marcher", context: "Camino en el parque" },
-    { id: 312, type: "swipe", es: "Comprar", en: "Acheter", context: "Compro comida" },
-    { id: 313, type: "swipe", es: "¿Hablas español?", en: "Parles-tu espagnol ?", context: "Perdón, ¿hablas español?" },
-    { id: 314, type: "input", question: "Traduis : 'Je ne danse pas'", answer: ["no bailo", "yo no bailo"], hint: "No + verbe" }
+    { id: 306, type: "swipe", es: "Comer", en: "Manger", context: "Como pan" },
+    { id: 307, type: "swipe", es: "Vivir", en: "Vivre", context: "Vivo en España" }
+  ],
+  // --- A2 : LE PASSÉ COMPOSÉ ---
+  5: [
+    { id: 501, type: "swipe", es: "Ayer", en: "Hier", context: "Ayer comí pizza" },
+    { id: 502, type: "grammar", title: "Passé Composé", description: "Haber + Participe Passé", conjugation: [{ pronoun: "Yo", verb: "he comido", fr: "J'ai mangé" }, { pronoun: "Tú", verb: "has comido", fr: "Tu as mangé" }, { pronoun: "Él", verb: "ha comido", fr: "Il a mangé" }] },
+    { id: 503, type: "swipe", es: "He hablado", en: "J'ai parlé", context: "He hablado con Juan" },
+    { id: 504, type: "input", question: "Traduis : 'J'ai mangé'", answer: ["he comido", "yo he comido"], hint: "Utilise Haber" },
+    { id: 505, type: "structure", title: "Structure du Passé", formula: "Haber (conjugué) + Verbe-ADO/IDO", example: "He habl-ado (J'ai parlé)", note: "-AR devient -ADO, -ER/-IR devient -IDO." }
+  ],
+  // --- B1 : LE SUBJONCTIF ---
+  9: [
+    { id: 901, type: "swipe", es: "Espero que", en: "J'espère que", context: "Espero que vengas" },
+    { id: 902, type: "grammar", title: "Subjonctif Présent", description: "Exprime le doute/souhait. Les voyelles s'inversent !", conjugation: [{ pronoun: "Yo (Hablar)", verb: "hable", fr: "Que je parle" }, { pronoun: "Tú (Comer)", verb: "comas", fr: "Que tu manges" }, { pronoun: "Él (Vivir)", verb: "viva", fr: "Qu'il vive" }] },
+    { id: 903, type: "swipe", es: "Ojalá", en: "Pourvu que", context: "¡Ojalá llueva!" },
+    { id: 904, type: "input", question: "Que tu manges (Comer)", answer: ["comas"], hint: "Subjonctif: E devient A" },
+    { id: 905, type: "structure", title: "Déclencheur du Subjonctif", formula: "Verbe de désir + QUE + Subjonctif", example: "Quiero que comas (Je veux que tu manges)", note: "Deux sujets différents = Subjonctif obligatoire." }
+  ],
+  // --- C1 : NUANCES & EXPERT ---
+  13: [
+    { id: 1301, type: "swipe", es: "Paradójico", en: "Paradoxal", context: "Es un resultado paradójico" },
+    { id: 1302, type: "swipe", es: "Escrutinio", en: "Scrutin / Examen minutieux", context: "Bajo el escrutinio público" },
+    { id: 1303, type: "grammar", title: "Subjonctif Imparfait", description: "Hypothèses irréelles (Si j'étais...)", conjugation: [{ pronoun: "Yo (Haber)", verb: "hubiera", fr: "J'eusse / J'avais" }, { pronoun: "Tú (Ser)", verb: "fueras", fr: "Tu fusses / Tu étais" }, { pronoun: "Él (Tener)", verb: "tuviera", fr: "Il eût / Il avait" }] },
+    { id: 1304, type: "swipe", es: "Efímero", en: "Éphémère", context: "La belleza es efímera" },
+    { id: 1305, type: "structure", title: "Hypothèse Irréelle", formula: "Si + Subj. Imparfait ... + Conditionnel", example: "Si tuviera dinero, viajaría.", note: "Si j'avais de l'argent (mais j'en ai pas), je voyagerais." },
+    { id: 1306, type: "input", question: "Si j'avais (Tener - Subj. Imp)", answer: ["tuviera", "tuviese"], hint: "Verbe Tener au passé du subjonctif" },
+    { id: 1307, type: "swipe", es: "Ineludible", en: "Inéluctable", context: "Un destino ineludible" },
+    { id: 1308, type: "swipe", es: "Por ende", en: "Par conséquent (Soutenu)", context: "Pienso, por ende existo" }
   ]
 };
 
 const SENTENCE_STRUCTURES = [
-  { id: 1, title: "La Phrase Simple", formula: "Sujet (Facultatif) + Verbe + Reste", example_es: "(Yo) como una manzana.", example_en: "Je mange une pomme.", explanation: "Le pronom personnel (Yo, Tú...) est souvent omis." },
-  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No hablo inglés.", example_en: "Je ne parle pas anglais.", explanation: "Le 'ne...pas' français se traduit simplement par 'No' placé juste avant le verbe." },
-  { id: 3, title: "L'Adjectif", formula: "Nom + Adjectif", example_es: "Un libro rojo.", example_en: "Un livre rouge.", explanation: "Comme en français, l'adjectif se place généralement après le nom." },
-  { id: 4, title: "La Question", formula: "¿ + Verbe + Sujet ?", example_es: "¿Tienes tú un coche?", example_en: "As-tu une voiture ?", explanation: "Point d'interrogation inversé au début." }
+  { id: 1, title: "Phrase Simple (A1)", formula: "Sujet + Verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Sujet souvent omis." },
+  { id: 2, title: "Négation (A1)", formula: "No + Verbe", example_es: "No como.", example_en: "Je ne mange pas.", explanation: "Simple 'No' devant." },
+  { id: 3, title: "Futur Proche (A2)", formula: "Ir + a + Infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Très utilisé à l'oral." },
+  { id: 4, title: "Obligation (B1)", formula: "Tener + que + Infinitif", example_es: "Tengo que comer.", example_en: "Je dois manger.", explanation: "Équivalent de 'Il faut que'." },
+  { id: 5, title: "Hypothèse (C1)", formula: "Si + Subj. Imp + Conditionnel", example_es: "Si pudiera, lo haría.", example_en: "Si je pouvais, je le ferais.", explanation: "Pour l'imaginaire ou l'impossible." }
 ];
 
 /* --- APPLICATION --- */
@@ -158,13 +185,13 @@ export default function EspanolSprintPro() {
   }, []);
 
   const uploadFullContentToCloud = async () => {
-    if (!confirm("ADMIN : Mettre à jour tout le contenu dans Firebase ?")) return;
+    if (!confirm("ADMIN : Mettre à jour tout le contenu (A1->C1) dans Firebase ?")) return;
     try {
       await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST });
       for (const [id, content] of Object.entries(INITIAL_LESSONS_CONTENT)) {
         await setDoc(doc(db, "lessons", id), { content: content });
       }
-      alert("✅ Contenu mis à jour !");
+      alert("✅ Contenu A1-C1 mis à jour !");
       window.location.reload(); 
     } catch (e) { alert("Erreur: " + e.message); }
   };
@@ -195,28 +222,24 @@ export default function EspanolSprintPro() {
     if (isNewLesson && userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 4) { 
       setShowLimitModal(true); return; 
     }
-    if (!dynamicLessonsContent[lessonId]) { alert("Leçon non disponible."); return; }
+    if (!dynamicLessonsContent[lessonId]) { alert("Cette leçon n'est pas encore dans la base de données."); return; }
     setActiveLessonId(lessonId);
     setView('lesson');
   };
 
   const handleLessonComplete = async (xp, lessonContent, lessonId) => {
-    // Capture TOUS les types importants : Swipe (vocab), Grammaire, Structure
     const newItems = lessonContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
     const today = new Date().toDateString();
     if (currentUser) {
       const userRef = doc(db, "users", currentUser.uid);
-      
-      // Filtre pour ne pas ajouter ce qu'on a déjà (basé sur l'ID de la carte)
       const uniqueNewItems = newItems.filter(item => !userData.vocab.some(v => v.id === item.id));
-
       const isNew = !userData.completedLessons.includes(lessonId);
       const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
 
       const updateData = {
         xp: increment(xp),
         streak: increment(1),
-        vocab: arrayUnion(...uniqueNewItems), // Ajoute vocab, grammaire ET structures
+        vocab: arrayUnion(...uniqueNewItems), 
         completedLessons: arrayUnion(lessonId),
         dailyLimit: { date: today, count: newCount }
       };
@@ -307,12 +330,41 @@ const NotebookContent = ({ userVocab }) => {
   const vocabItems = userVocab.filter(c => c.type === 'swipe');
   const grammarItems = userVocab.filter(c => c.type === 'grammar');
   
+  const [showReference, setShowReference] = useState(false);
+
+  const REFERENCE_VERBS = [
+    { title: "Verbes en -AR", endings: ["-o", "-as", "-a", "-amos", "-an"], ex: "Hablar (Parler)" },
+    { title: "Verbes en -ER", endings: ["-o", "-es", "-e", "-emos", "-en"], ex: "Comer (Manger)" },
+    { title: "Verbes en -IR", endings: ["-o", "-es", "-e", "-imos", "-en"], ex: "Vivir (Vivre)" },
+  ];
+  
   return (
     <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
-      <div className="flex items-center justify-between mb-8"><h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique & Savoir</h2><div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Éléments</div></div>
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique</h2>
+        <div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Éléments</div>
+      </div>
+
+      <div className="mb-8">
+         <button onClick={() => setShowReference(!showReference)} className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors">
+           <Table size={20} /> {showReference ? "Masquer les terminaisons" : "Voir les terminaisons (-AR, -ER, -IR)"}
+         </button>
+         {showReference && (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 fade-in duration-300">
+               {REFERENCE_VERBS.map((v, i) => (
+                 <div key={i} className="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm">
+                    <h4 className="font-bold text-center mb-2 text-indigo-600">{v.title}</h4>
+                    <p className="text-xs text-center text-gray-400 italic mb-2">{v.ex}</p>
+                    <div className="space-y-1 text-sm text-center">
+                       {v.endings.map(e => <div key={e} className="bg-slate-50 py-1 rounded">{e}</div>)}
+                    </div>
+                 </div>
+               ))}
+            </div>
+         )}
+      </div>
+
       <div className="grid md:grid-cols-2 gap-8">
-        
-        {/* VOCABULAIRE */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Edit3 size={18} /> Vocabulaire Acquis</h3>
           {vocabItems.length > 0 ? (
@@ -327,7 +379,6 @@ const NotebookContent = ({ userVocab }) => {
           ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
         </div>
 
-        {/* GRAMMAIRE CORRIGÉE AVEC COLONNES FLEXIBLES */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire Apprise</h3>
           <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
@@ -348,7 +399,6 @@ const NotebookContent = ({ userVocab }) => {
             {grammarItems.length === 0 && <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
           </div>
         </div>
-
       </div>
     </div>
   );
@@ -458,24 +508,6 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
   );
 };
 
-const ProfileContent = ({ userData, email, onLogout }) => (
-  <div className="max-w-2xl mx-auto w-full p-6 md:p-12 space-y-8">
-    <h2 className="text-3xl font-black text-slate-900">Mon Compte</h2>
-    <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center text-2xl font-bold text-indigo-600">{userData?.name?.charAt(0).toUpperCase()}</div>
-        <div><p className="font-bold text-slate-900 text-lg">{userData?.name}</p><p className="text-slate-400 text-sm">{email}</p></div>
-      </div>
-      <div className="grid grid-cols-3 gap-4 text-center py-4 border-y border-slate-100">
-        <div><p className="text-2xl font-black text-slate-900">{userData?.xp}</p><p className="text-xs text-slate-400 uppercase font-bold">XP Total</p></div>
-        <div><p className="text-2xl font-black text-slate-900">{userData?.streak}</p><p className="text-xs text-slate-400 uppercase font-bold">Série</p></div>
-        <div><p className="text-2xl font-black text-slate-900">{userData?.level}</p><p className="text-xs text-slate-400 uppercase font-bold">Niveau</p></div>
-      </div>
-      <button onClick={onLogout} className="w-full text-red-500 font-bold py-3 rounded-xl hover:bg-red-50 transition-colors flex items-center justify-center gap-2"><LogOut size={20} /> Se déconnecter</button>
-    </div>
-  </div>
-);
-
 const LessonEngine = ({ content, onComplete, onExit }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -544,13 +576,7 @@ const SwipeCard = ({ data, onNext, onPrev }) => {
         <p className="text-sm text-slate-400 italic">"{data.context}"</p>
       </div>
       <div className="p-6 pb-8 flex justify-center gap-8">
-        <button onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-red-50 border-2 border-red-100 text-red-500 flex items-center justify-center hover:bg-red-100 active:scale-95 transition-all"><X size={32} strokeWidth={3} /></button>
-        
-        {/* Bouton Retour (Optionnel au milieu) */}
-        <button onClick={() => handleSwipe('left')} className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all md:hidden">
-           <RotateCcw size={20} />
-        </button>
-
+        <button onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-red-50 border-2 border-red-100 text-red-500 flex items-center justify-center hover:bg-red-100 active:scale-95 transition-all"><RotateCcw size={32} strokeWidth={3} /></button>
         <button onClick={() => handleSwipe('right')} className="w-16 h-16 rounded-full bg-teal-500 border-b-4 border-teal-700 text-white flex items-center justify-center hover:bg-teal-400 hover:scale-105 active:scale-95 active:border-b-0 active:translate-y-1 transition-all"><Check size={32} strokeWidth={3} /></button>
       </div>
     </div>
