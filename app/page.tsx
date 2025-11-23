@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, Hammer, ArrowRight
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
@@ -29,30 +29,25 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-// Fonction Audio (Synthèse Vocale)
+// Fonction Audio
 const speak = (text) => {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel(); // Arrête le son précédent
+    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Essayer de trouver une voix native de meilleure qualité
     const voices = window.speechSynthesis.getVoices();
-    // Cherche une voix 'es-ES' (Espagne) ou 'es' tout court
     const esVoice = voices.find(v => v.lang.includes('es-ES') || v.lang.includes('es'));
-    
     if (esVoice) utterance.voice = esVoice;
-
     utterance.lang = 'es-ES'; 
-    utterance.rate = 0.85; // Vitesse légèrement ralentie pour l'apprentissage
+    utterance.rate = 0.85;
     window.speechSynthesis.speak(utterance);
   }
 };
 
-/* --- DATASET ENRICHI (A1 - SEMAINE 1) --- */
+/* --- DATASET ENRICHI --- */
 const INITIAL_LESSONS_LIST = [
-  { id: 1, title: "Les Bases", level: "A1", desc: "Se présenter & Être (12 cartes)" },
-  { id: 2, title: "Ma Famille", level: "A1", desc: "Possession & Avoir (15 cartes)" },
-  { id: 3, title: "Au Quotidien", level: "A1", desc: "Verbes en -AR & Routine (14 cartes)" },
+  { id: 1, title: "Les Bases", level: "A1", desc: "Se présenter & Être" },
+  { id: 2, title: "Ma Famille", level: "A1", desc: "Possession & Avoir" },
+  { id: 3, title: "Au Quotidien", level: "A1", desc: "Verbes en -AR & Routine" },
   { id: 4, title: "La Nourriture", level: "A1", desc: "Gustar & Manger" },
   { id: 5, title: "Voyage", level: "A1", desc: "Transports & Lieux" },
   { id: 6, title: "En Ville", level: "A1", desc: "Directions & Verbe Aller" },
@@ -63,10 +58,10 @@ const INITIAL_LESSONS_CONTENT = {
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Hola, ¿qué tal?" },
     { id: 102, type: "swipe", es: "Buenos días", en: "Bonjour (Matin)", context: "Buenos días, mamá" },
-    { id: 103, type: "grammar", title: "Grammaire : Être (Ser)", description: "Pour l'identité (je suis Paul) et l'origine (je suis français).", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él/Ella", verb: "es", fr: "Il est" }] },
+    { id: 103, type: "grammar", title: "Grammaire : Être (Ser)", description: "Pour l'identité et l'origine.", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él/Ella", verb: "es", fr: "Il est" }] },
     { id: 104, type: "input", question: "Traduis : 'Je suis'", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
     { id: 105, type: "swipe", es: "Yo soy francés", en: "Je suis français", context: "Yo soy francés de París" },
-    { id: 106, type: "structure", title: "Structure : La Phrase Simple", formula: "Sujet (Optionnel) + Verbe + Adjectif", example: "Yo soy alto (Je suis grand)", note: "En espagnol, on peut dire 'Soy alto' sans le 'Yo'." },
+    { id: 106, type: "structure", title: "Structure : Phrase Simple", formula: "Sujet (Optionnel) + Verbe + Adjectif", example: "Soy alto (Je suis grand)", note: "On omet souvent le 'Yo'." },
     { id: 107, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" },
     { id: 108, type: "swipe", es: "Por favor", en: "S'il vous plaît", context: "Agua, por favor" },
     { id: 109, type: "swipe", es: "Me llamo", en: "Je m'appelle", context: "Me llamo Sofia" },
@@ -76,26 +71,25 @@ const INITIAL_LESSONS_CONTENT = {
   ],
   2: [
     { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Amo a mi familia" },
-    { id: 202, type: "grammar", title: "Grammaire : Avoir (Tener)", description: "Utilisé pour la possession (j'ai un chien) et l'âge (j'ai 20 ans).", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él/Ella", verb: "tiene", fr: "Il a" }] },
+    { id: 202, type: "grammar", title: "Grammaire : Avoir (Tener)", description: "Possession & Âge", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él/Ella", verb: "tiene", fr: "Il a" }, { pronoun: "Nosotros", verb: "tenemos", fr: "Nous avons" }, { pronoun: "Ellos", verb: "tienen", fr: "Ils ont" }] },
     { id: 203, type: "input", question: "Traduis : 'J'ai'", answer: ["tengo", "yo tengo"], hint: "Verbe Tener" },
     { id: 204, type: "swipe", es: "El padre", en: "Le père", context: "Mi padre es alto" },
     { id: 205, type: "swipe", es: "La madre", en: "La mère", context: "Mi madre es guapa" },
-    { id: 206, type: "swipe", es: "El hermano", en: "Le frère", context: "Tengo un hermano" },
-    { id: 207, type: "swipe", es: "La hermana", en: "La soeur", context: "Mi hermana pequeña" },
-    { id: 208, type: "swipe", es: "Tengo 20 años", en: "J'ai 20 ans", context: "Tengo 20 años" },
-    { id: 209, type: "swipe", es: "La casa", en: "La maison", context: "Vivo en una casa" },
-    { id: 210, type: "input", question: "Traduis : 'La mère'", answer: ["la madre", "madre"], hint: "La m..." },
+    { id: 206, type: "structure", title: "Structure : La Possession", formula: "Mi / Tu / Su + Nom", example: "Mi casa (Ma maison)", note: "Pas d'article devant le possessif." },
+    { id: 207, type: "swipe", es: "Mi hermano", en: "Mon frère", context: "Mi hermano se llama Juan" },
+    { id: 208, type: "swipe", es: "Tu hermana", en: "Ta soeur", context: "¿Cómo se llama tu hermana?" },
+    { id: 209, type: "swipe", es: "Tengo 20 años", en: "J'ai 20 ans", context: "Tengo 20 años" },
+    { id: 210, type: "input", question: "Traduis : 'J'ai un frère'", answer: ["tengo un hermano", "yo tengo un hermano"], hint: "Tengo un h..." },
     { id: 211, type: "swipe", es: "El gato", en: "Le chat", context: "El gato negro" },
     { id: 212, type: "swipe", es: "El perro", en: "Le chien", context: "Mi perro es fiel" },
-    { id: 213, type: "structure", title: "Structure : La Possession", formula: "Mi / Tu / Su + Nom", example: "Mi casa (Ma maison)", note: "Pas besoin d'article (le/la) devant 'Mi'." },
-    { id: 214, type: "input", question: "Traduis : 'J'ai un frère'", answer: ["tengo un hermano", "yo tengo un hermano"], hint: "Tengo un h..." }
+    { id: 213, type: "swipe", es: "La casa", en: "La maison", context: "Vivo en una casa" }
   ],
   3: [
     { id: 301, type: "swipe", es: "Hablar", en: "Parler", context: "Hablo español" },
-    { id: 302, type: "grammar", title: "Verbes en -AR (Présent)", description: "La majorité des verbes finissent en -AR. Voici les terminaisons.", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }] },
+    { id: 302, type: "grammar", title: "Verbes en -AR", description: "Terminaisons du présent", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }, { pronoun: "Nosotros", verb: "-amos", fr: "habl(amos)" }, { pronoun: "Ellos", verb: "-an", fr: "habl(an)" }] },
     { id: 303, type: "input", question: "Je parle (Hablar)", answer: ["hablo", "yo hablo"], hint: "Terminaison -o" },
     { id: 304, type: "swipe", es: "Trabajar", en: "Travailler", context: "Trabajo en Madrid" },
-    { id: 305, type: "structure", title: "Structure : La Négation", formula: "No + Verbe", example: "No hablo inglés (Je ne parle pas anglais)", note: "Le 'ne... pas' français devient juste 'No' devant le verbe." },
+    { id: 305, type: "structure", title: "Structure : La Négation", formula: "No + Verbe", example: "No hablo inglés", note: "Juste 'No' avant le verbe." },
     { id: 306, type: "swipe", es: "No trabajo", en: "Je ne travaille pas", context: "Hoy no trabajo" },
     { id: 307, type: "swipe", es: "Escuchar", en: "Écouter", context: "Escucho música" },
     { id: 308, type: "swipe", es: "Estudiar", en: "Étudier", context: "Estudio mucho" },
@@ -108,14 +102,7 @@ const INITIAL_LESSONS_CONTENT = {
   ]
 };
 
-const SENTENCE_STRUCTURES = [
-  { id: 1, title: "La Phrase Simple", formula: "Sujet (Facultatif) + Verbe + Reste", example_es: "(Yo) como una manzana.", example_en: "Je mange une pomme.", explanation: "Le pronom personnel (Yo, Tú...) est souvent omis car la terminaison du verbe suffit." },
-  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No hablo inglés.", example_en: "Je ne parle pas anglais.", explanation: "Le 'ne...pas' français se traduit simplement par 'No' placé juste avant le verbe." },
-  { id: 3, title: "L'Adjectif", formula: "Nom + Adjectif", example_es: "Un libro rojo.", example_en: "Un livre rouge.", explanation: "Comme en français, l'adjectif se place généralement après le nom." },
-  { id: 4, title: "La Question", formula: "¿ + Verbe + Sujet ?", example_es: "¿Tienes tú un coche?", example_en: "As-tu une voiture ?", explanation: "L'espagnol utilise un point d'interrogation inversé au début. L'ordre des mots est flexible." }
-];
-
-/* --- APPLICATION PRINCIPALE --- */
+/* --- APPLICATION --- */
 export default function EspanolSprintPro() {
   const [view, setView] = useState('landing'); 
   const [currentUser, setCurrentUser] = useState(null); 
@@ -144,8 +131,6 @@ export default function EspanolSprintPro() {
             await setDoc(userRef, newProfile);
             setUserData(newProfile);
           }
-
-          // Chargement des données dynamiques
           const roadmapSnap = await getDoc(doc(db, "meta", "roadmap"));
           if (roadmapSnap.exists()) setDynamicLessonsList(roadmapSnap.data().lessons);
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
@@ -165,7 +150,6 @@ export default function EspanolSprintPro() {
     return () => unsubscribe();
   }, []);
 
-  // FONCTION ADMIN
   const uploadFullContentToCloud = async () => {
     if (!confirm("ADMIN : Mettre à jour tout le contenu dans Firebase ?")) return;
     try {
@@ -200,37 +184,33 @@ export default function EspanolSprintPro() {
 
   const startLesson = (lessonId) => {
     const today = new Date().toDateString();
-    
-    // Vérification Limite : 4 Nouvelles par jour MAX
     const isNewLesson = !userData.completedLessons.includes(lessonId);
     if (isNewLesson && userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 4) { 
       setShowLimitModal(true); return; 
     }
-
-    // Sécurité : Vérifier si la leçon existe
-    if (!dynamicLessonsContent[lessonId]) { alert("Leçon non disponible pour l'instant."); return; }
-    
+    if (!dynamicLessonsContent[lessonId]) { alert("Leçon non disponible."); return; }
     setActiveLessonId(lessonId);
     setView('lesson');
   };
 
   const handleLessonComplete = async (xp, lessonContent, lessonId) => {
-    const newVocab = lessonContent.filter(item => item.type === 'swipe');
+    // Capture TOUS les types importants : Swipe, Grammaire, Structure
+    const newItems = lessonContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
     const today = new Date().toDateString();
+    
     if (currentUser) {
       const userRef = doc(db, "users", currentUser.uid);
-      // On ne compte que si c'est une NOUVELLE leçon
-      const isNew = !userData.completedLessons.includes(lessonId);
-      const newCount = isNew 
-        ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1)
-        : (userData.dailyLimit?.count || 0);
+      
+      // Filtre pour ne pas ajouter ce qu'on a déjà
+      const uniqueNewItems = newItems.filter(item => !userData.vocab.some(v => v.id === item.id));
 
-      const uniqueNewVocab = newVocab.filter(item => !userData.vocab.some(v => v.id === item.id));
+      const isNew = !userData.completedLessons.includes(lessonId);
+      const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
 
       const updateData = {
         xp: increment(xp),
         streak: increment(1),
-        vocab: arrayUnion(...uniqueNewVocab),
+        vocab: arrayUnion(...uniqueNewItems), // Ajoute vocab, grammaire ET structures
         completedLessons: arrayUnion(lessonId),
         dailyLimit: { date: today, count: newCount }
       };
@@ -246,8 +226,16 @@ export default function EspanolSprintPro() {
     if(!content) return;
     const printWindow = window.open('', '_blank');
     const vocabHTML = content.filter(c => c.type === 'swipe').map(c => `<div style="margin-bottom:10px; border-bottom:1px solid #eee;"><b>${c.es}</b> = ${c.en} <i style="color:gray">(${c.context})</i></div>`).join('');
-    const grammarHTML = content.filter(c => c.type === 'grammar').map(c => `<div style="margin-top:20px;"><h3>${c.title}</h3><p>${c.description}</p></div>`).join('');
-    printWindow.document.write(`<html><head><title>Leçon ${lessonId}</title></head><body style="font-family:sans-serif; padding:30px;"><h1>🇪🇸 Leçon ${lessonId}</h1><h3>Vocabulaire</h3>${vocabHTML}${grammarHTML}<script>window.print()</script></body></html>`);
+    const grammarHTML = content.filter(c => c.type === 'grammar').map(c => `
+      <div style="margin-top:20px; background:#f9fafb; padding:15px; border-radius:8px;">
+        <h3>${c.title}</h3>
+        <table style="width:100%; border-collapse:collapse;">
+          ${c.conjugation.map(r => `<tr style="border-bottom:1px solid #eee;"><td style="padding:5px; color:#888;">${r.pronoun}</td><td style="padding:5px; font-weight:bold;">${r.verb}</td><td style="padding:5px;">${r.fr}</td></tr>`).join('')}
+        </table>
+      </div>`).join('');
+    const structHTML = content.filter(c => c.type === 'structure').map(c => `<div style="margin-top:20px; border:1px solid #fbbf24; padding:10px; border-radius:8px;"><h3>${c.title}</h3><p><code>${c.formula}</code></p><p>${c.example}</p></div>`).join('');
+    
+    printWindow.document.write(`<html><head><title>Leçon ${lessonId}</title></head><body style="font-family:sans-serif; padding:30px;"><h1>🇪🇸 Leçon ${lessonId}</h1><h2>Vocabulaire</h2>${vocabHTML}<h2>Grammaire</h2>${grammarHTML}<h2>Structures</h2>${structHTML}<script>window.print()</script></body></html>`);
     printWindow.document.close();
   };
 
@@ -259,7 +247,7 @@ export default function EspanolSprintPro() {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center space-y-6">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500"><AlertCircle size={40} /></div>
-            <div><h3 className="text-2xl font-black text-slate-900">Cerveau Plein ! 🧠</h3><p className="text-slate-500 mt-2">Tu as fait 4 nouvelles leçons. Tu peux réviser les anciennes à volonté !</p></div>
+            <div><h3 className="text-2xl font-black text-slate-900">Cerveau Plein ! 🧠</h3><p className="text-slate-500 mt-2">4 leçons par jour. Repose-toi ou révise !</p></div>
             <button onClick={() => setShowLimitModal(false)} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">Compris</button>
           </div>
         </div>
@@ -277,8 +265,7 @@ export default function EspanolSprintPro() {
             <MobileHeader userData={userData} />
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
               {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} />}
-              {view === 'notebook' && userData && <NotebookContent allContent={Object.values(dynamicLessonsContent).flat()} userVocab={userData.vocab} />}
-              {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} />}
+              {view === 'notebook' && userData && <NotebookContent userVocab={userData.vocab} />}
               {view === 'profile' && userData && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} />}
               {view === 'lesson' && dynamicLessonsContent[activeLessonId] && <LessonEngine content={dynamicLessonsContent[activeLessonId]} onComplete={(xp) => handleLessonComplete(xp, dynamicLessonsContent[activeLessonId], activeLessonId)} onExit={() => setView('dashboard')} />}
               {view === 'complete' && <LessonComplete xp={150} onHome={() => setView('dashboard')} onDownload={() => handlePrintPDF(activeLessonId)} />}
@@ -293,21 +280,73 @@ export default function EspanolSprintPro() {
 
 /* --- UI COMPONENTS --- */
 
-const StructuresContent = ({ structures }) => (
-  <div className="max-w-3xl mx-auto w-full p-6 pb-24">
-    <h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2>
-    <div className="space-y-6">
-      {structures.map((struct) => (
-        <div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-          <div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div>
-          <div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div>
-          <div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div>
-          <p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p>
+const NotebookContent = ({ userVocab }) => {
+  // Filtrage dynamique du contenu appris
+  const vocabItems = userVocab.filter(c => c.type === 'swipe');
+  const grammarItems = userVocab.filter(c => c.type === 'grammar');
+  const structureItems = userVocab.filter(c => c.type === 'structure');
+  
+  return (
+    <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
+      <div className="flex items-center justify-between mb-8"><h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique & Savoir</h2><div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Éléments</div></div>
+      <div className="grid md:grid-cols-2 gap-8">
+        
+        {/* VOCABULAIRE */}
+        <div className="space-y-4">
+          <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Edit3 size={18} /> Vocabulaire</h3>
+          {vocabItems.length > 0 ? (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[500px] overflow-y-auto">
+              {vocabItems.map((item, idx) => (
+                <div key={`vocab-${idx}`} className="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                  <div><p className="font-bold text-slate-800">{item.es}</p><p className="text-xs text-slate-400 italic mt-0.5">{item.context}</p></div>
+                  <span className="text-indigo-600 font-medium bg-indigo-50 px-3 py-1 rounded-full text-sm">{item.en}</span>
+                </div>
+              ))}
+            </div>
+          ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
         </div>
-      ))}
+
+        {/* GRAMMAIRE & STRUCTURES */}
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire</h3>
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
+              {grammarItems.map((item, index) => (
+                <div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                  <h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4>
+                  <div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">
+                    {item.conjugation && item.conjugation.map((row, idx) => (
+                      <div key={idx} className={`flex justify-between p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                        <span className="text-slate-400 w-1/3">{row.pronoun}</span>
+                        <span className="font-bold text-slate-800 w-1/3 text-center">{row.verb}</span>
+                        <span className="text-slate-400 text-xs w-1/3 text-right italic">{row.fr}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {grammarItems.length === 0 && <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+             <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Hammer size={18} /> Structures</h3>
+             <div className="space-y-4">
+               {structureItems.map((item, index) => (
+                 <div key={`struct-${index}`} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-yellow-400">
+                    <h4 className="font-bold text-slate-900">{item.title}</h4>
+                    <p className="font-mono text-xs text-indigo-600 bg-indigo-50 p-2 rounded mt-2 mb-2">{item.formula}</p>
+                    <p className="text-sm text-slate-600 italic">Ex: {item.example}</p>
+                 </div>
+               ))}
+             </div>
+          </div>
+        </div>
+
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const LandingPage = ({ onStart }) => (
   <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-400 relative overflow-hidden text-center">
@@ -344,7 +383,6 @@ const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUploa
     <div className="flex items-center gap-2 mb-12 px-2"><div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center shadow-md rotate-3"><span className="text-2xl">🇪🇸</span></div><h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Español<span className="text-red-600">Sprint</span></h1></div>
     <nav className="flex-1 space-y-2">
       <SidebarLink icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
-      <SidebarLink icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} />
       <SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
       <SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
     </nav>
@@ -373,7 +411,6 @@ const MobileHeader = ({ userData }) => (
 const MobileBottomNav = ({ currentView, onChangeView }) => (
   <div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30">
     <NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
-    <NavBtn icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} />
     <NavBtn icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
     <NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
   </div>
@@ -413,19 +450,6 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
   );
 };
 
-const NotebookContent = ({ allContent, userVocab }) => {
-  const grammarItems = allContent.filter(c => c.type === 'grammar');
-  return (
-    <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
-      <div className="flex items-center justify-between mb-8"><h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique</h2><div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Mots appris</div></div>
-      <div className="grid md:grid-cols-2 gap-8">
-        <div className="space-y-4"><h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Edit3 size={18} /> Vocabulaire</h3>{userVocab && userVocab.length > 0 ? (<div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[400px] overflow-y-auto">{userVocab.map((item, idx) => (<div key={`${item.id}-${idx}`} className="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 hover:bg-slate-50"><div><p className="font-bold text-slate-800">{item.es}</p><p className="text-xs text-slate-400 italic mt-0.5">{item.context}</p></div><span className="text-indigo-600 font-medium bg-indigo-50 px-3 py-1 rounded-full text-sm">{item.en}</span></div>))}</div>) : <div className="flex flex-col items-center justify-center p-12 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200 text-slate-400"><BookOpen size={48} className="mb-4 opacity-20" /><p className="font-medium text-lg">Ton lexique est vide.</p></div>}</div>
-        <div className="space-y-4"><h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire</h3><div className="space-y-4">{grammarItems.map(item => (<div key={item.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-indigo-100 rounded-lg text-indigo-600"><Book size={20} /></div><div><h4 className="font-bold text-slate-900">{item.title}</h4><p className="text-xs text-slate-500">{item.description}</p></div></div><div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">{item.conjugation.map((row, idx) => (<div key={idx} className={`flex justify-between p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}><span className="text-slate-400 w-1/3">{row.pronoun}</span><span className="font-bold text-slate-800 w-1/3 text-center">{row.verb}</span><span className="text-slate-400 text-xs w-1/3 text-right italic">{row.fr}</span></div>))}</div></div>))}</div></div>
-      </div>
-    </div>
-  );
-};
-
 const ProfileContent = ({ userData, email, onLogout }) => (
   <div className="max-w-2xl mx-auto w-full p-6 md:p-12 space-y-8">
     <h2 className="text-3xl font-black text-slate-900">Mon Compte</h2>
@@ -456,11 +480,9 @@ const LessonEngine = ({ content, onComplete, onExit }) => {
     } else {
       setProgress(((currentIndex + 1) / content.length) * 100);
       setCurrentIndex(prev => prev + 1);
-      // L'audio automatique est désactivé, l'utilisateur doit cliquer
     }
   };
 
-  // Jouer le son UNIQUEMENT si c'est la première carte
   useEffect(() => {
     if (currentIndex === 0 && currentCard?.es) speak(currentCard.es);
   }, []);
