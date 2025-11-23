@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Español Sprint - B2 en 90 Jours",
+  title: "Español Sprint",
   description: "L'application d'apprentissage de l'espagnol la plus rapide.",
 };
 

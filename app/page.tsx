@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
@@ -29,63 +29,96 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-/* --- DATASET CORRIGÉ & ENRICHI --- */
+// Fonction Audio (Synthèse Vocale)
+const speak = (text) => {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel(); // Arrête le son précédent
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'es-ES'; 
+    utterance.rate = 0.8; // Vitesse légèrement ralentie pour l'apprentissage
+    window.speechSynthesis.speak(utterance);
+  }
+};
+
+/* --- DATASET ENRICHI (A1 - SEMAINE 1) --- */
 const INITIAL_LESSONS_LIST = [
-  { id: 1, title: "Hola!", level: "A1", desc: "Salutations & Verbe Être" },
-  { id: 2, title: "La Famille", level: "A1", desc: "Possession & Verbe Avoir" },
-  { id: 3, title: "Actions", level: "A1", desc: "Verbes en -AR & Quotidien" },
-  { id: 4, title: "J'aime...", level: "A1", desc: "Goûts (Gustar) & Nourriture" },
-  { id: 5, title: "Nombres", level: "A1", desc: "Compter & L'Heure" },
-  { id: 6, title: "En Ville", level: "A1", desc: "Lieux & Verbe Aller (Ir)" },
-  { id: 7, title: "Bilan Semaine 1", level: "A1", desc: "Révision complète & Quiz" },
+  { id: 1, title: "Les Bases", level: "A1", desc: "Se présenter & Être" },
+  { id: 2, title: "Ma Famille", level: "A1", desc: "Possession & Avoir" },
+  { id: 3, title: "Au Quotidien", level: "A1", desc: "Verbes en -AR & Routine" },
+  { id: 4, title: "La Nourriture", level: "A1", desc: "J'aime (Gustar) & Manger" },
+  { id: 5, title: "Nombres & Heure", level: "A1", desc: "Compter jusqu'à 100" },
+  { id: 6, title: "En Ville", level: "A1", desc: "Directions & Verbe Aller" },
+  { id: 7, title: "Bilan Semaine 1", level: "A1", desc: "Grand Quiz Final" },
 ];
 
 const INITIAL_LESSONS_CONTENT = {
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Hola, ¿qué tal?" },
     { id: 102, type: "swipe", es: "Buenos días", en: "Bonjour (Matin)", context: "Buenos días, mamá" },
-    { id: 103, type: "grammar", title: "Le Verbe Être (Ser)", description: "Pour l'identité et l'origine.", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él/Ella", verb: "es", fr: "Il est" }] },
+    { id: 103, type: "grammar", title: "Le Verbe Être (Ser)", description: "Pour l'identité (je suis Paul) et l'origine (je suis français).", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él/Ella", verb: "es", fr: "Il est" }] },
     { id: 104, type: "input", question: "Traduis : 'Je suis'", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
     { id: 105, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" },
     { id: 106, type: "swipe", es: "Por favor", en: "S'il vous plaît", context: "Agua, por favor" },
-    { id: 107, type: "swipe", es: "Mucho gusto", en: "Enchanté", context: "Hola, mucho gusto" },
-    { id: 108, type: "swipe", es: "Adiós", en: "Au revoir", context: "Adiós amigo" }
+    { id: 107, type: "swipe", es: "Me llamo", en: "Je m'appelle", context: "Me llamo Sofia" },
+    { id: 108, type: "input", question: "Traduis : 'Merci'", answer: ["gracias"], hint: "Gra..." },
+    { id: 109, type: "swipe", es: "¿Cómo estás?", en: "Comment ça va ?", context: "Hola, ¿cómo estás?" },
+    { id: 110, type: "swipe", es: "Muy bien", en: "Très bien", context: "Estoy muy bien, gracias" }
   ],
   2: [
     { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Amo a mi familia" },
-    { id: 202, type: "swipe", es: "El padre", en: "Le père", context: "Es mi padre" }, // Corrigé: Ajouté ID manquant potentiellement
-    { id: 203, type: "grammar", title: "Le Verbe Avoir (Tener)", description: "Possession et âge.", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él/Ella", verb: "tiene", fr: "Il a" }] },
-    { id: 204, type: "input", question: "Traduis : 'J'ai'", answer: ["tengo", "yo tengo"], hint: "Verbe Tener" },
+    { id: 202, type: "grammar", title: "Le Verbe Avoir (Tener)", description: "Utilisé pour la possession (j'ai un chien) et l'âge (j'ai 20 ans).", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él/Ella", verb: "tiene", fr: "Il a" }] },
+    { id: 203, type: "input", question: "Traduis : 'J'ai'", answer: ["tengo", "yo tengo"], hint: "Verbe Tener" },
+    { id: 204, type: "swipe", es: "El padre", en: "Le père", context: "Mi padre es alto" },
     { id: 205, type: "swipe", es: "La madre", en: "La mère", context: "Mi madre es guapa" },
     { id: 206, type: "swipe", es: "El hermano", en: "Le frère", context: "Tengo un hermano" },
     { id: 207, type: "swipe", es: "La hermana", en: "La soeur", context: "Mi hermana pequeña" },
-    { id: 208, type: "swipe", es: "El abuelo", en: "Le grand-père", context: "Mi abuelo es viejo" },
+    { id: 208, type: "swipe", es: "Tengo 20 años", en: "J'ai 20 ans", context: "Tengo 20 años" },
     { id: 209, type: "swipe", es: "La casa", en: "La maison", context: "Vivo en una casa" },
     { id: 210, type: "input", question: "Traduis : 'La mère'", answer: ["la madre", "madre"], hint: "La m..." }
   ],
   3: [
     { id: 301, type: "swipe", es: "Hablar", en: "Parler", context: "Hablo español" },
-    { id: 302, type: "swipe", es: "Trabajar", en: "Travailler", context: "Trabajo aquí" },
-    { id: 303, type: "grammar", title: "Verbes en -AR", description: "Au présent, les terminaisons.", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }] },
-    { id: 304, type: "input", question: "Je parle (Hablar)", answer: ["hablo", "yo hablo"], hint: "Terminaison -o" },
+    { id: 302, type: "grammar", title: "Verbes en -AR (Présent)", description: "La majorité des verbes finissent en -AR. Voici les terminaisons.", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }] },
+    { id: 303, type: "input", question: "Je parle (Hablar)", answer: ["hablo", "yo hablo"], hint: "Terminaison -o" },
+    { id: 304, type: "swipe", es: "Trabajar", en: "Travailler", context: "Trabajo en Madrid" },
     { id: 305, type: "swipe", es: "Escuchar", en: "Écouter", context: "Escucho música" },
     { id: 306, type: "swipe", es: "Estudiar", en: "Étudier", context: "Estudio mucho" },
     { id: 307, type: "swipe", es: "Bailar", en: "Danser", context: "Me gusta bailar" },
-    { id: 308, type: "swipe", es: "Caminar", en: "Marcher", context: "Camino en el parque" }
+    { id: 308, type: "swipe", es: "Caminar", en: "Marcher", context: "Camino en el parque" },
+    { id: 309, type: "swipe", es: "Comprar", en: "Acheter", context: "Compro comida" },
+    { id: 310, type: "input", question: "Tu étudies (Estudiar)", answer: ["estudias", "tú estudias"], hint: "Terminaison -as" }
   ]
 };
 
-// Fonction utilitaire pour l'audio (Text-to-Speech)
-const speak = (text) => {
-  if ('speechSynthesis' in window) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'es-ES'; // Espagnol d'Espagne
-    utterance.rate = 0.9; // Un peu plus lent pour bien comprendre
-    window.speechSynthesis.speak(utterance);
+/* --- STRUCTURES DE PHRASES (Nouveau Dataset) --- */
+const SENTENCE_STRUCTURES = [
+  {
+    id: 1,
+    title: "La Phrase Simple",
+    formula: "Sujet + Verbe + Complément",
+    example_es: "Yo como una manzana.",
+    example_en: "Je mange une pomme.",
+    explanation: "Comme en français, l'ordre est standard. Note : on peut souvent omettre le sujet 'Yo' en espagnol."
+  },
+  {
+    id: 2,
+    title: "La Négation",
+    formula: "No + Verbe",
+    example_es: "No hablo inglés.",
+    example_en: "Je ne parle pas anglais.",
+    explanation: "C'est très simple : mets juste 'No' avant le verbe."
+  },
+  {
+    id: 3,
+    title: "La Question",
+    formula: "¿ + Verbe + Sujet ?",
+    example_es: "¿Tienes tú un coche?",
+    example_en: "As-tu une voiture ?",
+    explanation: "L'espagnol utilise un point d'interrogation inversé '¿' au début. L'ordre des mots est souple."
   }
-};
+];
 
-/* --- APPLICATION --- */
+/* --- APPLICATION PRINCIPALE --- */
 export default function EspanolSprintPro() {
   const [view, setView] = useState('landing'); 
   const [currentUser, setCurrentUser] = useState(null); 
@@ -99,7 +132,7 @@ export default function EspanolSprintPro() {
 
   useEffect(() => {
     const initApp = async (user) => {
-      try { await getRedirectResult(auth); } catch (e) { console.error(e); }
+      try { await getRedirectResult(auth); } catch (e) { console.error("Redirect:", e); }
       
       if (user) {
         setCurrentUser(user);
@@ -114,6 +147,8 @@ export default function EspanolSprintPro() {
             await setDoc(userRef, newProfile);
             setUserData(newProfile);
           }
+
+          // Chargement des données dynamiques
           const roadmapSnap = await getDoc(doc(db, "meta", "roadmap"));
           if (roadmapSnap.exists()) setDynamicLessonsList(roadmapSnap.data().lessons);
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
@@ -133,14 +168,15 @@ export default function EspanolSprintPro() {
     return () => unsubscribe();
   }, []);
 
+  // FONCTION ADMIN
   const uploadFullContentToCloud = async () => {
-    if (!confirm("ADMIN : Initialiser le contenu ?")) return;
+    if (!confirm("ADMIN : Écraser les données Firebase ?")) return;
     try {
       await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST });
       for (const [id, content] of Object.entries(INITIAL_LESSONS_CONTENT)) {
         await setDoc(doc(db, "lessons", id), { content: content });
       }
-      alert("✅ Synchronisation réussie !");
+      alert("✅ Données mises à jour dans le Cloud !");
       window.location.reload(); 
     } catch (e) { alert("Erreur: " + e.message); }
   };
@@ -167,8 +203,16 @@ export default function EspanolSprintPro() {
 
   const startLesson = (lessonId) => {
     const today = new Date().toDateString();
-    if (userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 3) { setShowLimitModal(true); return; }
-    if (!dynamicLessonsContent[lessonId]) { alert("Bientôt disponible !"); return; }
+    
+    // Vérification Limite : 4 Nouvelles par jour MAX
+    const isNewLesson = !userData.completedLessons.includes(lessonId);
+    if (isNewLesson && userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 4) { 
+      setShowLimitModal(true); return; 
+    }
+
+    // Sécurité : Vérifier si la leçon existe
+    if (!dynamicLessonsContent[lessonId]) { alert("Leçon non disponible pour l'instant."); return; }
+    
     setActiveLessonId(lessonId);
     setView('lesson');
   };
@@ -178,14 +222,20 @@ export default function EspanolSprintPro() {
     const today = new Date().toDateString();
     if (currentUser) {
       const userRef = doc(db, "users", currentUser.uid);
-      const existingIds = new Set(userData.vocab.map(item => item.id));
-      const uniqueNewVocab = newVocab.filter(item => !existingIds.has(item.id));
+      // On ne compte que si c'est une NOUVELLE leçon
+      const isNew = !userData.completedLessons.includes(lessonId);
+      const newCount = isNew 
+        ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1)
+        : (userData.dailyLimit?.count || 0);
+
+      const uniqueNewVocab = newVocab.filter(item => !userData.vocab.some(v => v.id === item.id));
+
       const updateData = {
         xp: increment(xp),
         streak: increment(1),
         vocab: arrayUnion(...uniqueNewVocab),
         completedLessons: arrayUnion(lessonId),
-        dailyLimit: { date: today, count: (userData.dailyLimit?.date === today ? userData.dailyLimit.count : 0) + 1 }
+        dailyLimit: { date: today, count: newCount }
       };
       await updateDoc(userRef, updateData);
       const newSnap = await getDoc(userRef);
@@ -194,32 +244,45 @@ export default function EspanolSprintPro() {
     setView('complete');
   };
 
-  // Fonction pour générer le PDF (Impression simplifiée)
+  // Générateur PDF (Amélioré)
   const handlePrintPDF = (lessonId) => {
     const content = dynamicLessonsContent[lessonId];
+    const title = dynamicLessonsList.find(l => l.id === lessonId)?.title || "Leçon " + lessonId;
     if(!content) return;
     
-    // On crée une fenêtre temporaire pour l'impression
     const printWindow = window.open('', '_blank');
-    const vocabList = content.filter(c => c.type === 'swipe').map(c => `<li><b>${c.es}</b> : ${c.en} <i>(${c.context})</i></li>`).join('');
-    const grammarList = content.filter(c => c.type === 'grammar').map(c => `<h3>${c.title}</h3><p>${c.description}</p><ul>${c.conjugation.map(r => `<li>${r.pronoun} ${r.verb} (${r.fr})</li>`).join('')}</ul>`).join('');
+    const vocabHTML = content.filter(c => c.type === 'swipe').map(c => 
+      `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;">
+         <span><b>${c.es}</b> <em style="color:#666; font-size:0.9em;">(${c.context})</em></span>
+         <span>${c.en}</span>
+       </div>`).join('');
     
+    const grammarHTML = content.filter(c => c.type === 'grammar').map(c => 
+      `<div style="background:#f0f9ff; padding:15px; border-radius:10px; margin-top:20px;">
+         <h3 style="color:#4f46e5; margin-top:0;">${c.title}</h3>
+         <p>${c.description}</p>
+         <table style="width:100%; text-align:left;">
+           ${c.conjugation.map(r => `<tr><td style="color:#666;">${r.pronoun}</td><td style="font-weight:bold;">${r.verb}</td><td>${r.fr}</td></tr>`).join('')}
+         </table>
+       </div>`).join('');
+
     printWindow.document.write(`
       <html>
-        <head><title>Español Sprint - Leçon ${lessonId}</title></head>
-        <body style="font-family: sans-serif; padding: 40px;">
-          <h1 style="color: #eab308;">Español Sprint 🇪🇸</h1>
-          <h2>Récapitulatif de la Leçon ${lessonId}</h2>
-          <hr/>
+        <head><title>Español Sprint - ${title}</title></head>
+        <body style="font-family: system-ui, sans-serif; padding: 40px; max-width: 800px; margin: auto;">
+          <div style="text-align:center; margin-bottom:40px;">
+            <h1 style="color: #eab308; font-size: 2.5rem; margin-bottom: 5px;">Español Sprint 🇪🇸</h1>
+            <h2 style="color: #333;">Fiche de Révision : ${title}</h2>
+          </div>
           <h3>Vocabulaire</h3>
-          <ul>${vocabList}</ul>
-          ${grammarList}
-          <div style="margin-top: 50px; font-size: 12px; color: gray;">Généré par Español Sprint App</div>
+          ${vocabHTML}
+          ${grammarHTML}
+          <div style="margin-top: 50px; text-align:center; font-size: 12px; color: gray;">Généré automatiquement par votre application</div>
+          <script>window.print();</script>
         </body>
       </html>
     `);
     printWindow.document.close();
-    printWindow.print();
   };
 
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-yellow-400"><Loader2 size={48} className="animate-spin text-white" /></div>;
@@ -230,8 +293,8 @@ export default function EspanolSprintPro() {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center space-y-6">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500"><AlertCircle size={40} /></div>
-            <div><h3 className="text-2xl font-black text-slate-900">Pause ! 🧠</h3><p className="text-slate-500 mt-2">3 leçons par jour max.</p></div>
-            <button onClick={() => setShowLimitModal(false)} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">À demain</button>
+            <div><h3 className="text-2xl font-black text-slate-900">Repos ! 🧠</h3><p className="text-slate-500 mt-2">Tu as déjà appris 4 nouvelles leçons aujourd'hui. Révise les anciennes pour ancrer tes connaissances !</p></div>
+            <button onClick={() => setShowLimitModal(false)} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">Compris</button>
           </div>
         </div>
       )}
@@ -249,6 +312,7 @@ export default function EspanolSprintPro() {
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
               {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} />}
               {view === 'notebook' && userData && <NotebookContent allContent={Object.values(dynamicLessonsContent).flat()} userVocab={userData.vocab} />}
+              {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} />}
               {view === 'profile' && userData && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} />}
               {view === 'lesson' && dynamicLessonsContent[activeLessonId] && <LessonEngine content={dynamicLessonsContent[activeLessonId]} onComplete={(xp) => handleLessonComplete(xp, dynamicLessonsContent[activeLessonId], activeLessonId)} onExit={() => setView('dashboard')} />}
               {view === 'complete' && <LessonComplete xp={100} onHome={() => setView('dashboard')} onDownload={() => handlePrintPDF(activeLessonId)} />}
@@ -262,9 +326,36 @@ export default function EspanolSprintPro() {
 }
 
 /* --- UI COMPONENTS --- */
+/* (Mêmes composants LandingPage, AuthScreen... je te mets juste les NOUVEAUX ou MODIFIÉS) */
 
-// Landing, Auth, Sidebar, MobileHeader, MobileBottomNav, DashboardContent, NotebookContent, ProfileContent sont IDENTIQUES à la V11.
-// Je les réintègre pour que tu aies un fichier complet qui marche du premier coup.
+// NOUVEAU : Onglet Structures
+const StructuresContent = ({ structures }) => (
+  <div className="max-w-3xl mx-auto w-full p-6 pb-24">
+    <h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2>
+    <div className="space-y-6">
+      {structures.map((struct) => (
+        <div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div>
+            <h3 className="text-xl font-bold text-slate-900">{struct.title}</h3>
+          </div>
+          <div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">
+            {struct.formula}
+          </div>
+          <div className="space-y-2 mb-4">
+             <p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p>
+             <p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p>
+          </div>
+          <p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+/* --- Reste de l'UI (Landing, Auth, Sidebar...) --- */
+/* Colle ici les composants existants (LandingPage, AuthScreen, SidebarDesktop, MobileHeader, etc.) 
+   IMPORTANT : Ajoute le bouton "Structures" dans SidebarDesktop et MobileBottomNav */
 
 const LandingPage = ({ onStart }) => (
   <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-400 relative overflow-hidden text-center">
@@ -301,6 +392,7 @@ const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUploa
     <div className="flex items-center gap-2 mb-12 px-2"><div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center shadow-md rotate-3"><span className="text-2xl">🇪🇸</span></div><h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Español<span className="text-red-600">Sprint</span></h1></div>
     <nav className="flex-1 space-y-2">
       <SidebarLink icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
+      <SidebarLink icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} />
       <SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
       <SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
     </nav>
@@ -329,6 +421,7 @@ const MobileHeader = ({ userData }) => (
 const MobileBottomNav = ({ currentView, onChangeView }) => (
   <div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30">
     <NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
+    <NavBtn icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} />
     <NavBtn icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
     <NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
   </div>
@@ -345,7 +438,7 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
       <div className="text-center mb-8 md:mb-12">
         <h2 className="text-3xl font-black text-slate-900">Semaine 1</h2>
         <p className="text-slate-500">Objectif A1 • {userData.completedLessons.length} / {allLessons.length} leçons</p>
-        <div className="mt-4 inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Énergie du jour</span><div className="flex gap-1">{[1, 2, 3].map(i => (<div key={i} className={`w-3 h-8 rounded-full ${i <= (3 - dailyCount) ? 'bg-green-400' : 'bg-slate-200'}`}></div>))}</div></div>
+        <div className="mt-4 inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Énergie du jour</span><div className="flex gap-1">{[1, 2, 3, 4].map(i => (<div key={i} className={`w-3 h-8 rounded-full ${i <= (4 - dailyCount) ? 'bg-green-400' : 'bg-slate-200'}`}></div>))}</div></div>
       </div>
       <div className="space-y-8 relative z-10">
         <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-slate-200 -translate-x-1/2 z-0"></div>
@@ -411,12 +504,11 @@ const LessonEngine = ({ content, onComplete, onExit }) => {
     } else {
       setProgress(((currentIndex + 1) / content.length) * 100);
       setCurrentIndex(prev => prev + 1);
-      // Audio automatique à chaque nouvelle carte (optionnel)
+      // Audio automatique
       if(content[currentIndex + 1]?.es) speak(content[currentIndex + 1].es);
     }
   };
 
-  // Jouer le son au chargement de la première carte
   useEffect(() => {
     if (currentCard?.es) speak(currentCard.es);
   }, [currentCard]);
@@ -469,12 +561,7 @@ const InputCard = ({ data, onNext }) => {
   const checkAnswer = () => {
     const isCorrect = data.answer.includes(val.trim().toLowerCase());
     setStatus(isCorrect ? 'success' : 'error');
-    if (isCorrect) {
-        speak("¡Muy bien!");
-        setTimeout(onNext, 1500);
-    } else {
-        speak("Inténtalo de nuevo");
-    }
+    if (isCorrect) { speak("¡Muy bien!"); setTimeout(onNext, 1500); } else { speak("Inténtalo de nuevo"); }
   };
   return (
     <div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-8 md:p-12 justify-center space-y-8 animate-in zoom-in duration-300">
@@ -508,14 +595,9 @@ const LessonComplete = ({ xp, onHome, onDownload }) => (
     <div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform"><Trophy size={100} className="text-yellow-500 fill-yellow-500" /></div>
     <div><h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">Increíble!</h2><p className="text-xl text-yellow-900 font-bold opacity-80">Leçon terminée et sauvegardée.</p></div>
     <div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div>
-    
     <div className="flex flex-col gap-4 w-full max-w-sm">
-        <button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all">
-            <Download size={20} /> Télécharger le PDF
-        </button>
-        <button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">
-            Continuer
-        </button>
+        <button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all"><Download size={20} /> Télécharger le PDF</button>
+        <button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">Continuer</button>
     </div>
   </div>
 );
