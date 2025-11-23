@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
@@ -43,7 +43,7 @@ const speak = (text) => {
   }
 };
 
-/* --- DATASET --- */
+/* --- DATASET INITIAL --- */
 const INITIAL_LESSONS_LIST = [
   { id: 1, title: "Les Bases", level: "A1", desc: "Se présenter & Être" },
   { id: 2, title: "Ma Famille", level: "A1", desc: "Possession & Avoir" },
@@ -201,18 +201,22 @@ export default function EspanolSprintPro() {
   };
 
   const handleLessonComplete = async (xp, lessonContent, lessonId) => {
+    // Capture TOUS les types importants : Swipe (vocab), Grammaire, Structure
     const newItems = lessonContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
     const today = new Date().toDateString();
     if (currentUser) {
       const userRef = doc(db, "users", currentUser.uid);
+      
+      // Filtre pour ne pas ajouter ce qu'on a déjà (basé sur l'ID de la carte)
       const uniqueNewItems = newItems.filter(item => !userData.vocab.some(v => v.id === item.id));
+
       const isNew = !userData.completedLessons.includes(lessonId);
       const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
 
       const updateData = {
         xp: increment(xp),
         streak: increment(1),
-        vocab: arrayUnion(...uniqueNewItems), 
+        vocab: arrayUnion(...uniqueNewItems), // Ajoute vocab, grammaire ET structures
         completedLessons: arrayUnion(lessonId),
         dailyLimit: { date: today, count: newCount }
       };
@@ -307,6 +311,7 @@ const NotebookContent = ({ userVocab }) => {
     <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
       <div className="flex items-center justify-between mb-8"><h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique & Savoir</h2><div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">{userVocab?.length || 0} Éléments</div></div>
       <div className="grid md:grid-cols-2 gap-8">
+        
         {/* VOCABULAIRE */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><Edit3 size={18} /> Vocabulaire Acquis</h3>
@@ -321,7 +326,8 @@ const NotebookContent = ({ userVocab }) => {
             </div>
           ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
         </div>
-        {/* GRAMMAIRE */}
+
+        {/* GRAMMAIRE CORRIGÉE AVEC COLONNES FLEXIBLES */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2"><BookOpen size={18} /> Grammaire Apprise</h3>
           <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
@@ -342,6 +348,7 @@ const NotebookContent = ({ userVocab }) => {
             {grammarItems.length === 0 && <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
           </div>
         </div>
+
       </div>
     </div>
   );
