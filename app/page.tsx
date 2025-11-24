@@ -50,44 +50,42 @@ const speak = (text) => {
 const DATA_BANK = {
   verbs: [
     // --- NIVEAU A1/A2 (Vie quotidienne) ---
-    { es: "Comer", en: "Manger", conj: "Como", plur: "Comemos" },
-    { es: "Vivir", en: "Vivre", conj: "Vivo", plur: "Vivimos" },
-    { es: "Beber", en: "Boire", conj: "Bebo", plur: "Bebemos" },
-    { es: "Leer", en: "Lire", conj: "Leo", plur: "Leemos" },
-    { es: "Escribir", en: "Écrire", conj: "Escribo", plur: "Escribimos" },
-    { es: "Correr", en: "Courir", conj: "Corro", plur: "Corremos" },
-    { es: "Caminar", en: "Marcher", conj: "Camino", plur: "Caminamos" },
-    { es: "Dormir", en: "Dormir", conj: "Duermo", plur: "Dormimos" },
-    { es: "Jugar", en: "Jouer", conj: "Juego", plur: "Jugamos" },
-    { es: "Escuchar", en: "Écouter", conj: "Escucho", plur: "Escuchamos" },
-    { es: "Mirar", en: "Regarder", conj: "Miro", plur: "Miramos" },
-    { es: "Amar", en: "Aimer", conj: "Amo", plur: "Amamos" },
-    { es: "Viajar", en: "Voyager", conj: "Viajo", plur: "Viajamos" },
-    { es: "Trabajar", en: "Travailler", conj: "Trabajo", plur: "Trabajamos" },
-    { es: "Estudiar", en: "Étudier", conj: "Estudio", plur: "Estudiamos" },
-    { es: "Comprar", en: "Acheter", conj: "Compro", plur: "Compramos" },
+    { es: "Comer", en: "Manger", yo: "Como", tu: "Comes", el: "Come", nos: "Comemos", vos: "Coméis", ellos: "Comen" },
+    { es: "Vivir", en: "Vivre", yo: "Vivo", tu: "Vives", el: "Vive", nos: "Vivimos", vos: "Vivís", ellos: "Viven" },
+    { es: "Beber", en: "Boire", yo: "Bebo", tu: "Bebes", el: "Bebe", nos: "Bebemos", vos: "Bebéis", ellos: "Beben" },
+    { es: "Leer", en: "Lire", yo: "Leo", tu: "Lees", el: "Lee", nos: "Leemos", vos: "Leéis", ellos: "Leen" },
+    { es: "Escribir", en: "Écrire", yo: "Escribo", tu: "Escribes", el: "Escribe", nos: "Escribimos", vos: "Escribís", ellos: "Escriben" },
+    { es: "Correr", en: "Courir", yo: "Corro", tu: "Corres", el: "Corre", nos: "Corremos", vos: "Corréis", ellos: "Corren" },
+    { es: "Caminar", en: "Marcher", yo: "Camino", tu: "Caminas", el: "Camina", nos: "Caminamos", vos: "Camináis", ellos: "Caminan" },
+    { es: "Dormir", en: "Dormir", yo: "Duermo", tu: "Duermes", el: "Duerme", nos: "Dormimos", vos: "Dormís", ellos: "Duermen" },
+    { es: "Jugar", en: "Jouer", yo: "Juego", tu: "Juegas", el: "Juega", nos: "Jugamos", vos: "Jugáis", ellos: "Juegan" },
+    { es: "Escuchar", en: "Écouter", yo: "Escucho", tu: "Escuchas", el: "Escucha", nos: "Escuchamos", vos: "Escucháis", ellos: "Escuchan" },
+    { es: "Mirar", en: "Regarder", yo: "Miro", tu: "Miras", el: "Mira", nos: "Miramos", vos: "Miráis", ellos: "Miran" },
+    { es: "Amar", en: "Aimer", yo: "Amo", tu: "Amas", el: "Ama", nos: "Amamos", vos: "Amáis", ellos: "Aman" },
+    { es: "Viajar", en: "Voyager", yo: "Viajo", tu: "Viajas", el: "Viaja", nos: "Viajamos", vos: "Viajáis", ellos: "Viajan" },
+    { es: "Trabajar", en: "Travailler", yo: "Trabajo", tu: "Trabajas", el: "Trabaja", nos: "Trabajamos", vos: "Trabajáis", ellos: "Trabajan" },
+    { es: "Estudiar", en: "Étudier", yo: "Estudio", tu: "Estudias", el: "Estudia", nos: "Estudiamos", vos: "Estudiáis", ellos: "Estudian" },
+    { es: "Comprar", en: "Acheter", yo: "Compro", tu: "Compras", el: "Compra", nos: "Compramos", vos: "Compráis", ellos: "Compran" },
     
-    // --- NIVEAU B1/B2 (Interaction & Opinion) ---
-    { es: "Pensar", en: "Penser", conj: "Pienso", plur: "Pensamos" },
-    { es: "Creer", en: "Croire", conj: "Creo", plur: "Creemos" },
-    { es: "Sentir", en: "Sentir/Ressentir", conj: "Siento", plur: "Sentimos" },
-    { es: "Pedir", en: "Demander", conj: "Pido", plur: "Pedimos" },
-    { es: "Entender", en: "Comprendre", conj: "Entiendo", plur: "Entendemos" },
-    { es: "Recordar", en: "Se souvenir", conj: "Recuerdo", plur: "Recordamos" },
-    { es: "Olvidar", en: "Oublier", conj: "Olvido", plur: "Olvidamos" },
-    { es: "Conseguir", en: "Obtenir", conj: "Consigo", plur: "Conseguimos" },
-    { es: "Elegir", en: "Choisir", conj: "Elijo", plur: "Elegimos" },
-    { es: "Soñar", en: "Rêver", conj: "Sueño", plur: "Soñamos" },
+    // --- NIVEAU B1/B2 ---
+    { es: "Pensar", en: "Penser", yo: "Pienso", tu: "Piensas", el: "Piensa", nos: "Pensamos", vos: "Pensáis", ellos: "Piensan" },
+    { es: "Creer", en: "Croire", yo: "Creo", tu: "Crees", el: "Cree", nos: "Creemos", vos: "Creéis", ellos: "Creen" },
+    { es: "Sentir", en: "Sentir", yo: "Siento", tu: "Sientes", el: "Siente", nos: "Sentimos", vos: "Sentís", ellos: "Sienten" },
+    { es: "Pedir", en: "Demander", yo: "Pido", tu: "Pides", el: "Pide", nos: "Pedimos", vos: "Pedís", ellos: "Piden" },
+    { es: "Entender", en: "Comprendre", yo: "Entiendo", tu: "Entiendes", el: "Entiende", nos: "Entendemos", vos: "Entendéis", ellos: "Entienden" },
+    { es: "Recordar", en: "Se souvenir", yo: "Recuerdo", tu: "Recuerdas", el: "Recuerda", nos: "Recordamos", vos: "Recordáis", ellos: "Recuerdan" },
+    { es: "Conseguir", en: "Obtenir", yo: "Consigo", tu: "Consigues", el: "Consigue", nos: "Conseguimos", vos: "Conseguís", ellos: "Consiguen" },
+    { es: "Elegir", en: "Choisir", yo: "Elijo", tu: "Eliges", el: "Elige", nos: "Elegimos", vos: "Elegís", ellos: "Eligen" },
     
-    // --- NIVEAU C1 (Abstrait & Technique) ---
-    { es: "Analizar", en: "Analyser", conj: "Analizo", plur: "Analizamos" },
-    { es: "Debatir", en: "Débattre", conj: "Debato", plur: "Debatimos" },
-    { es: "Influir", en: "Influencer", conj: "Influyo", plur: "Influimos" },
-    { es: "Deducir", en: "Déduire", conj: "Deduzco", plur: "Deducimos" },
-    { es: "Suponer", en: "Supposer", conj: "Supongo", plur: "Suponemos" },
-    { es: "Convencer", en: "Convaincre", conj: "Convenzo", plur: "Convencemos" },
-    { es: "Prever", en: "Prévoir", conj: "Preveo", plur: "Prevemos" },
-    { es: "Exigir", en: "Exiger", conj: "Exijo", plur: "Exigimos" }
+    // --- NIVEAU C1 ---
+    { es: "Analizar", en: "Analyser", yo: "Analizo", tu: "Analizas", el: "Analiza", nos: "Analizamos", vos: "Analizáis", ellos: "Analizan" },
+    { es: "Debatir", en: "Débattre", yo: "Debato", tu: "Debates", el: "Debate", nos: "Debatimos", vos: "Debatís", ellos: "Debaten" },
+    { es: "Influir", en: "Influencer", yo: "Influyo", tu: "Influyes", el: "Influye", nos: "Influimos", vos: "Influís", ellos: "Influyen" },
+    { es: "Deducir", en: "Déduire", yo: "Deduzco", tu: "Deduces", el: "Deduce", nos: "Deducimos", vos: "Deducís", ellos: "Deducen" },
+    { es: "Suponer", en: "Supposer", yo: "Supongo", tu: "Supones", el: "Supone", nos: "Suponemos", vos: "Suponéis", ellos: "Suponen" },
+    { es: "Convencer", en: "Convaincre", yo: "Convenzo", tu: "Convences", el: "Convence", nos: "Convencemos", vos: "Convencéis", ellos: "Convencen" },
+    { es: "Prever", en: "Prévoir", yo: "Preveo", tu: "Prever", el: "Prevé", nos: "Prevemos", vos: "Prevéis", ellos: "Prevén" },
+    { es: "Exigir", en: "Exiger", yo: "Exijo", tu: "Exiges", el: "Exige", nos: "Exigimos", vos: "Exigís", ellos: "Exigen" }
   ],
 
   nouns: [
@@ -297,73 +295,105 @@ const CURRICULUM_LOGIC = {
   ]
 };
 
-// 3. GÉNÉRATEUR DE LEÇON (VERSION COMPLÈTE A1-C1)
+// 3. GÉNÉRATEUR DE LEÇON INTELLIGENT (Complet et définitif)
 const generateStructuredLesson = (id) => {
   let level = "A1";
-  let config = { topic: "Sujet Divers", grammar: "Pratique" };
+  let config = { topic: "Thème Général", grammar: "Grammaire" };
 
-  if (id <= 20) { 
-      level = "A1"; 
-      config = CURRICULUM_LOGIC.A1[id - 1] || { topic: "Révision A1", grammar: "Mix" }; 
-  }
-  else if (id <= 40) { 
-      level = "A2"; 
-      config = CURRICULUM_LOGIC.A2[id - 21] || { topic: "Révision A2", grammar: "Mix" }; 
-  }
-  else if (id <= 60) { 
-      level = "B1"; 
-      config = CURRICULUM_LOGIC.B1[id - 41] || { topic: "Révision B1", grammar: "Mix" }; 
-  }
-  else if (id <= 80) { 
-      level = "B2"; 
-      // id - 61 car le tableau B2 commence à l'index 0 pour la leçon 61
-      config = CURRICULUM_LOGIC.B2[id - 61] || { topic: "Révision B2", grammar: "Mix" }; 
-  }
-  else { 
-      level = "C1"; 
-      // id - 81 pour la leçon 81
-      config = CURRICULUM_LOGIC.C1[id - 81] || { topic: "Perfectionnement C1", grammar: "Expert" }; 
-  }
+  // Sélection du niveau et du thème
+  if (id <= 20) { level = "A1"; config = CURRICULUM_LOGIC.A1[id - 1] || { topic: "Révision", grammar: "Mix" }; }
+  else if (id <= 40) { level = "A2"; config = CURRICULUM_LOGIC.A2[id - 21] || { topic: "Avancé A2", grammar: "Mix" }; }
+  else if (id <= 60) { level = "B1"; config = CURRICULUM_LOGIC.B1[id - 41] || { topic: "Expert B1", grammar: "Mix" }; }
+  else if (id <= 80) { level = "B2"; config = CURRICULUM_LOGIC.B2[id - 61] || { topic: "Révision B2", grammar: "Mix" }; }
+  else { level = "C1"; config = CURRICULUM_LOGIC.C1[id - 81] || { topic: "Perfectionnement C1", grammar: "Expert" }; }
 
-  // Pioche aléatoire intelligente dans la banque
-  const randVerb = DATA_BANK.verbs[id % DATA_BANK.verbs.length];
-  const randNoun = DATA_BANK.nouns[id % DATA_BANK.nouns.length];
-  const randConn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
-const tipIdx = id % DATA_BANK.tips.length;
-  const randTip = DATA_BANK.tips[tipIdx];
+  // --- 🟢 LA PARTIE QUE TU VOULAIS RAJOUTER EST ICI ---
+  const verbsCount = DATA_BANK.verbs.length;
   
+  // 1. Le Verbe (avec calcul du cycle Singulier/Pluriel)
+  const verbIdx = id % verbsCount;
+  const isPluralCycle = Math.floor(id / verbsCount) % 2 !== 0; 
+  const randVerb = DATA_BANK.verbs[verbIdx];
+
+  // 2. Les Noms, Adjectifs et Connecteurs
+  const randNoun = DATA_BANK.nouns[id % DATA_BANK.nouns.length];
+  const randNoun2 = DATA_BANK.nouns[(id + 5) % DATA_BANK.nouns.length]; // Un 2ème nom pour varier
+  const randAdj = DATA_BANK.adjectives[id % DATA_BANK.adjectives.length];
+  const randConn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
+  
+  // 3. L'Astuce
+  const tipIdx = id % DATA_BANK.tips.length;
+  const randTip = DATA_BANK.tips[tipIdx];
+
   let cardId = id * 1000;
 
-  return [
-    // 1. Intro Structure
-    { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `${randVerb.es} ${randNoun.es}`, note: `Focus sur : ${config.topic}` },
-    
-    // 2. Grammaire Contextuelle
-    { id: cardId++, type: "grammar", title: `Verbe : ${randVerb.es}`, description: `Conjugaison ${config.grammar}`, conjugation: [{ pronoun: "Yo", verb: randVerb.conj, fr: `Je ${randVerb.en.toLowerCase()}` }, { pronoun: "Tú", verb: `${randVerb.es}as`, fr: `Tu ${randVerb.en.toLowerCase()}s` }] },
+  // --- CONSTRUCTION DYNAMIQUE (Singulier vs Pluriel) ---
+  const grammarTitle = isPluralCycle ? `Verbe : ${randVerb.es} (Pluriel)` : `Verbe : ${randVerb.es} (Singulier)`;
+  const grammarDesc = isPluralCycle ? "Nous / Vous / Ils" : "Je / Tu / Il";
+  
+  const grammarConjugation = isPluralCycle 
+    ? [ // Cycle Pluriel (Nous, Vous, Ils)
+        { pronoun: "Nosotros", verb: randVerb.nos, fr: `Nous ${randVerb.en.toLowerCase()}ons` },
+        { pronoun: "Vosotros", verb: randVerb.vos, fr: `Vous ${randVerb.en.toLowerCase()}ez` },
+        { pronoun: "Ellos", verb: randVerb.ellos, fr: `Ils ${randVerb.en.toLowerCase()}ent` }
+      ]
+    : [ // Cycle Singulier (Je, Tu, Il)
+        { pronoun: "Yo", verb: randVerb.yo, fr: `Je ${randVerb.en.toLowerCase()}` },
+        { pronoun: "Tú", verb: randVerb.tu, fr: `Tu ${randVerb.en.toLowerCase()}s` },
+        { pronoun: "Él/Ella", verb: randVerb.el, fr: `Il/Elle ${randVerb.en.toLowerCase()}` }
+      ];
 
-    // 3. Vocabulaire Thématique (Vrais mots)
-    { id: cardId++, type: "swipe", es: randNoun.es, en: randNoun.en, context: `Uso: ${randNoun.es} es importante` },
-    { id: cardId++, type: "swipe", es: randVerb.es, en: randVerb.en, context: `Acción: ${randVerb.conj} mucho` },
+  // L'exercice cible "Il" (Singulier) ou "Vous" (Pluriel) pour varier
+  const exerciseQuestion = isPluralCycle 
+    ? `Vous ${randVerb.en.toLowerCase()}ez` 
+    : `Il ${randVerb.en.toLowerCase()}`;
     
-    // 4. Exercice Actif (Input)
-    { id: cardId++, type: "input", question: `Traduis '${randNoun.en}'`, answer: [randNoun.es.toLowerCase()], hint: `${randNoun.es.charAt(0)}...` },
+  const exerciseAnswer = isPluralCycle 
+    ? [randVerb.vos.toLowerCase()] 
+    : [randVerb.el.toLowerCase()];
+
+  return [
+    // 1. Intro
+    { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Focus : ${randVerb.es}`, note: `Niveau ${level}` },
     
-    // 5. Connecteur
-    { id: cardId++, type: "swipe", es: randConn.es, en: randConn.en, context: "Mot de liaison" },
+    // 2. Vocabulaire 1
+    { id: cardId++, type: "swipe", es: randNoun.es, en: randNoun.en, context: "Mot clé" },
+    
+    // 3. Grammaire (Affiche les 3 formes adaptées au cycle)
+    { id: cardId++, type: "grammar", title: grammarTitle, description: grammarDesc, conjugation: grammarConjugation },
+
+    // 4. Exercice
+    { id: cardId++, type: "input", question: exerciseQuestion, answer: exerciseAnswer, hint: `Verbe ${randVerb.es}` },
+
+    // 5. Vocabulaire 2 (Adjectif)
+    { id: cardId++, type: "swipe", es: randAdj.es, en: randAdj.en, context: "Description" },
+
+    // 6. Structure
+    { id: cardId++, type: "structure", title: "L'accord", formula: "Nom + Adjectif", example: `${randNoun.es} ${randAdj.es.toLowerCase()}`, note: "L'adjectif s'accorde." },
+
+    // 7. Vocabulaire 3
+    { id: cardId++, type: "swipe", es: randNoun2.es, en: randNoun2.en, context: "Bonus" },
+
+    // 8. Connecteur
+    { id: cardId++, type: "swipe", es: randConn.es, en: randConn.en, context: "Liaison" },
+
+    // 9. Astuce
+    { id: cardId++, type: "structure", title: "Astuce Pro 💡", formula: "Culture & Langue", example: randTip, note: "Bon à savoir !" },
+
+    // 10. Phrase Complète
     { 
       id: cardId++, 
       type: "structure", 
-      title: "Astuce Pro 💡", 
-      formula: "Culture & Langue", 
-      example: randTip, 
-      note: "Bon à savoir !" 
+      title: "Phrase Complète", 
+      formula: "Sujet + Verbe + Complément", 
+      example: isPluralCycle 
+        ? `Vosotros ${randVerb.vos.toLowerCase()} ${randNoun.es.toLowerCase()}` // Vous
+        : `Él ${randVerb.el.toLowerCase()} ${randNoun.es.toLowerCase()}`,        // Il
+      note: "Répète à voix haute." 
     },
     
-    // 6. Phrase Complexe (Structure)
-    { id: cardId++, type: "structure", title: "Phrase Type", formula: "Sujet + Verbe + Nom", example: `Yo ${randVerb.conj} ${randNoun.es.toLowerCase()}`, note: "Entraîne-toi à prononcer." },
-    
-    // 7. Exercice Final
-    { id: cardId++, type: "input", question: `Écris le verbe '${randVerb.en}'`, answer: [randVerb.es.toLowerCase()], hint: `${randVerb.es.substring(0,3)}...` }
+    // 11. Challenge Final
+    { id: cardId++, type: "input", question: `Traduis '${randNoun.en}'`, answer: [randNoun.es.toLowerCase()], hint: `${randNoun.es.substring(0,3)}...` }
   ];
 };
 
@@ -1038,7 +1068,26 @@ export default function EspanolSprintPro() {
     const today = new Date().toDateString();
     if (currentUser) {
       const userRef = doc(db, "users", currentUser.uid);
-      const uniqueNewItems = newItems.filter(item => !userData.vocab.some(v => v.id === item.id));
+      const uniqueNewItems = newItems.filter(item => {
+      // 1. Vérif classique par ID
+      const isIdPresent = userData.vocab.some(v => v.id === item.id);
+      
+      // 2. Vérif intelligente par CONTENU (pour éviter les doublons de mots)
+      const isContentPresent = userData.vocab.some(v => {
+         // Si c'est du vocabulaire, on vérifie si on a déjà ce mot espagnol
+         if (item.type === 'swipe' && v.type === 'swipe') {
+            return v.es === item.es;
+         }
+         // Si c'est de la grammaire, on vérifie si on a déjà ce titre
+         if (item.type === 'grammar' && v.type === 'grammar') {
+            return v.title === item.title;
+         }
+         return false;
+      });
+
+      // On garde l'élément seulement s'il n'est NI connu par ID, NI connu par contenu
+      return !isIdPresent && !isContentPresent;
+    });
       const isNew = !userData.completedLessons.includes(lessonId);
       const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
       
