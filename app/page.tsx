@@ -60,7 +60,7 @@ const DATA_BANK = {
     { es: "El libro", en: "Le livre" }, { es: "La casa", en: "La maison" },
     { es: "El coche", en: "La voiture" }, { es: "La ciudad", en: "La ville" },
     { es: "El amigo", en: "L'ami" }, { es: "La playa", en: "La plage" },
-    { id: "El tiempo", en: "Le temps" }, { es: "El trabajo", en: "Le travail" }
+    { es: "El tiempo", en: "Le temps" }, { es: "El trabajo", en: "Le travail" }
   ],
   connectors: [
     { es: "Pero", en: "Mais" }, { es: "Y", en: "Et" }, { es: "O", en: "Ou" },
