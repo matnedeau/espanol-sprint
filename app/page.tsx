@@ -295,59 +295,56 @@ const TestDashboard = ({ userData, onStartTest }) => { const levels = ["A1", "A2
 const DashboardContent = ({ userData, allLessons, onStartLesson }) => { const levels = ["A1", "A2", "B1", "B2", "C1"]; const safeLevel = (userData.level && levels.includes(userData.level)) ? userData.level : "A1"; const currentLevelIndex = levels.indexOf(safeLevel); return (<div className="w-full h-full flex flex-col"><div className="p-6 md:p-8"><h2 className="text-3xl font-black text-slate-900 mb-2">Ton Parcours</h2><p className="text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p></div><div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-10 snap-x snap-mandatory flex gap-8">{levels.map((level, index) => { const isLocked = index > currentLevelIndex; const isCurrent = index === currentLevelIndex; const isCompleted = index < currentLevelIndex; const levelLessons = allLessons.filter(l => l.level === level); return (<div key={level} className={`snap-center shrink-0 w-[300px] md:w-[350px] h-full flex flex-col rounded-3xl border-4 ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} p-6 relative overflow-hidden`}><div className="flex justify-between items-center mb-8"><div><h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3><p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p></div>{isLocked && <Lock size={24} className="text-slate-400" />}{isCompleted && <div className="bg-green-500 text-white p-1 rounded-full"><Check size={16} /></div>}</div><div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-2 custom-scrollbar">{levelLessons.map((lesson) => { const isLessonDone = userData.completedLessons.includes(lesson.id); const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id); if (isCompleted) { return (<div key={lesson.id} className="w-full p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-4 opacity-70 cursor-not-allowed"><CheckCircle size={16} /><span className="text-sm font-bold truncate flex-1">{lesson.title}</span><span className="text-xs uppercase font-bold">Acquis</span></div>); } return (<button key={lesson.id} disabled={!isAccessible} onClick={() => onStartLesson(lesson.id)} className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${isLessonDone ? 'bg-green-500 text-white shadow-md' : isAccessible ? 'bg-yellow-400 text-slate-900 shadow-lg scale-105 font-bold ring-4 ring-yellow-100' : 'bg-slate-200 text-slate-400'}`}><div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">{isLessonDone ? <Check size={16} /> : lesson.id}</div><div className="flex-1 truncate"><p className="text-sm truncate">{lesson.title}</p></div>{isAccessible && !isLessonDone && <PlayCircle size={20} />}</button>); })}</div>{isLocked && (<div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[2px] flex items-center justify-center z-10"><div className="bg-white p-6 rounded-2xl shadow-xl text-center border border-slate-100"><Lock size={32} className="mx-auto text-slate-300 mb-2" /><h4 className="font-bold text-slate-800">Niveau Bloqué</h4></div></div>)}</div>); })}<div className="w-6 shrink-0"></div></div></div>); };
 const StructuresContent = ({ structures }) => (<div className="max-w-3xl mx-auto w-full p-6 pb-24"><h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2><div className="space-y-6">{structures.map((struct) => (<div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p></div>))}</div></div>);
 const NotebookContent = ({ userVocab }) => {
-  // --- FIX : SÉCURISATION DES DONNÉES ---
-  // On s'assure que safeVocab est toujours un tableau, même si userVocab est vide/null
-  const safeVocab = userVocab || [];
+  // 1. Sécurité absolue : Si userVocab est vide/null, on utilise un tableau vide.
+  const safeList = userVocab || [];
 
-  // 1. Vocabulaire (Dédoublonné)
-  const vocabItems = [...new Map(safeVocab
-    .filter(c => c.type === 'swipe')
-    .map(item => [item.es, item])
-  ).values()];
+  // 2. Dédoublonnage "Soft" : On garde ta logique .filter, et on ajoute un check d'index.
+  // Ça vérifie : "Est-ce que c'est la première fois que je vois ce mot (t.es) ?"
+  
+  const vocabItems = safeList
+    .filter(c => c && c.type === 'swipe') // Le "c &&" protège contre les objets vides
+    .filter((item, index, self) => 
+      index === self.findIndex((t) => t.es === item.es)
+    );
 
-  // 2. Grammaire (Dédoublonnée)
-  const grammarItems = [...new Map(safeVocab
-    .filter(c => c.type === 'grammar')
-    .map(item => [item.title, item])
-  ).values()];
+  const grammarItems = safeList
+    .filter(c => c && c.type === 'grammar')
+    .filter((item, index, self) => 
+      index === self.findIndex((t) => t.title === item.title)
+    );
 
-  // Calcul du total
-  const totalItems = vocabItems.length + grammarItems.length;
-
+  // Le reste de ton code reste IDENTIQUE
   const [showReference, setShowReference] = useState(false);
-
+  
   const REFERENCE_VERBS = [
     { title: "Verbes en -AR", endings: ["-o", "-as", "-a", "-amos", "-an"], ex: "Hablar" },
     { title: "Verbes en -ER", endings: ["-o", "-es", "-e", "-emos", "-en"], ex: "Comer" },
     { title: "Verbes en -IR", endings: ["-o", "-es", "-e", "-imos", "-en"], ex: "Vivir" }
   ];
 
+  // Calcul pour l'affichage (optionnel, tu peux garder userVocab?.length si tu préfères)
+  const count = vocabItems.length + grammarItems.length;
+
   return (
     <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique</h2>
         <div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">
-          {totalItems} Éléments
+          {count} Éléments
         </div>
       </div>
-
+      
       <div className="mb-8">
-        <button 
-          onClick={() => setShowReference(!showReference)} 
-          className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors"
-        >
+        <button onClick={() => setShowReference(!showReference)} className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors">
           <Table size={20} /> {showReference ? "Masquer" : "Voir les terminaisons"}
         </button>
-        
         {showReference && (
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 fade-in duration-300">
             {REFERENCE_VERBS.map((v, i) => (
               <div key={i} className="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm">
                 <h4 className="font-bold text-center mb-2 text-indigo-600">{v.title}</h4>
                 <p className="text-xs text-center text-gray-400 italic mb-2">{v.ex}</p>
-                <div className="space-y-1 text-sm text-center">
-                  {v.endings.map(e => <div key={e} className="bg-slate-50 py-1 rounded">{e}</div>)}
-                </div>
+                <div className="space-y-1 text-sm text-center">{v.endings.map(e => <div key={e} className="bg-slate-50 py-1 rounded">{e}</div>)}</div>
               </div>
             ))}
           </div>
@@ -371,9 +368,7 @@ const NotebookContent = ({ userVocab }) => {
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>
-          )}
+          ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
         </div>
 
         <div className="space-y-4">
@@ -386,7 +381,11 @@ const NotebookContent = ({ userVocab }) => {
                 <h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4>
                 <div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">
                   {item.conjugation && item.conjugation.map((row, idx) => (
-                    <div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}><span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span><span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span><span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span></div>
+                    <div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                      <span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span>
+                      <span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span>
+                      <span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span>
+                    </div>
                   ))}
                 </div>
               </div>
