@@ -725,10 +725,6 @@ export const generateStructuredLesson = (id) => {
 
 
 
-export const INITIAL_LESSONS_CONTENT = generateAllContent();
-
-
-
 export const generateSmartTest = (completedLessons, userVocab) => {
   const questions = [];
   let qId = 9900;
@@ -750,20 +746,7 @@ export const generateSmartTest = (completedLessons, userVocab) => {
   return questions.sort(() => 0.5 - Math.random());
 };
 
-export const INITIAL_LESSONS_LIST = [];
-let idCounter = 1;
-const levels = ["A1", "A2", "B1", "B2", "C1"];
-levels.forEach(lvl => {
-    for(let i=0; i<20; i++) {
-        let topic = "Pratique";
-        if (lvl === "A1" && CURRICULUM_LOGIC.A1[i]) topic = CURRICULUM_LOGIC.A1[i].topic;
-        if (lvl === "A2" && CURRICULUM_LOGIC.A2[i]) topic = CURRICULUM_LOGIC.A2[i].topic;
-        if (lvl === "B1" && CURRICULUM_LOGIC.B1[i]) topic = CURRICULUM_LOGIC.B1[i].topic;
-        if (lvl === "B2" && CURRICULUM_LOGIC.B2[i]) topic = CURRICULUM_LOGIC.B2[i].topic;
-        if (lvl === "C1" && CURRICULUM_LOGIC.C1[i]) topic = CURRICULUM_LOGIC.C1[i].topic;
-        INITIAL_LESSONS_LIST.push({ id: idCounter++, title: topic, level: lvl, desc: "Cours complet" });
-    }
-});
+
 
 export const SENTENCE_STRUCTURES = [
   { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Sujet souvent omis." },
@@ -781,3 +764,20 @@ export const generateAllContent = () => {
   }
   return content;
 };
+
+export const INITIAL_LESSONS_CONTENT = generateAllContent();
+
+export const INITIAL_LESSONS_LIST = [];
+let idCounter = 1;
+const levels = ["A1", "A2", "B1", "B2", "C1"];
+levels.forEach(lvl => {
+    for(let i=0; i<20; i++) {
+        let topic = "Pratique";
+        if (lvl === "A1" && CURRICULUM_LOGIC.A1[i]) topic = CURRICULUM_LOGIC.A1[i].topic;
+        if (lvl === "A2" && CURRICULUM_LOGIC.A2[i]) topic = CURRICULUM_LOGIC.A2[i].topic;
+        if (lvl === "B1" && CURRICULUM_LOGIC.B1[i]) topic = CURRICULUM_LOGIC.B1[i].topic;
+        if (lvl === "B2" && CURRICULUM_LOGIC.B2[i]) topic = CURRICULUM_LOGIC.B2[i].topic;
+        if (lvl === "C1" && CURRICULUM_LOGIC.C1[i]) topic = CURRICULUM_LOGIC.C1[i].topic;
+        INITIAL_LESSONS_LIST.push({ id: idCounter++, title: topic, level: lvl, desc: "Cours complet" });
+    }
+});
