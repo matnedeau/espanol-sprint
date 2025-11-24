@@ -2,15 +2,14 @@
 // @ts-nocheck
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table, Map, CheckCircle, Star
 } from 'lucide-react';
 
 // --- IMPORTATION FIREBASE ---
 import { initializeApp } from "firebase/app";
-// Note : On utilise uniquement signInWithPopup maintenant (plus stable)
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, getRedirectResult } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, getRedirectResult, signInWithRedirect } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, increment, collection, getDocs } from "firebase/firestore";
 
 // ---------------------------------------------------------
@@ -54,12 +53,10 @@ const LEVELS_CONFIG = [
 ];
 
 const LESSON_TOPICS = {
-  1: "Hola! (Salutations)", 2: "Être & Avoir", 3: "La Famille", 4: "Au Quotidien", 5: "Nourriture",
-  6: "Nombres & Heure", 7: "Vêtements", 8: "La Ville", 9: "La Maison", 10: "Le Corps",
+  1: "Hola! (Salutations)", 2: "Être & Avoir", 3: "La Famille", 4: "Nourriture & Goûts", 5: "Voyage & Nombres",
+  6: "La Ville", 7: "Vêtements", 8: "La Maison", 9: "Le Corps", 10: "Bilan A1",
   11: "Les Animaux", 12: "La Météo", 13: "L'École", 14: "Les Loisirs", 15: "Les Amis",
-  16: "Sentiments Simples", 17: "Les Saisons", 18: "La Nature", 19: "Questions de base", 20: "Bilan A1",
-  21: "Le Passé Composé", 22: "L'Imparfait", 23: "Futur Proche", 24: "Comparaisons", 25: "Obligation",
-  41: "Futur Simple", 61: "Subjonctif Imparfait", 81: "Nuances de Style"
+  16: "Sentiments", 17: "Saisons", 18: "Nature", 19: "Questions", 20: "Examen Final A1"
 };
 
 const generateLessonList = () => {
@@ -81,37 +78,129 @@ const generateLessonList = () => {
 
 const INITIAL_LESSONS_LIST = generateLessonList();
 
+/* --- CONTENU PÉDAGOGIQUE PREMIUM (MANUEL) --- */
 const MANUAL_CONTENT = {
+  // LEÇON 1 : BASES (16 cartes)
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Hola, ¿qué tal?" },
-    { id: 103, type: "grammar", title: "Être (Ser)", description: "Identité", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }] },
+    { id: 102, type: "swipe", es: "Buenos días", en: "Bonjour (Matin)", context: "Buenos días, mamá" },
+    { id: 103, type: "grammar", title: "Être (Ser)", description: "Identité & Origine", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }] },
     { id: 104, type: "input", question: "Traduis : 'Je suis'", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
-    { id: 105, type: "structure", title: "La Phrase Simple", formula: "Sujet + Verbe", example: "Soy Pablo", note: "Sujet omis." },
-    { id: 106, type: "swipe", es: "Adiós", en: "Au revoir", context: "Adiós amigo" },
-    { id: 108, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" }
+    { id: 105, type: "swipe", es: "Soy francés", en: "Je suis français", context: "Soy francés de París" },
+    { id: 106, type: "structure", title: "La Phrase Simple", formula: "Sujet (Optionnel) + Verbe + Adjectif", example: "Soy alto (Je suis grand)", note: "En espagnol, le pronom 'Yo' est souvent inutile." },
+    { id: 107, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" },
+    { id: 108, type: "swipe", es: "Por favor", en: "S'il vous plaît", context: "Agua, por favor" },
+    { id: 109, type: "swipe", es: "Mucho gusto", en: "Enchanté", context: "Hola, mucho gusto" },
+    { id: 110, type: "input", question: "Traduis : 'Merci'", answer: ["gracias"], hint: "G..." },
+    { id: 111, type: "swipe", es: "¿Cómo estás?", en: "Comment ça va ?", context: "Hola, ¿cómo estás?" },
+    { id: 112, type: "swipe", es: "Muy bien", en: "Très bien", context: "Estoy muy bien, gracias" },
+    { id: 113, type: "swipe", es: "Me llamo", en: "Je m'appelle", context: "Me llamo Pedro" },
+    { id: 114, type: "structure", title: "Se Présenter", formula: "Me llamo + Prénom", example: "Me llamo Maria", note: "Littéralement : Je m'appelle moi-même..." },
+    { id: 115, type: "input", question: "Je m'appelle...", answer: ["me llamo"], hint: "M... Ll..." },
+    { id: 116, type: "swipe", es: "Adiós", en: "Au revoir", context: "Adiós amigos" }
+  ],
+  // LEÇON 2 : AVOIR & FAMILLE (15 cartes)
+  2: [
+    { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Amo a mi familia" },
+    { id: 202, type: "grammar", title: "Avoir (Tener)", description: "Pour la possession (J'ai un chien) et l'âge (J'ai 20 ans).", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él/Ella", verb: "tiene", fr: "Il a" }] },
+    { id: 203, type: "input", question: "J'ai (Tener)", answer: ["tengo", "yo tengo"], hint: "T..." },
+    { id: 204, type: "swipe", es: "El padre", en: "Le père", context: "Mi padre es alto" },
+    { id: 205, type: "structure", title: "La Possession", formula: "Mi / Tu / Su + Nom", example: "Mi casa (Ma maison)", note: "Attention : on ne met PAS d'article (le/la) devant 'Mi' ou 'Tu'." },
+    { id: 206, type: "swipe", es: "Mi madre", en: "Ma mère", context: "Mi madre es guapa" },
+    { id: 207, type: "swipe", es: "El hermano", en: "Le frère", context: "Tengo un hermano" },
+    { id: 208, type: "swipe", es: "Tu hermana", en: "Ta soeur", context: "¿Tienes una hermana?" },
+    { id: 209, type: "input", question: "Traduis : 'Ma mère'", answer: ["mi madre"], hint: "Possessif 'Mi'" },
+    { id: 210, type: "swipe", es: "Tener hambre", en: "Avoir faim", context: "Tengo mucha hambre" },
+    { id: 211, type: "swipe", es: "La casa", en: "La maison", context: "Vivo en una casa" },
+    { id: 212, type: "swipe", es: "El perro", en: "Le chien", context: "Mi perro es fiel" },
+    { id: 213, type: "swipe", es: "El gato", en: "Le chat", context: "El gato duerme" },
+    { id: 214, type: "structure", title: "L'Âge", formula: "Tener + Nombre + Años", example: "Tengo 20 años", note: "En espagnol on 'possède' les années (Avoir), on ne 'est' pas (Être)." },
+    { id: 215, type: "input", question: "J'ai un frère", answer: ["tengo un hermano"], hint: "Tengo..." }
+  ],
+  // LEÇON 3 : ACTIONS (15 cartes)
+  3: [
+    { id: 301, type: "swipe", es: "Hablar", en: "Parler", context: "Hablo español" },
+    { id: 302, type: "grammar", title: "Verbes en -AR (Présent)", description: "Ce sont les verbes les plus courants. On enlève -AR et on ajoute :", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "habl(o)" }, { pronoun: "Tú", verb: "-as", fr: "habl(as)" }, { pronoun: "Él", verb: "-a", fr: "habl(a)" }, { pronoun: "Nosotros", verb: "-amos", fr: "habl(amos)" }] },
+    { id: 303, type: "input", question: "Je parle (Hablar)", answer: ["hablo", "yo hablo"], hint: "Terminaison -o" },
+    { id: 304, type: "swipe", es: "Trabajar", en: "Travailler", context: "Trabajo en Madrid" },
+    { id: 305, type: "structure", title: "La Négation", formula: "No + Verbe", example: "No hablo inglés (Je ne parle pas anglais)", note: "C'est simple : mets juste 'No' devant le verbe conjugué." },
+    { id: 306, type: "swipe", es: "No trabajo", en: "Je ne travaille pas", context: "Hoy no trabajo" },
+    { id: 307, type: "swipe", es: "Estudiar", en: "Étudier", context: "Estudio mucho" },
+    { id: 308, type: "swipe", es: "Escuchar", en: "Écouter", context: "Escucho música" },
+    { id: 309, type: "input", question: "Tu étudies (Estudiar)", answer: ["estudias", "tú estudias"], hint: "Terminaison -as" },
+    { id: 310, type: "swipe", es: "Caminar", en: "Marcher", context: "Camino en el parque" },
+    { id: 311, type: "swipe", es: "Comprar", en: "Acheter", context: "Compro pan" },
+    { id: 312, type: "swipe", es: "Bailar", en: "Danser", context: "Me gusta bailar" },
+    { id: 313, type: "swipe", es: "Cocinar", en: "Cuisiner", context: "Cocino la cena" },
+    { id: 314, type: "swipe", es: "Viajar", en: "Voyager", context: "Me gusta viajar" },
+    { id: 315, type: "structure", title: "La Question", formula: "¿ + Verbe + Sujet ?", example: "¿Hablas tú español?", note: "L'intonation monte à la fin." },
+    { id: 316, type: "input", question: "Traduis : 'Je ne danse pas'", answer: ["no bailo", "yo no bailo"], hint: "No + Verbe" }
+  ],
+  // LEÇON 4 : NOURRITURE (15 cartes) - CORRIGÉE ET COMPLÈTE
+  4: [
+    { id: 401, type: "swipe", es: "La comida", en: "La nourriture", context: "Me gusta la comida" },
+    { id: 402, type: "grammar", title: "Le Verbe Gustar (Aimer)", description: "Attention, il s'accorde avec ce qu'on aime !", conjugation: [{ pronoun: "Singulier", verb: "Me gusta", fr: "J'aime (le pain)" }, { pronoun: "Pluriel", verb: "Me gustan", fr: "J'aime (les fruits)" }] },
+    { id: 403, type: "swipe", es: "Me gusta", en: "J'aime (ça me plaît)", context: "Me gusta el chocolate" },
+    { id: 404, type: "input", question: "J'aime (Singulier)", answer: ["me gusta"], hint: "M... g..." },
+    { id: 405, type: "swipe", es: "El pan", en: "Le pain", context: "Como pan con queso" },
+    { id: 406, type: "swipe", es: "El agua", en: "L'eau", context: "Bebo agua" },
+    { id: 407, type: "structure", title: "Exprimer ses goûts", formula: "Me gusta + Article + Nom", example: "Me gusta el pan (J'aime le pain)", note: "N'oublie pas l'article 'el' ou 'la' après Gustar." },
+    { id: 408, type: "swipe", es: "La fruta", en: "Les fruits", context: "Me gusta la fruta" },
+    { id: 409, type: "swipe", es: "La carne", en: "La viande", context: "No como carne" },
+    { id: 410, type: "swipe", es: "Comer", en: "Manger", context: "Vamos a comer" },
+    { id: 411, type: "swipe", es: "Beber", en: "Boire", context: "Beber agua es bueno" },
+    { id: 412, type: "input", question: "Je mange du pain", answer: ["como pan", "yo como pan"], hint: "Comer (o)" },
+    { id: 413, type: "swipe", es: "El desayuno", en: "Le petit-déjeuner", context: "El desayuno es importante" },
+    { id: 414, type: "swipe", es: "La cena", en: "Le dîner", context: "La cena está lista" },
+    { id: 415, type: "input", question: "J'aime les fruits (Pluriel)", answer: ["me gustan las frutas", "me gustan la fruta"], hint: "Me gustan..." }
+  ],
+  // LEÇON 5 : VOYAGE & NOMBRES (15 cartes) - CORRIGÉE ET COMPLÈTE
+  5: [
+    { id: 501, type: "swipe", es: "Uno, Dos, Tres", en: "Un, Deux, Trois", context: "Uno, dos, tres, ¡ya!" },
+    { id: 502, type: "grammar", title: "Les Nombres 1-10", description: "Essentiels pour tout.", conjugation: [{ pronoun: "1-3", verb: "Uno, Dos, Tres", fr: "1, 2, 3" }, { pronoun: "4-6", verb: "Cuatro, Cinco, Seis", fr: "4, 5, 6" }, { pronoun: "7-10", verb: "Siete, Ocho, Nueve, Diez", fr: "7, 8, 9, 10" }] },
+    { id: 503, type: "input", question: "Écris le chiffre 5", answer: ["cinco"], hint: "C..." },
+    { id: 504, type: "swipe", es: "El viaje", en: "Le voyage", context: "Buen viaje" },
+    { id: 505, type: "swipe", es: "El tren", en: "Le train", context: "Voy en tren" },
+    { id: 506, type: "swipe", es: "El avión", en: "L'avion", context: "El avión es rápido" },
+    { id: 507, type: "structure", title: "Moyen de Transport", formula: "Ir + EN + Transport", example: "Voy en coche (Je vais en voiture)", note: "On utilise toujours 'EN' pour les véhicules." },
+    { id: 508, type: "swipe", es: "Ir", en: "Aller", context: "Voy a Madrid" },
+    { id: 509, type: "input", question: "Je vais en train", answer: ["voy en tren"], hint: "Voy en..." },
+    { id: 510, type: "swipe", es: "La playa", en: "La plage", context: "Vamos a la playa" },
+    { id: 511, type: "swipe", es: "La montaña", en: "La montagne", context: "Me gusta la montaña" },
+    { id: 512, type: "swipe", es: "El billete", en: "Le billet", context: "Un billete, por favor" },
+    { id: 513, type: "swipe", es: "La maleta", en: "La valise", context: "Mi maleta es roja" },
+    { id: 514, type: "structure", title: "Futur Proche", formula: "Ir + a + Infinitif", example: "Voy a comer (Je vais manger)", note: "Très utile pour parler de l'avenir sans conjuguer au futur." },
+    { id: 515, type: "input", question: "Je vais voyager", answer: ["voy a viajar"], hint: "Voy a..." }
   ]
 };
 
+// Générateur pour les leçons 6 à 100
 const generateAllContent = () => {
   const content = { ...MANUAL_CONTENT };
-  for (let i = 1; i <= 100; i++) { 
-    if (!content[i]) {
-      const level = i <= 20 ? 'A1' : i <= 40 ? 'A2' : i <= 60 ? 'B1' : i <= 80 ? 'B2' : 'C1';
-      const title = LESSON_TOPICS[i] || `Leçon ${i}`;
-      content[i] = [
-        { id: i * 100 + 1, type: "structure", title: `Concept : ${title}`, formula: "Sujet + Verbe", example: `Práctica ${level}`, note: "Focus fluidité" },
-        { id: i * 100 + 2, type: "swipe", es: `Palabra ${i}`, en: `Mot ${level}`, context: `Contexto` },
-        { id: i * 100 + 3, type: "input", question: `Traduis le mot`, answer: [`mot`], hint: "..." }
-      ];
-    }
+  for (let i = 6; i <= 100; i++) {
+    // Placeholders plus structurés
+    content[i] = [
+      { id: i * 100 + 1, type: "structure", title: `Structure Leçon ${i}`, formula: "Sujet + Verbe + Reste", example: "Ejemplo de frase", note: "Grammaire du niveau en cours" },
+      { id: i * 100 + 2, type: "swipe", es: `Palabra ${i}A`, en: `Mot ${i}A`, context: "Contexte A" },
+      { id: i * 100 + 3, type: "swipe", es: `Palabra ${i}B`, en: `Mot ${i}B`, context: "Contexte B" },
+      { id: i * 100 + 4, type: "grammar", title: `Verbe ${i}`, description: "Conjugaison", conjugation: [{ pronoun: "Yo", verb: "hago", fr: "je fais" }, { pronoun: "Tú", verb: "haces", fr: "tu fais" }] },
+      { id: i * 100 + 5, type: "input", question: `Traduis le mot ${i}A`, answer: [`mot ${i}a`], hint: "..." },
+      { id: i * 100 + 6, type: "swipe", es: `Palabra ${i}C`, en: `Mot ${i}C`, context: "Contexte C" },
+      { id: i * 100 + 7, type: "swipe", es: `Palabra ${i}D`, en: `Mot ${i}D`, context: "Contexte D" },
+      { id: i * 100 + 8, type: "swipe", es: `Palabra ${i}E`, en: `Mot ${i}E`, context: "Contexte E" },
+      { id: i * 100 + 9, type: "structure", title: `Expression ${i}`, formula: "Idiome", example: "Expression courante", note: "À retenir" },
+      { id: i * 100 + 10, type: "input", question: `Écris le mot ${i}B`, answer: [`mot ${i}b`], hint: "..." }
+    ];
   }
   return content;
 };
 const INITIAL_LESSONS_CONTENT = generateAllContent();
 
 const SENTENCE_STRUCTURES = [
-  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe", example_es: "Yo como.", example_en: "Je mange.", explanation: "Sujet souvent omis." },
-  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No como.", example_en: "Je ne mange pas.", explanation: "Simple 'No' devant." }
+  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe + Complément", example_es: "Yo como una manzana.", example_en: "Je mange une pomme.", explanation: "Comme en français." },
+  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No hablo inglés.", example_en: "Je ne parle pas anglais.", explanation: "Juste 'No' avant." },
+  { id: 3, title: "Le Futur Proche", formula: "Ir + a + Infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Très courant à l'oral." },
+  { id: 4, title: "La Possession", formula: "Mi/Tu/Su + Nom", example_es: "Mi casa.", example_en: "Ma maison.", explanation: "Pas d'article devant." }
 ];
 
 /* --- APPLICATION --- */
@@ -129,6 +218,8 @@ export default function EspanolSprintPro() {
 
   useEffect(() => {
     const initApp = async (user) => {
+      try { await getRedirectResult(auth); } catch (e) { console.error("Redirect:", e); }
+      
       if (user) {
         setCurrentUser(user);
         const userRef = doc(db, "users", user.uid);
@@ -142,7 +233,6 @@ export default function EspanolSprintPro() {
             await setDoc(userRef, newProfile);
             setUserData(newProfile);
           }
-          
           const roadmapSnap = await getDoc(doc(db, "meta", "roadmap"));
           if (roadmapSnap.exists()) setDynamicLessonsList(roadmapSnap.data().lessons);
           
@@ -165,7 +255,7 @@ export default function EspanolSprintPro() {
   }, []);
 
   const uploadFullContentToCloud = async () => {
-    if (!confirm("ADMIN : Initialiser les 100 leçons ?")) return;
+    if (!confirm("ADMIN : Initialiser les 100 leçons dans Firebase ? (Cela peut prendre quelques secondes)")) return;
     try {
       await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST });
       let count = 0;
@@ -181,7 +271,6 @@ export default function EspanolSprintPro() {
   const handleAuth = async (email, password, isSignUp) => {
     setLoading(true);
     setAuthError("");
-    // Nettoyage email
     const cleanEmail = email.trim();
     if (!cleanEmail || !password) {
         setAuthError("Email ou mot de passe vide.");
@@ -206,7 +295,6 @@ export default function EspanolSprintPro() {
     setLoading(true);
     setAuthError("");
     try {
-      // FORCE POPUP : Plus fiable sur mobile avec les navigateurs modernes que la redirection
       await signInWithPopup(auth, googleProvider);
     } catch (error) { 
       setAuthError("Erreur Google : " + error.message); 
