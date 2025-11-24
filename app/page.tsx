@@ -631,7 +631,7 @@ const CONTENT_PART_1 = {
   };
 // Génération du contenu complet
 const generateAllContent = () => {
-  const content = { ...MANUAL_CONTENT };
+  const content = { ...CONTENT_PART_1 };
   for (let i = 3; i <= 100; i++) {
      content[i] = generateStructuredLesson(i);
   }
