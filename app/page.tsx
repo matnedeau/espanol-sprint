@@ -93,9 +93,9 @@ const generateStructuredLesson = (id) => {
   let level = "A1";
   let config = { topic: "Thème Général", grammar: "Grammaire" };
 
-  if (id <= 20) { level = "A1"; config = CURRICULUM_LOGIC.A1[(id-1)%10]; }
-  else if (id <= 40) { level = "A2"; config = CURRICULUM_LOGIC.A2[(id-21)%6]; }
-  else if (id <= 60) { level = "B1"; config = CURRICULUM_LOGIC.B1[(id-41)%4]; }
+  if (id <= 20) { level = "A1"; config = CURRICULUM_LOGIC.A1[(id-1)%10] || {topic: "Révision", grammar: "Mix"}; }
+  else if (id <= 40) { level = "A2"; config = CURRICULUM_LOGIC.A2[(id-21)%6] || {topic: "Avancé A2", grammar: "Mix"}; }
+  else if (id <= 60) { level = "B1"; config = CURRICULUM_LOGIC.B1[(id-41)%4] || {topic: "Expert B1", grammar: "Mix"}; }
   else { level = "B2"; config = { topic: "Avancé", grammar: "Nuances" }; }
 
   // Pioche aléatoire intelligente dans la banque
@@ -117,7 +117,7 @@ const generateStructuredLesson = (id) => {
     { id: cardId++, type: "swipe", es: randVerb.es, en: randVerb.en, context: `Acción: ${randVerb.conj} mucho` },
     
     // 4. Exercice Actif (Input)
-    { id: cardId++, type: "input", question: `Traduis '${randNoun.en}'`, answer: [randNoun.es.toLowerCase()], hint: `${randNoun.es.substring(0,2)}...` },
+    { id: cardId++, type: "input", question: `Traduis '${randNoun.en}'`, answer: [randNoun.es.toLowerCase()], hint: `${randNoun.es.charAt(0)}...` },
     
     // 5. Connecteur
     { id: cardId++, type: "swipe", es: randConn.es, en: randConn.en, context: "Mot de liaison" },
@@ -171,8 +171,8 @@ const generateAllContent = () => {
 const INITIAL_LESSONS_CONTENT = generateAllContent();
 
 const SENTENCE_STRUCTURES = [
-  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe", example_es: "Yo como.", example_en: "Je mange.", explanation: "Sujet souvent omis." },
-  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No hablo.", example_en: "Je ne parle pas.", explanation: "Simple 'No' devant." },
+  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Sujet souvent omis." },
+  { id: 2, title: "Négation", formula: "No + Verbe", example_es: "No hablo.", example_en: "Je ne parle pas.", explanation: "Simple 'No' devant." },
   { id: 3, title: "Le Futur Proche", formula: "Ir + a + Infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Très courant à l'oral." }
 ];
 
@@ -181,38 +181,22 @@ const generateSmartTest = (completedLessons, userVocab) => {
   const questions = [];
   let qId = 9900;
 
-  // 1. Questions basées sur les leçons terminées (La vraie intelligence)
-  // Le test regarde quelles leçons sont finies et pose des questions de GRAMMAIRE liées
-  if (completedLessons.includes(1)) {
-      questions.push({ id: qId++, type: 'input', question: "Conjugue : Je suis (Ser)", answer: ["soy"], hint: "S..." });
-  }
-  if (completedLessons.includes(2)) {
-      questions.push({ id: qId++, type: 'input', question: "Conjugue : Tu as (Tener)", answer: ["tienes"], hint: "T..." });
-  }
-  // Si leçon 5 finie (Futur proche)
-  if (completedLessons.includes(5)) {
-      questions.push({ id: qId++, type: 'input', question: "Traduis : Je vais manger (Ir a comer)", answer: ["voy a comer"], hint: "Voy a..." });
-  }
-  
-  // 2. Questions basées sur le vocabulaire acquis (Aléatoire pondéré)
+  // 1. Vocabulaire (Reverse Translation)
   if (userVocab && userVocab.length > 0) {
-     // On prend 5 mots au hasard
      const target = userVocab.filter(v => v.type === 'swipe').sort(() => 0.5 - Math.random()).slice(0, 5);
-     target.forEach(w => {
-         questions.push({
-             id: qId++, 
-             type: 'input', 
-             question: `Traduis '${w.en}' en espagnol`, 
-             answer: [w.es.toLowerCase()], 
-             hint: w.es.substring(0,1)+"..." 
-         });
-     });
+     target.forEach(w => questions.push({
+         id: qId++, type: 'input', question: `Traduis '${w.en}' en espagnol`, answer: [w.es.toLowerCase()], hint: w.es.substring(0,1)+"..." 
+     }));
   }
 
-  // 3. Remplissage si le test est trop court
-  if (questions.length < 5) {
-      questions.push({ id: qId++, type: 'input', question: "Bonjour", answer: ["hola"], hint: "H..." });
-  }
+  // 2. Grammaire Contextuelle (Selon progression)
+  if (completedLessons.includes(1)) questions.push({ id: qId++, type: 'input', question: "Je suis (Ser)", answer: ["soy"], hint: "S..." });
+  if (completedLessons.includes(2)) questions.push({ id: qId++, type: 'input', question: "Tu as (Tener)", answer: ["tienes"], hint: "T..." });
+  if (completedLessons.includes(3)) questions.push({ id: qId++, type: 'input', question: "Négation : Je ne parle pas", answer: ["no hablo"], hint: "No..." });
+  if (completedLessons.includes(5)) questions.push({ id: qId++, type: 'input', question: "Futur : Je vais manger", answer: ["voy a comer"], hint: "Voy a..." });
+  
+  // Fallback si vide
+  if (questions.length === 0) questions.push({ id: qId++, type: 'input', question: "Bonjour", answer: ["hola"], hint: "H..." });
   
   return questions.sort(() => 0.5 - Math.random());
 };
@@ -423,7 +407,6 @@ export default function EspanolSprintPro() {
 }
 
 /* --- UI COMPONENTS --- */
-// ... (Tous les composants UI restent identiques : TestDashboard, DashboardContent, etc. - Je les inclus dans le fichier complet si besoin, mais ils sont dans le code ci-dessus)
 const TestDashboard = ({ userData, onStartTest }) => { const levels = ["A1", "A2", "B1", "B2", "C1"]; const currentIdx = levels.indexOf(userData.level || "A1"); const nextLevel = levels[currentIdx + 1]; const lessonsDone = userData.completedLessons.length; const canTakeExam = lessonsDone >= (currentIdx + 1) * 20; return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-8"><div className="text-center"><h2 className="text-3xl font-black text-slate-900 mb-2">Zone Test 🧠</h2><p className="text-slate-500">Valide tes acquis.</p></div><div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all cursor-pointer group" onClick={() => onStartTest('training')}><div className="flex items-center gap-6"><div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform"><BrainCircuit size={32} /></div><div className="flex-1"><h3 className="text-xl font-bold text-slate-900">Entraînement Rapide</h3><p className="text-sm text-slate-500 mt-1">Révision intelligente.</p></div><ChevronRight className="text-slate-300" /></div></div><div className={`bg-white p-8 rounded-3xl shadow-sm border border-slate-200 transition-all relative overflow-hidden ${!canTakeExam ? 'opacity-60 grayscale' : 'cursor-pointer hover:shadow-md group'}`} onClick={() => canTakeExam && onStartTest('levelup')}><div className="flex items-center gap-6"><div className="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center text-yellow-600 group-hover:rotate-6 transition-transform"><Target size={32} /></div><div className="flex-1"><h3 className="text-xl font-bold text-slate-900">Examen {nextLevel}</h3><p className="text-sm text-slate-500 mt-1">Passage de niveau.</p></div>{canTakeExam ? <ChevronRight className="text-slate-300" /> : <Lock className="text-slate-300" />}</div>{!canTakeExam && <div className="absolute bottom-2 right-4 text-xs font-bold text-red-400 bg-red-50 px-2 py-1 rounded">Finis le niveau d'abord</div>}</div></div>); };
 const DashboardContent = ({ userData, allLessons, onStartLesson }) => { const levels = ["A1", "A2", "B1", "B2", "C1"]; const safeLevel = (userData.level && levels.includes(userData.level)) ? userData.level : "A1"; const currentLevelIndex = levels.indexOf(safeLevel); return (<div className="w-full h-full flex flex-col"><div className="p-6 md:p-8"><h2 className="text-3xl font-black text-slate-900 mb-2">Ton Parcours</h2><p className="text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p></div><div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-10 snap-x snap-mandatory flex gap-8">{levels.map((level, index) => { const isLocked = index > currentLevelIndex; const isCurrent = index === currentLevelIndex; const isCompleted = index < currentLevelIndex; const levelLessons = allLessons.filter(l => l.level === level); return (<div key={level} className={`snap-center shrink-0 w-[300px] md:w-[350px] h-full flex flex-col rounded-3xl border-4 ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} p-6 relative overflow-hidden`}><div className="flex justify-between items-center mb-8"><div><h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3><p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p></div>{isLocked && <Lock size={24} className="text-slate-400" />}{isCompleted && <div className="bg-green-500 text-white p-1 rounded-full"><Check size={16} /></div>}</div><div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-2 custom-scrollbar">{levelLessons.map((lesson) => { const isLessonDone = userData.completedLessons.includes(lesson.id); const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id); if (isCompleted) { return (<div key={lesson.id} className="w-full p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-4 opacity-70 cursor-not-allowed"><CheckCircle size={16} /><span className="text-sm font-bold truncate flex-1">{lesson.title}</span><span className="text-xs uppercase font-bold">Acquis</span></div>); } return (<button key={lesson.id} disabled={!isAccessible} onClick={() => onStartLesson(lesson.id)} className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${isLessonDone ? 'bg-green-500 text-white shadow-md' : isAccessible ? 'bg-yellow-400 text-slate-900 shadow-lg scale-105 font-bold ring-4 ring-yellow-100' : 'bg-slate-200 text-slate-400'}`}><div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">{isLessonDone ? <Check size={16} /> : lesson.id}</div><div className="flex-1 truncate"><p className="text-sm truncate">{lesson.title}</p></div>{isAccessible && !isLessonDone && <PlayCircle size={20} />}</button>); })}</div>{isLocked && (<div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[2px] flex items-center justify-center z-10"><div className="bg-white p-6 rounded-2xl shadow-xl text-center border border-slate-100"><Lock size={32} className="mx-auto text-slate-300 mb-2" /><h4 className="font-bold text-slate-800">Niveau Bloqué</h4></div></div>)}</div>); })}<div className="w-6 shrink-0"></div></div></div>); };
 const StructuresContent = ({ structures }) => (<div className="max-w-3xl mx-auto w-full p-6 pb-24"><h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2><div className="space-y-6">{structures.map((struct) => (<div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p></div>))}</div></div>);
