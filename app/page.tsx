@@ -44,66 +44,286 @@ const speak = (text) => {
 };
 
 /* =======================================================================================
-   🧠 CONTENT FACTORY : LE GÉNÉRATEUR DE CONTENU INTELLIGENT
+   🧠 CONTENT FACTORY V3 : LA BANQUE DE DONNÉES ULTIME (A1 -> C1)
    ======================================================================================= */
 
-// 1. BANQUE DE DONNÉES (Vocabulaire Réel)
 const DATA_BANK = {
   verbs: [
-    { es: "Comer", en: "Manger", conj: "Como" }, { es: "Vivir", en: "Vivre", conj: "Vivo" },
-    { es: "Beber", en: "Boire", conj: "Bebo" }, { es: "Leer", en: "Lire", conj: "Leo" },
-    { es: "Escribir", en: "Écrire", conj: "Escribo" }, { es: "Correr", en: "Courir", conj: "Corro" },
-    { es: "Abrir", en: "Ouvrir", conj: "Abro" }, { es: "Mirar", en: "Regarder", conj: "Miro" },
-    { es: "Amar", en: "Aimer", conj: "Amo" }, { es: "Llamar", en: "Appeler", conj: "Llamo" }
+    // --- NIVEAU A1/A2 (Vie quotidienne) ---
+    { es: "Comer", en: "Manger", conj: "Como", plur: "Comemos" },
+    { es: "Vivir", en: "Vivre", conj: "Vivo", plur: "Vivimos" },
+    { es: "Beber", en: "Boire", conj: "Bebo", plur: "Bebemos" },
+    { es: "Leer", en: "Lire", conj: "Leo", plur: "Leemos" },
+    { es: "Escribir", en: "Écrire", conj: "Escribo", plur: "Escribimos" },
+    { es: "Correr", en: "Courir", conj: "Corro", plur: "Corremos" },
+    { es: "Caminar", en: "Marcher", conj: "Camino", plur: "Caminamos" },
+    { es: "Dormir", en: "Dormir", conj: "Duermo", plur: "Dormimos" },
+    { es: "Jugar", en: "Jouer", conj: "Juego", plur: "Jugamos" },
+    { es: "Escuchar", en: "Écouter", conj: "Escucho", plur: "Escuchamos" },
+    { es: "Mirar", en: "Regarder", conj: "Miro", plur: "Miramos" },
+    { es: "Amar", en: "Aimer", conj: "Amo", plur: "Amamos" },
+    { es: "Viajar", en: "Voyager", conj: "Viajo", plur: "Viajamos" },
+    { es: "Trabajar", en: "Travailler", conj: "Trabajo", plur: "Trabajamos" },
+    { es: "Estudiar", en: "Étudier", conj: "Estudio", plur: "Estudiamos" },
+    { es: "Comprar", en: "Acheter", conj: "Compro", plur: "Compramos" },
+    
+    // --- NIVEAU B1/B2 (Interaction & Opinion) ---
+    { es: "Pensar", en: "Penser", conj: "Pienso", plur: "Pensamos" },
+    { es: "Creer", en: "Croire", conj: "Creo", plur: "Creemos" },
+    { es: "Sentir", en: "Sentir/Ressentir", conj: "Siento", plur: "Sentimos" },
+    { es: "Pedir", en: "Demander", conj: "Pido", plur: "Pedimos" },
+    { es: "Entender", en: "Comprendre", conj: "Entiendo", plur: "Entendemos" },
+    { es: "Recordar", en: "Se souvenir", conj: "Recuerdo", plur: "Recordamos" },
+    { es: "Olvidar", en: "Oublier", conj: "Olvido", plur: "Olvidamos" },
+    { es: "Conseguir", en: "Obtenir", conj: "Consigo", plur: "Conseguimos" },
+    { es: "Elegir", en: "Choisir", conj: "Elijo", plur: "Elegimos" },
+    { es: "Soñar", en: "Rêver", conj: "Sueño", plur: "Soñamos" },
+    
+    // --- NIVEAU C1 (Abstrait & Technique) ---
+    { es: "Analizar", en: "Analyser", conj: "Analizo", plur: "Analizamos" },
+    { es: "Debatir", en: "Débattre", conj: "Debato", plur: "Debatimos" },
+    { es: "Influir", en: "Influencer", conj: "Influyo", plur: "Influimos" },
+    { es: "Deducir", en: "Déduire", conj: "Deduzco", plur: "Deducimos" },
+    { es: "Suponer", en: "Supposer", conj: "Supongo", plur: "Suponemos" },
+    { es: "Convencer", en: "Convaincre", conj: "Convenzo", plur: "Convencemos" },
+    { es: "Prever", en: "Prévoir", conj: "Preveo", plur: "Prevemos" },
+    { es: "Exigir", en: "Exiger", conj: "Exijo", plur: "Exigimos" }
   ],
+
   nouns: [
+    // --- A1/A2 (Concret) ---
     { es: "El libro", en: "Le livre" }, { es: "La casa", en: "La maison" },
     { es: "El coche", en: "La voiture" }, { es: "La ciudad", en: "La ville" },
     { es: "El amigo", en: "L'ami" }, { es: "La playa", en: "La plage" },
-    { es: "El tiempo", en: "Le temps" }, { es: "El trabajo", en: "Le travail" }
+    { es: "El tiempo", en: "Le temps" }, { es: "El trabajo", en: "Le travail" },
+    { es: "La comida", en: "La nourriture" }, { es: "El dinero", en: "L'argent" },
+    { es: "El mundo", en: "Le monde" }, { es: "La música", en: "La musique" },
+    { es: "La familia", en: "La famille" }, { es: "El agua", en: "L'eau" },
+    { es: "La escuela", en: "L'école" }, { es: "El sol", en: "Le soleil" },
+    { es: "La noche", en: "La nuit" }, { es: "El problema", en: "Le problème" },
+    
+    // --- B1/B2 (Société & Concepts) ---
+    { es: "El gobierno", en: "Le gouvernement" }, { es: "La salud", en: "La santé" },
+    { es: "La empresa", en: "L'entreprise" }, { es: "El éxito", en: "Le succès" },
+    { es: "La guerra", en: "La guerre" }, { es: "La paz", en: "La paix" },
+    { es: "El medio ambiente", en: "L'environnement" }, { es: "La tecnología", en: "La technologie" },
+    { es: "La libertad", en: "La liberté" }, { es: "El derecho", en: "Le droit" },
+    { es: "La cultura", en: "La culture" }, { es: "El futuro", en: "L'avenir" },
+    { es: "La duda", en: "Le doute" }, { es: "La razón", en: "La raison" },
+    
+    // --- C1 (Expert & Abstrait) ---
+    { es: "La paradoja", en: "Le paradoxe" }, { es: "El matiz", en: "La nuance" },
+    { es: "La hipótesis", en: "L'hypothèse" }, { es: "La ironía", en: "L'ironie" },
+    { es: "El fenómeno", en: "Le phénomène" }, { es: "La tendencia", en: "La tendance" },
+    { es: "La controversia", en: "La controverse" }, { es: "La perspectiva", en: "La perspective" },
+    { es: "El contexto", en: "Le contexte" }, { es: "La infraestructura", en: "L'infrastructure" },
+    { es: "La diversidad", en: "La diversité" }, { es: "El paradigma", en: "Le paradigme" }
   ],
+
+  adjectives: [
+    // --- Simple ---
+    { es: "Grande", en: "Grand" }, { es: "Pequeño", en: "Petit" },
+    { es: "Bueno", en: "Bon" }, { es: "Malo", en: "Mauvais" },
+    { es: "Nuevo", en: "Nouveau" }, { es: "Viejo", en: "Vieux" },
+    { es: "Rápido", en: "Rapide" }, { es: "Lento", en: "Lent" },
+    { es: "Feliz", en: "Heureux" }, { es: "Triste", en: "Triste" },
+    { es: "Fácil", en: "Facile" }, { es: "Difícil", en: "Difficile" },
+    
+    // --- Avancé ---
+    { es: "Interesante", en: "Intéressant" }, { es: "Importante", en: "Important" },
+    { es: "Peligroso", en: "Dangereux" }, { es: "Seguro", en: "Sûr" },
+    { es: "Sostenible", en: "Durable" }, { es: "Justo", en: "Juste" },
+    { es: "Necesario", en: "Nécessaire" }, { es: "Posible", en: "Possible" },
+    
+    // --- Expert ---
+    { es: "Inevitable", en: "Inévitable" }, { es: "Eficaz", en: "Efficace" },
+    { es: "Subjetivo", en: "Subjectif" }, { es: "Ambiguo", en: "Ambigu" },
+    { es: "Sutil", en: "Subtil" }, { es: "Efímero", en: "Éphémère" },
+    { es: "Trascendental", en: "Transcendantal" }, { es: "Polémico", en: "Polémique" }
+  ],
+
   connectors: [
+    // --- Logique simple ---
     { es: "Pero", en: "Mais" }, { es: "Y", en: "Et" }, { es: "O", en: "Ou" },
-    { es: "Porque", en: "Parce que" }, { es: "Cuando", en: "Quand" }
+    { es: "Porque", en: "Parce que" }, { es: "Cuando", en: "Quand" },
+    { es: "Si", en: "Si" }, { es: "También", en: "Aussi" },
+    
+    // --- Argumentation ---
+    { es: "Aunque", en: "Bien que" }, { es: "Sin embargo", en: "Cependant" },
+    { es: "Por lo tanto", en: "Par conséquent" }, { es: "Además", en: "De plus" },
+    { es: "En cambio", en: "En revanche" }, { es: "Por eso", en: "C'est pour ça que" },
+    
+    // --- Discours soutenu ---
+    { es: "No obstante", en: "Néanmoins" }, { es: "Por el contrario", en: "Au contraire" },
+    { es: "En consecuencia", en: "En conséquence" }, { es: "A pesar de", en: "Malgré" },
+    { es: "Dado que", en: "Étant donné que" }, { es: "A fin de que", en: "Afin que" }
   ],
+
   tips: [
-    "En espagnol, le 'H' est toujours muet !",
+    // Prononciation & Bases
+    "En espagnol, le 'H' est toujours muet ! (Hola = Ola)",
     "Les points d'interrogation se mettent aussi au début : ¿ ?",
-    "L'accent tonique est crucial pour être compris.",
-    "Le 'V' se prononce presque comme un 'B'.",
-    "Les adjectifs se placent généralement après le nom."
+    "Le 'V' se prononce presque comme un 'B' doux.",
+    "Le 'RR' roulé est typique : mets ta langue sur le palais.",
+    "Le 'LL' se prononce comme un 'Y' (Paella = Pa-é-ya).",
+    
+    // Grammaire & Pièges
+    "Por = Cause (pour) / Para = But (pour). C'est le piège classique !",
+    "Ser = Identité permanente / Estar = État temporaire.",
+    "Les adjectifs se placent généralement APRES le nom.",
+    "Le sujet (Yo, Tú) est souvent omis car le verbe suffit.",
+    "Gustar s'accorde avec ce qu'on aime, pas avec la personne !",
+    
+    // Culture
+    "En Espagne, on mange tard : déjeuner à 14h, dîner à 21h !",
+    "Le tutoiement (Tuteo) est très fréquent, même avec des inconnus.",
+    "En Amérique Latine, 'Vosotros' n'existe pas, on utilise 'Ustedes'.",
+    "La 'Siesta' est un cliché, mais la pause de 14h à 16h est réelle.",
+    "Il y a 4 langues officielles en Espagne (Castillan, Catalan, Basque, Galicien)."
   ]
 };
 
-// 2. LOGIQUE DU CURRICULUM (A1 -> C1)
+// 2. LOGIQUE DU CURRICULUM COMPLÈTE (100 Leçons Uniques)
 const CURRICULUM_LOGIC = {
-  A1: [ // 1-20
-    { topic: "Bases", grammar: "Présent" }, { topic: "Famille", grammar: "Possession" },
-    { topic: "Routine", grammar: "Verbes -AR" }, { topic: "Goûts", grammar: "Gustar" },
-    { topic: "Voyage", grammar: "Futur Proche" }, { topic: "Ville", grammar: "Hay (Il y a)" },
-    { topic: "Vêtements", grammar: "Adjectifs" }, { topic: "Maison", grammar: "Estar (Lieu)" },
-    { topic: "Corps", grammar: "Avoir mal" }, { topic: "Bilan A1", grammar: "Révision" }
+  A1: [ // 1-20 (Débutant)
+    { topic: "Bases & Salutations", grammar: "Présent (Ser)" }, 
+    { topic: "La Famille", grammar: "Possession" },
+    { topic: "Ma Routine", grammar: "Verbes -AR" }, 
+    { topic: "Mes Goûts", grammar: "Gustar" },
+    { topic: "Projets de Voyage", grammar: "Futur Proche" }, 
+    { topic: "Ma Ville", grammar: "Hay (Il y a)" },
+    { topic: "Shopping & Vêtements", grammar: "Adjectifs" }, 
+    { topic: "La Maison", grammar: "Estar (Lieu)" },
+    { topic: "Le Corps Humain", grammar: "Avoir mal" }, 
+    { topic: "La Nourriture", grammar: "Impératif (Tu)" },
+    { topic: "Les Animaux", grammar: "Genre & Nombre" }, 
+    { topic: "La Météo", grammar: "Verbe Hacer" },
+    { topic: "L'École", grammar: "Fournitures" }, 
+    { topic: "Les Loisirs", grammar: "Jugar (Jouer)" },
+    { topic: "Les Amis", grammar: "Ser vs Estar" }, 
+    { topic: "Les Émotions", grammar: "Estar + Adj" },
+    { topic: "Les Saisons", grammar: "Comparatifs" }, 
+    { topic: "La Nature", grammar: "Démonstratifs" },
+    { topic: "Poser des Questions", grammar: "Interrogatifs" }, 
+    { topic: "Bilan A1", grammar: "Révision Globale" }
   ],
-  A2: [ // 21-40
-    { topic: "Passé", grammar: "Passé Composé" }, { topic: "Souvenirs", grammar: "Imparfait" },
-    { topic: "Projets", grammar: "Futur Simple" }, { topic: "Comparaison", grammar: "Más que" },
-    { topic: "Obligation", grammar: "Tener que" }, { topic: "Santé", grammar: "Impératif" }
+  A2: [ // 21-40 (Élémentaire)
+    { topic: "Raconter le Passé", grammar: "Passé Composé" }, 
+    { topic: "Souvenirs d'Enfance", grammar: "Imparfait" },
+    { topic: "Futur & Avenir", grammar: "Futur Simple" }, 
+    { topic: "Comparaisons", grammar: "Superlatifs" },
+    { topic: "Obligations", grammar: "Tener que / Deber" }, 
+    { topic: "Santé & Médecin", grammar: "Impératif (Vous)" },
+    { topic: "Au Restaurant", grammar: "Politesse" }, 
+    { topic: "Réservation Hôtel", grammar: "Conditionnel (Je)" },
+    { topic: "La Banque", grammar: "Chiffres élevés" }, 
+    { topic: "La Poste", grammar: "COD (Lo/La)" },
+    { topic: "Urgences", grammar: "Impératif Négatif" }, 
+    { topic: "Fêtes & Traditions", grammar: "Passé Simple" },
+    { topic: "La Sieste", grammar: "Habitudes" }, 
+    { topic: "Orientation", grammar: "Prépositions" },
+    { topic: "Action en cours", grammar: "Gérondif" }, 
+    { topic: "Sentiments", grammar: "Subjonctif (Intro)" },
+    { topic: "Musique & Cinéma", grammar: "Opinion" }, 
+    { topic: "Internet", grammar: "Verbes Techno" },
+    { topic: "Voyage (Avion)", grammar: "Vocabulaire" }, 
+    { topic: "Bilan A2", grammar: "Validation" }
   ],
-  B1: [ // 41-60
-    { topic: "Opinion", grammar: "Subjonctif" }, { topic: "Hypothèse", grammar: "Conditionnel" },
-    { topic: "Discours", grammar: "Style Indirect" }, { topic: "Relations", grammar: "Por / Para" }
+  B1: [ // 41-60 (Intermédiaire)
+    { topic: "Exprimer l'Opinion", grammar: "Subjonctif Présent" }, 
+    { topic: "Hypothèses", grammar: "Conditionnel" },
+    { topic: "Rapporter un Discours", grammar: "Style Indirect" }, 
+    { topic: "Relations Sociales", grammar: "Por vs Para" },
+    { topic: "L'Environnement", grammar: "Futur Antérieur" }, 
+    { topic: "La Technologie", grammar: "Avantages/Inconvénients" },
+    { topic: "Le Monde du Travail", grammar: "CV & Lettre" }, 
+    { topic: "La Politique", grammar: "Débat" },
+    { topic: "La Justice", grammar: "Vocabulaire Juridique" }, 
+    { topic: "L'Économie", grammar: "Chiffres & Trends" },
+    { topic: "L'Art & Culture", grammar: "Description" }, 
+    { topic: "La Littérature", grammar: "Passé Simple (Avancé)" },
+    { topic: "L'Histoire", grammar: "Concordance temps" }, 
+    { topic: "La Géographie", grammar: "Régions" },
+    { topic: "La Société", grammar: "Égalité/Droits" }, 
+    { topic: "La Science", grammar: "Futur Proche" },
+    { topic: "Les Médias", grammar: "Connecteurs Logiques" }, 
+    { topic: "Psychologie", grammar: "Verbes de changement" },
+    { topic: "Philosophie", grammar: "Abstrait" }, 
+    { topic: "Bilan B1", grammar: "Maîtrise" }
+  ],
+  B2: [ // 61-80 (Avancé)
+    { topic: "Si j'étais...", grammar: "Subjonctif Imparfait" },
+    { topic: "Regrets", grammar: "Conditionnel Passé" },
+    { topic: "Faits Divers", grammar: "Voix Passive" },
+    { topic: "Rumeurs", grammar: "Discours Rapporté (Passé)" },
+    { topic: "Santé Avancée", grammar: "Expressions Corps" },
+    { topic: "Changements d'État", grammar: "Ponerse / Quedarse" },
+    { topic: "Nuances", grammar: "Por vs Para (Subtil)" },
+    { topic: "Précision", grammar: "Pronoms Relatifs (Cuyo)" },
+    { topic: "Projets Futurs", grammar: "Futur Antérieur" },
+    { topic: "Récit Complexe", grammar: "Plus-que-parfait" },
+    { topic: "Sentiments", grammar: "Verbes Prépositionnels" },
+    { topic: "Argumentation", grammar: "Concession (Bien que)" },
+    { topic: "Doute & Probabilité", grammar: "Deber de / Quizás" },
+    { topic: "Habitudes Passées", grammar: "Soler + Infinitif" },
+    { topic: "Généralités", grammar: "Le Neutre (Lo)" },
+    { topic: "Nuances de Taille", grammar: "Diminutifs (-ito)" },
+    { topic: "Business", grammar: "Négociation" },
+    { topic: "Écologie", grammar: "Débat & Solutions" },
+    { topic: "Humour & Ironie", grammar: "Double Sens" },
+    { topic: "Bilan B2", grammar: "Fluidité Totale" }
+  ],
+  C1: [ // 81-100 (Expert)
+    { topic: "Subtilités", grammar: "Subjonctif (Nuances)" },
+    { topic: "Langage Soutenu", grammar: "Registres de langue" },
+    { topic: "Expressions Idiomatiques", grammar: "Sens Figuré" },
+    { topic: "Argot & Rue", grammar: "Langage Familier" },
+    { topic: "Accents & Régions", grammar: "Esp vs Latam" },
+    { topic: "Littérature", grammar: "Style Romanesque" },
+    { topic: "Philosophie", grammar: "Concepts Abstraits" },
+    { topic: "Médecine", grammar: "Termes Techniques" },
+    { topic: "Juridique", grammar: "Langage de Loi" },
+    { topic: "Histoire d'Espagne", grammar: "Civilisation" },
+    { topic: "Amérique Latine", grammar: "Culture Spécifique" },
+    { topic: "Rhétorique", grammar: "Connecteurs Complexes" },
+    { topic: "Emphase", grammar: "Double Négation" },
+    { topic: "Transformation", grammar: "Verbes Complexes" },
+    { topic: "Faux Amis", grammar: "Pièges Courants" },
+    { topic: "Sagesse Populaire", grammar: "Proverbes" },
+    { topic: "Presse & Média", grammar: "Analyse" },
+    { topic: "Rédaction", grammar: "Style Académique" },
+    { topic: "Bilinguisme", grammar: "Perfectionnement" },
+    { topic: "BILAN FINAL C1", grammar: "Expertise" }
   ]
 };
 
-// 3. GÉNÉRATEUR DE LEÇON (Remplace les "Palabra 4A")
+// 3. GÉNÉRATEUR DE LEÇON (VERSION COMPLÈTE A1-C1)
 const generateStructuredLesson = (id) => {
   let level = "A1";
-  let config = { topic: "Thème Général", grammar: "Grammaire" };
+  let config = { topic: "Sujet Divers", grammar: "Pratique" };
 
-  if (id <= 20) { level = "A1"; config = CURRICULUM_LOGIC.A1[(id-1)%10] || {topic: "Révision", grammar: "Mix"}; }
-  else if (id <= 40) { level = "A2"; config = CURRICULUM_LOGIC.A2[(id-21)%6] || {topic: "Avancé A2", grammar: "Mix"}; }
-  else if (id <= 60) { level = "B1"; config = CURRICULUM_LOGIC.B1[(id-41)%4] || {topic: "Expert B1", grammar: "Mix"}; }
-  else { level = "B2"; config = { topic: "Avancé", grammar: "Nuances" }; }
+  if (id <= 20) { 
+      level = "A1"; 
+      config = CURRICULUM_LOGIC.A1[id - 1] || { topic: "Révision A1", grammar: "Mix" }; 
+  }
+  else if (id <= 40) { 
+      level = "A2"; 
+      config = CURRICULUM_LOGIC.A2[id - 21] || { topic: "Révision A2", grammar: "Mix" }; 
+  }
+  else if (id <= 60) { 
+      level = "B1"; 
+      config = CURRICULUM_LOGIC.B1[id - 41] || { topic: "Révision B1", grammar: "Mix" }; 
+  }
+  else if (id <= 80) { 
+      level = "B2"; 
+      // id - 61 car le tableau B2 commence à l'index 0 pour la leçon 61
+      config = CURRICULUM_LOGIC.B2[id - 61] || { topic: "Révision B2", grammar: "Mix" }; 
+  }
+  else { 
+      level = "C1"; 
+      // id - 81 pour la leçon 81
+      config = CURRICULUM_LOGIC.C1[id - 81] || { topic: "Perfectionnement C1", grammar: "Expert" }; 
+  }
 
   // Pioche aléatoire intelligente dans la banque
   const randVerb = DATA_BANK.verbs[id % DATA_BANK.verbs.length];
