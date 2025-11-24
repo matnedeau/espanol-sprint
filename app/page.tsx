@@ -295,22 +295,18 @@ const TestDashboard = ({ userData, onStartTest }) => { const levels = ["A1", "A2
 const DashboardContent = ({ userData, allLessons, onStartLesson }) => { const levels = ["A1", "A2", "B1", "B2", "C1"]; const safeLevel = (userData.level && levels.includes(userData.level)) ? userData.level : "A1"; const currentLevelIndex = levels.indexOf(safeLevel); return (<div className="w-full h-full flex flex-col"><div className="p-6 md:p-8"><h2 className="text-3xl font-black text-slate-900 mb-2">Ton Parcours</h2><p className="text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p></div><div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-10 snap-x snap-mandatory flex gap-8">{levels.map((level, index) => { const isLocked = index > currentLevelIndex; const isCurrent = index === currentLevelIndex; const isCompleted = index < currentLevelIndex; const levelLessons = allLessons.filter(l => l.level === level); return (<div key={level} className={`snap-center shrink-0 w-[300px] md:w-[350px] h-full flex flex-col rounded-3xl border-4 ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} p-6 relative overflow-hidden`}><div className="flex justify-between items-center mb-8"><div><h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3><p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p></div>{isLocked && <Lock size={24} className="text-slate-400" />}{isCompleted && <div className="bg-green-500 text-white p-1 rounded-full"><Check size={16} /></div>}</div><div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-2 custom-scrollbar">{levelLessons.map((lesson) => { const isLessonDone = userData.completedLessons.includes(lesson.id); const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id); if (isCompleted) { return (<div key={lesson.id} className="w-full p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-4 opacity-70 cursor-not-allowed"><CheckCircle size={16} /><span className="text-sm font-bold truncate flex-1">{lesson.title}</span><span className="text-xs uppercase font-bold">Acquis</span></div>); } return (<button key={lesson.id} disabled={!isAccessible} onClick={() => onStartLesson(lesson.id)} className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${isLessonDone ? 'bg-green-500 text-white shadow-md' : isAccessible ? 'bg-yellow-400 text-slate-900 shadow-lg scale-105 font-bold ring-4 ring-yellow-100' : 'bg-slate-200 text-slate-400'}`}><div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">{isLessonDone ? <Check size={16} /> : lesson.id}</div><div className="flex-1 truncate"><p className="text-sm truncate">{lesson.title}</p></div>{isAccessible && !isLessonDone && <PlayCircle size={20} />}</button>); })}</div>{isLocked && (<div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[2px] flex items-center justify-center z-10"><div className="bg-white p-6 rounded-2xl shadow-xl text-center border border-slate-100"><Lock size={32} className="mx-auto text-slate-300 mb-2" /><h4 className="font-bold text-slate-800">Niveau Bloqué</h4></div></div>)}</div>); })}<div className="w-6 shrink-0"></div></div></div>); };
 const StructuresContent = ({ structures }) => (<div className="max-w-3xl mx-auto w-full p-6 pb-24"><h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2><div className="space-y-6">{structures.map((struct) => (<div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p></div>))}</div></div>);
 const NotebookContent = ({ userVocab }) => {
-  // 🛡️ SÉCURITÉ : Si userVocab est vide ou undefined, on utilise un tableau vide []
-  const safeVocab = userVocab || [];
+  // 🛡️ SÉCURITÉ : Si userVocab est vide ou n'est pas une liste, on prend une liste vide
+  const safeVocab = Array.isArray(userVocab) ? userVocab : [];
 
-  // --- 1. LOGIQUE ANTI-DOUBLONS ---
-  
-  // Filtrage intelligent pour le Vocabulaire (Swipe)
+  // --- LOGIQUE ANTI-DOUBLONS ---
   const uniqueVocabMap = new Map();
   safeVocab.filter(c => c.type === 'swipe').forEach(item => {
-     // On utilise le mot espagnol (item.es) comme clé unique
      if (!uniqueVocabMap.has(item.es)) {
        uniqueVocabMap.set(item.es, item);
      }
   });
   const vocabItems = Array.from(uniqueVocabMap.values());
 
-  // Filtrage intelligent pour la Grammaire
   const uniqueGrammarMap = new Map();
   safeVocab.filter(c => c.type === 'grammar').forEach(item => {
      if (!uniqueGrammarMap.has(item.title)) {
@@ -319,7 +315,6 @@ const NotebookContent = ({ userVocab }) => {
   });
   const grammarItems = Array.from(uniqueGrammarMap.values());
 
-  // --- 2. ETAT LOCAL ---
   const [showReference, setShowReference] = useState(false);
   
   const REFERENCE_VERBS = [
@@ -328,7 +323,6 @@ const NotebookContent = ({ userVocab }) => {
     { title: "Verbes en -IR", endings: ["-o", "-es", "-e", "-imos", "-en"], ex: "Vivir" }
   ];
 
-  // --- 3. AFFICHAGE ---
   return (
     <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
       <div className="flex items-center justify-between mb-8">
@@ -358,7 +352,6 @@ const NotebookContent = ({ userVocab }) => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        {/* Colonne Vocabulaire */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
             <Edit3 size={18} /> Vocabulaire Acquis
@@ -380,7 +373,6 @@ const NotebookContent = ({ userVocab }) => {
           )}
         </div>
 
-        {/* Colonne Grammaire */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
             <BookOpen size={18} /> Grammaire Apprise
