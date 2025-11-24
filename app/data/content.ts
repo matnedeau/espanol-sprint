@@ -182,73 +182,6 @@ export const CURRICULUM_LOGIC = {
   ]
 };
 
-export const generateStructuredLesson = (id) => {
-  let level = "A1";
-  let config = { topic: "Thème Général", grammar: "Grammaire" };
-
-  if (id <= 20) { level = "A1"; config = CURRICULUM_LOGIC.A1[id - 1] || { topic: "Révision", grammar: "Mix" }; }
-  else if (id <= 40) { level = "A2"; config = CURRICULUM_LOGIC.A2[id - 21] || { topic: "Avancé A2", grammar: "Mix" }; }
-  else if (id <= 60) { level = "B1"; config = CURRICULUM_LOGIC.B1[id - 41] || { topic: "Expert B1", grammar: "Mix" }; }
-  else if (id <= 80) { level = "B2"; config = CURRICULUM_LOGIC.B2[id - 61] || { topic: "Révision B2", grammar: "Mix" }; }
-  else { level = "C1"; config = CURRICULUM_LOGIC.C1[id - 81] || { topic: "Perfectionnement C1", grammar: "Expert" }; }
-
-  const verbsCount = DATA_BANK.verbs.length;
-  const verbIdx = id % verbsCount;
-  const isPluralCycle = Math.floor(id / verbsCount) % 2 !== 0; 
-
-  const randVerb = DATA_BANK.verbs[verbIdx];
-  const randNoun = DATA_BANK.nouns[id % DATA_BANK.nouns.length];
-  const randNoun2 = DATA_BANK.nouns[(id + 5) % DATA_BANK.nouns.length];
-  const randAdj = DATA_BANK.adjectives[id % DATA_BANK.adjectives.length];
-  const randConn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
-  
-  const tipIdx = id % DATA_BANK.tips.length;
-  const randTip = DATA_BANK.tips[tipIdx];
-
-  let cardId = id * 1000;
-
-  const grammarTitle = isPluralCycle ? `Verbe : ${randVerb.es} (Pluriel)` : `Verbe : ${randVerb.es} (Singulier)`;
-  const grammarDesc = isPluralCycle ? "Nous / Vous / Ils" : "Je / Tu / Il";
-  
-  const grammarConjugation = isPluralCycle 
-    ? [
-        { pronoun: "Nosotros", verb: randVerb.nos, fr: `Nous ${randVerb.en.toLowerCase()}ons` },
-        { pronoun: "Vosotros", verb: randVerb.vos, fr: `Vous ${randVerb.en.toLowerCase()}ez` },
-        { pronoun: "Ellos", verb: randVerb.ellos, fr: `Ils ${randVerb.en.toLowerCase()}ent` }
-      ]
-    : [
-        { pronoun: "Yo", verb: randVerb.yo, fr: `Je ${randVerb.en.toLowerCase()}` },
-        { pronoun: "Tú", verb: randVerb.tu, fr: `Tu ${randVerb.en.toLowerCase()}s` },
-        { pronoun: "Él/Ella", verb: randVerb.el, fr: `Il/Elle ${randVerb.en.toLowerCase()}` }
-      ];
-
-  const exerciseQuestion = isPluralCycle ? `Vous ${randVerb.en.toLowerCase()}ez` : `Il ${randVerb.en.toLowerCase()}`;
-  const exerciseAnswer = isPluralCycle ? [randVerb.vos.toLowerCase()] : [randVerb.el.toLowerCase()];
-
-  return [
-    { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Focus : ${randVerb.es}`, note: `Niveau ${level}` },
-    { id: cardId++, type: "swipe", es: randNoun.es, en: randNoun.en, context: "Mot clé" },
-    { id: cardId++, type: "grammar", title: grammarTitle, description: grammarDesc, conjugation: grammarConjugation },
-    { id: cardId++, type: "input", question: exerciseQuestion, answer: exerciseAnswer, hint: `Verbe ${randVerb.es}` },
-    { id: cardId++, type: "swipe", es: randAdj.es, en: randAdj.en, context: "Description" },
-    { id: cardId++, type: "structure", title: "L'accord", formula: "Nom + Adjectif", example: `${randNoun.es} ${randAdj.es.toLowerCase()}`, note: "L'adjectif s'accorde." },
-    { id: cardId++, type: "swipe", es: randNoun2.es, en: randNoun2.en, context: "Bonus" },
-    { id: cardId++, type: "swipe", es: randConn.es, en: randConn.en, context: "Liaison" },
-    { id: cardId++, type: "structure", title: "Astuce Pro 💡", formula: "Culture & Langue", example: randTip, note: "Bon à savoir !" },
-    { 
-      id: cardId++, 
-      type: "structure", 
-      title: "Phrase Complète", 
-      formula: "Sujet + Verbe + Complément", 
-      example: isPluralCycle 
-        ? `Vosotros ${randVerb.vos.toLowerCase()} ${randNoun.es.toLowerCase()}`
-        : `Él ${randVerb.el.toLowerCase()} ${randNoun.es.toLowerCase()}`,
-      note: "Répète à voix haute." 
-    },
-    { id: cardId++, type: "input", question: `Traduis '${randNoun.en}'`, answer: [randNoun.es.toLowerCase()], hint: `${randNoun.es.substring(0,3)}...` }
-  ];
-};
-
 export const CONTENT_PART_1 = {
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Salutation universelle" },
@@ -723,25 +656,78 @@ export const CONTENT_PART_1 = {
   ]
 };
 
-// On s'assure que la fonction est bien définie avant de l'utiliser
-export const generateAllContent = () => {
-  const content = { ...CONTENT_PART_1 };
-  for (let i = 3; i <= 100; i++) {
-     if (!content[i]) {
-        // Appel direct de la fonction définie plus haut dans le même fichier
-        content[i] = generateStructuredLesson(i);
-     }
-  }
-  return content;
+export const generateStructuredLesson = (id) => {
+  let level = "A1";
+  let config = { topic: "Thème Général", grammar: "Grammaire" };
+
+  if (id <= 20) { level = "A1"; config = CURRICULUM_LOGIC.A1[id - 1] || { topic: "Révision", grammar: "Mix" }; }
+  else if (id <= 40) { level = "A2"; config = CURRICULUM_LOGIC.A2[id - 21] || { topic: "Avancé A2", grammar: "Mix" }; }
+  else if (id <= 60) { level = "B1"; config = CURRICULUM_LOGIC.B1[id - 41] || { topic: "Expert B1", grammar: "Mix" }; }
+  else if (id <= 80) { level = "B2"; config = CURRICULUM_LOGIC.B2[id - 61] || { topic: "Révision B2", grammar: "Mix" }; }
+  else { level = "C1"; config = CURRICULUM_LOGIC.C1[id - 81] || { topic: "Perfectionnement C1", grammar: "Expert" }; }
+
+  const verbsCount = DATA_BANK.verbs.length;
+  const verbIdx = id % verbsCount;
+  const isPluralCycle = Math.floor(id / verbsCount) % 2 !== 0; 
+
+  const randVerb = DATA_BANK.verbs[verbIdx];
+  const randNoun = DATA_BANK.nouns[id % DATA_BANK.nouns.length];
+  const randNoun2 = DATA_BANK.nouns[(id + 5) % DATA_BANK.nouns.length];
+  const randAdj = DATA_BANK.adjectives[id % DATA_BANK.adjectives.length];
+  const randConn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
+  
+  const tipIdx = id % DATA_BANK.tips.length;
+  const randTip = DATA_BANK.tips[tipIdx];
+
+  let cardId = id * 1000;
+
+  const grammarTitle = isPluralCycle ? `Verbe : ${randVerb.es} (Pluriel)` : `Verbe : ${randVerb.es} (Singulier)`;
+  const grammarDesc = isPluralCycle ? "Nous / Vous / Ils" : "Je / Tu / Il";
+  
+  const grammarConjugation = isPluralCycle 
+    ? [
+        { pronoun: "Nosotros", verb: randVerb.nos, fr: `Nous ${randVerb.en.toLowerCase()}ons` },
+        { pronoun: "Vosotros", verb: randVerb.vos, fr: `Vous ${randVerb.en.toLowerCase()}ez` },
+        { pronoun: "Ellos", verb: randVerb.ellos, fr: `Ils ${randVerb.en.toLowerCase()}ent` }
+      ]
+    : [
+        { pronoun: "Yo", verb: randVerb.yo, fr: `Je ${randVerb.en.toLowerCase()}` },
+        { pronoun: "Tú", verb: randVerb.tu, fr: `Tu ${randVerb.en.toLowerCase()}s` },
+        { pronoun: "Él/Ella", verb: randVerb.el, fr: `Il/Elle ${randVerb.en.toLowerCase()}` }
+      ];
+
+  const exerciseQuestion = isPluralCycle ? `Vous ${randVerb.en.toLowerCase()}ez` : `Il ${randVerb.en.toLowerCase()}`;
+  const exerciseAnswer = isPluralCycle ? [randVerb.vos.toLowerCase()] : [randVerb.el.toLowerCase()];
+
+  return [
+    { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Focus : ${randVerb.es}`, note: `Niveau ${level}` },
+    { id: cardId++, type: "swipe", es: randNoun.es, en: randNoun.en, context: "Mot clé" },
+    { id: cardId++, type: "grammar", title: grammarTitle, description: grammarDesc, conjugation: grammarConjugation },
+    { id: cardId++, type: "input", question: exerciseQuestion, answer: exerciseAnswer, hint: `Verbe ${randVerb.es}` },
+    { id: cardId++, type: "swipe", es: randAdj.es, en: randAdj.en, context: "Description" },
+    { id: cardId++, type: "structure", title: "L'accord", formula: "Nom + Adjectif", example: `${randNoun.es} ${randAdj.es.toLowerCase()}`, note: "L'adjectif s'accorde." },
+    { id: cardId++, type: "swipe", es: randNoun2.es, en: randNoun2.en, context: "Bonus" },
+    { id: cardId++, type: "swipe", es: randConn.es, en: randConn.en, context: "Liaison" },
+    { id: cardId++, type: "structure", title: "Astuce Pro 💡", formula: "Culture & Langue", example: randTip, note: "Bon à savoir !" },
+    { 
+      id: cardId++, 
+      type: "structure", 
+      title: "Phrase Complète", 
+      formula: "Sujet + Verbe + Complément", 
+      example: isPluralCycle 
+        ? `Vosotros ${randVerb.vos.toLowerCase()} ${randNoun.es.toLowerCase()}`
+        : `Él ${randVerb.el.toLowerCase()} ${randNoun.es.toLowerCase()}`,
+      note: "Répète à voix haute." 
+    },
+    { id: cardId++, type: "input", question: `Traduis '${randNoun.en}'`, answer: [randNoun.es.toLowerCase()], hint: `${randNoun.es.substring(0,3)}...` }
+  ];
 };
+
+
 
 export const INITIAL_LESSONS_CONTENT = generateAllContent();
 
-export const SENTENCE_STRUCTURES = [
-  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Sujet souvent omis." },
-  { id: 2, title: "Négation", formula: "No + Verbe", example_es: "No hablo.", example_en: "Je ne parle pas.", explanation: "Simple 'No' devant." },
-  { id: 3, title: "Le Futur Proche", formula: "Ir + a + Infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Très courant à l'oral." }
-];
+
 
 export const generateSmartTest = (completedLessons, userVocab) => {
   const questions = [];
@@ -778,3 +764,20 @@ levels.forEach(lvl => {
         INITIAL_LESSONS_LIST.push({ id: idCounter++, title: topic, level: lvl, desc: "Cours complet" });
     }
 });
+
+export const SENTENCE_STRUCTURES = [
+  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Sujet souvent omis." },
+  { id: 2, title: "Négation", formula: "No + Verbe", example_es: "No hablo.", example_en: "Je ne parle pas.", explanation: "Simple 'No' devant." },
+  { id: 3, title: "Le Futur Proche", formula: "Ir + a + Infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Très courant à l'oral." }
+];
+// On s'assure que la fonction est bien définie avant de l'utiliser
+export const generateAllContent = () => {
+  const content = { ...CONTENT_PART_1 };
+  for (let i = 3; i <= 100; i++) {
+     if (!content[i]) {
+        // Appel direct de la fonction définie plus haut dans le même fichier
+        content[i] = generateStructuredLesson(i);
+     }
+  }
+  return content;
+};
