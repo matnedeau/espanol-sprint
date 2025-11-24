@@ -65,6 +65,13 @@ const DATA_BANK = {
   connectors: [
     { es: "Pero", en: "Mais" }, { es: "Y", en: "Et" }, { es: "O", en: "Ou" },
     { es: "Porque", en: "Parce que" }, { es: "Cuando", en: "Quand" }
+  ],
+  tips: [
+    "En espagnol, le 'H' est toujours muet !",
+    "Les points d'interrogation se mettent aussi au début : ¿ ?",
+    "L'accent tonique est crucial pour être compris.",
+    "Le 'V' se prononce presque comme un 'B'.",
+    "Les adjectifs se placent généralement après le nom."
   ]
 };
 
@@ -102,7 +109,9 @@ const generateStructuredLesson = (id) => {
   const randVerb = DATA_BANK.verbs[id % DATA_BANK.verbs.length];
   const randNoun = DATA_BANK.nouns[id % DATA_BANK.nouns.length];
   const randConn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
-
+const tipIdx = id % DATA_BANK.tips.length;
+  const randTip = DATA_BANK.tips[tipIdx];
+  
   let cardId = id * 1000;
 
   return [
@@ -121,6 +130,14 @@ const generateStructuredLesson = (id) => {
     
     // 5. Connecteur
     { id: cardId++, type: "swipe", es: randConn.es, en: randConn.en, context: "Mot de liaison" },
+    { 
+      id: cardId++, 
+      type: "structure", 
+      title: "Astuce Pro 💡", 
+      formula: "Culture & Langue", 
+      example: randTip, 
+      note: "Bon à savoir !" 
+    },
     
     // 6. Phrase Complexe (Structure)
     { id: cardId++, type: "structure", title: "Phrase Type", formula: "Sujet + Verbe + Nom", example: `Yo ${randVerb.conj} ${randNoun.es.toLowerCase()}`, note: "Entraîne-toi à prononcer." },
