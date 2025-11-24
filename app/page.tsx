@@ -29,7 +29,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-// Fonction Audio
 const speak = (text) => {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
@@ -43,143 +42,181 @@ const speak = (text) => {
   }
 };
 
-/* --- GÉNÉRATEUR DE CURRICULUM (A1 -> C1) --- */
-const LEVELS_CONFIG = [
-  { name: "A1", count: 20, title: "Débutant", desc: "Les bases de survie" },
-  { name: "A2", count: 20, title: "Élémentaire", desc: "Raconter et décrire" },
-  { name: "B1", count: 20, title: "Intermédiaire", desc: "Opinions et projets" },
-  { name: "B2", count: 20, title: "Avancé", desc: "Débat et argumentation" },
-  { name: "C1", count: 20, title: "Expert", desc: "Nuances et maîtrise native" }
-];
+/* =========================================================================================
+   🧠 CONTENT FACTORY : LE CERVEAU PÉDAGOGIQUE
+   Ce système génère 100 leçons cohérentes basées sur des thèmes et des niveaux réels.
+   ========================================================================================= */
 
-const LESSON_TOPICS = {
-  1: "Hola! (Salutations)", 2: "Être & Avoir", 3: "La Famille", 4: "Au Quotidien", 5: "Nourriture",
-  6: "Nombres & Heure", 7: "Vêtements", 8: "La Ville", 9: "La Maison", 10: "Le Corps",
-  11: "Les Animaux", 12: "La Météo", 13: "L'École", 14: "Les Loisirs", 15: "Les Amis",
-  16: "Sentiments Simples", 17: "Les Saisons", 18: "La Nature", 19: "Questions de base", 20: "Bilan A1",
-  21: "Le Passé Composé", 22: "L'Imparfait", 23: "Futur Proche", 24: "Comparaisons", 25: "Obligation",
-  41: "Futur Simple", 61: "Subjonctif Imparfait", 81: "Nuances de Style"
-};
-
-const generateLessonList = () => {
-  const list = [];
-  let idCounter = 1;
-  LEVELS_CONFIG.forEach(lvl => {
-    for (let i = 0; i < lvl.count; i++) {
-      list.push({ 
-        id: idCounter, 
-        title: LESSON_TOPICS[idCounter] || `Leçon ${idCounter}`, 
-        level: lvl.name, 
-        desc: `${lvl.desc}` 
-      });
-      idCounter++;
-    }
-  });
-  return list;
-};
-
-const INITIAL_LESSONS_LIST = generateLessonList();
-
-/* --- CONTENU PÉDAGOGIQUE (EXTRAIT) --- */
-// Je remets le contenu manuel pour que le générateur puisse s'en inspirer
-const MANUAL_CONTENT = {
-  1: [
-    { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Hola, ¿qué tal?" },
-    { id: 103, type: "grammar", title: "Être (Ser)", description: "Identité", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }] },
-    { id: 105, type: "structure", title: "La Phrase Simple", formula: "Sujet + Verbe", example: "Soy Pablo", note: "Sujet omis." },
-    { id: 108, type: "swipe", es: "Gracias", en: "Merci", context: "Muchas gracias" }
+// 1. BANQUE DE VOCABULAIRE CLASSÉE
+const VOCAB_DATABASE = {
+  basics: [
+    { es: "Hola", en: "Bonjour", ctx: "Salutation" }, { es: "Adiós", en: "Au revoir", ctx: "Départ" },
+    { es: "Por favor", en: "S'il vous plaît", ctx: "Politesse" }, { es: "Gracias", en: "Merci", ctx: "Gratitude" },
+    { es: "Si", en: "Oui", ctx: "Affirmation" }, { es: "No", en: "Non", ctx: "Négation" }
+  ],
+  family: [
+    { es: "Madre", en: "Mère", ctx: "La maman" }, { es: "Padre", en: "Père", ctx: "Le papa" },
+    { es: "Hermano", en: "Frère", ctx: "Fratrie" }, { es: "Abuelo", en: "Grand-père", ctx: "Ancien" }
+  ],
+  travel: [
+    { es: "Avión", en: "Avion", ctx: "Transport air" }, { es: "Tren", en: "Train", ctx: "Transport rail" },
+    { es: "Billete", en: "Billet", ctx: "Ticket" }, { es: "Maleta", en: "Valise", ctx: "Bagage" }
+  ],
+  food: [
+    { es: "Manzana", en: "Pomme", ctx: "Fruit" }, { es: "Pan", en: "Pain", ctx: "Boulangerie" },
+    { es: "Agua", en: "Eau", ctx: "Boisson" }, { es: "Cerveza", en: "Bière", ctx: "Alcool" }
+  ],
+  work: [
+    { es: "Jefe", en: "Patron", ctx: "Chef" }, { es: "Reunión", en: "Réunion", ctx: "Meeting" },
+    { es: "Oficina", en: "Bureau", ctx: "Lieu de travail" }, { es: "Sueldo", en: "Salaire", ctx: "Argent" }
+  ],
+  abstract: [ // Pour C1
+    { es: "Efímero", en: "Éphémère", ctx: "Court terme" }, { es: "Paradójico", en: "Paradoxal", ctx: "Logique" },
+    { es: "Inevitable", en: "Inévitable", ctx: "Destin" }, { es: "Sutil", en: "Subtil", ctx: "Nuance" }
   ]
 };
 
-// Générateur simplifié
-const generateAllContent = () => {
-  const content = { ...MANUAL_CONTENT };
-  for (let i = 1; i <= 100; i++) { 
-    if (!content[i]) {
-      const level = i <= 20 ? 'A1' : i <= 40 ? 'A2' : i <= 60 ? 'B1' : i <= 80 ? 'B2' : 'C1';
-      content[i] = [
-        { id: i * 100 + 1, type: "structure", title: `Concept : ${level}`, formula: "Sujet + Verbe", example: `Práctica ${level}`, note: "Focus fluidité" },
-        { id: i * 100 + 2, type: "swipe", es: `Palabra ${i}`, en: `Mot ${level}`, context: `Contexto` },
-        { id: i * 100 + 3, type: "input", question: `Traduis le mot`, answer: [`mot`], hint: "..." }
-      ];
-    }
+// 2. ROADMAP DES 100 LEÇONS (TITRES & THÈMES)
+const FULL_ROADMAP = [];
+const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
+const THEMES = ["basics", "family", "food", "travel", "work", "abstract"];
+
+let lessonCounter = 1;
+LEVELS.forEach((lvl, lvlIdx) => {
+  for (let i = 0; i < 20; i++) {
+    // On cycle à travers les thèmes pour varier
+    const theme = THEMES[(lessonCounter + lvlIdx) % THEMES.length];
+    let title = `Leçon ${lessonCounter}: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`;
+    
+    // Titres spéciaux pour les jalons
+    if (i === 0) title = `${lvl} - Introduction`;
+    if (i === 19) title = `${lvl} - Examen Final`;
+    if (lessonCounter === 1) title = "Les Bases";
+    if (lessonCounter === 2) title = "La Famille";
+    if (lessonCounter === 5) title = "Le Futur Proche";
+
+    FULL_ROADMAP.push({
+      id: lessonCounter,
+      title: title,
+      level: lvl,
+      desc: `Apprentissage ${lvl} - ${theme}`,
+      theme: theme // Tag interne pour le générateur
+    });
+    lessonCounter++;
   }
+});
+
+// 3. GÉNÉRATEUR DE CONTENU UNIQUE
+const generateLessonContent = (lessonInfo) => {
+  const content = [];
+  const themeVocab = VOCAB_DATABASE[lessonInfo.theme] || VOCAB_DATABASE.basics;
+  const level = lessonInfo.level;
+  let cardId = lessonInfo.id * 1000;
+
+  // A. CARTE STRUCTURE (GRAMMAIRE)
+  let grammarTitle = "Grammaire";
+  let grammarDesc = "Règle de base";
+  let conj = [{ pronoun: "Yo", verb: "soy", fr: "suis" }];
+
+  if (level === "A1") { grammarTitle = "Le Présent"; grammarDesc = "La base de tout."; }
+  if (level === "A2") { grammarTitle = "Le Passé Composé"; grammarDesc = "Haber + Participe."; conj = [{ pronoun: "Yo", verb: "he comido", fr: "j'ai mangé" }]; }
+  if (level === "B1") { grammarTitle = "Le Futur Simple"; grammarDesc = "Infinitif + é, ás, á."; conj = [{ pronoun: "Yo", verb: "comeré", fr: "je mangerai" }]; }
+  if (level === "B2") { grammarTitle = "Le Subjonctif"; grammarDesc = "Le doute et le désir."; conj = [{ pronoun: "Que yo", verb: "coma", fr: "que je mange" }]; }
+  if (level === "C1") { grammarTitle = "Hypothèses"; grammarDesc = "Si + Subj. Imp."; conj = [{ pronoun: "Si yo", verb: "tuviera", fr: "si j'avais" }]; }
+
+  content.push({
+    id: cardId++, type: "grammar",
+    title: `${grammarTitle} (${level})`,
+    description: grammarDesc,
+    conjugation: conj
+  });
+
+  // B. CARTES VOCABULAIRE (3 mots du thème)
+  // On mélange et on prend 3 mots
+  const shuffled = [...themeVocab].sort(() => 0.5 - Math.random()).slice(0, 4);
+  
+  shuffled.forEach((word, idx) => {
+    content.push({
+      id: cardId++, type: "swipe",
+      es: word.es, en: word.en,
+      context: `${word.ctx} - Niveau ${level}`
+    });
+
+    // C. UNE CARTE INPUT (TEST) TOUS LES 2 MOTS
+    if (idx === 1) {
+      content.push({
+        id: cardId++, type: "input",
+        question: `Traduis : '${word.en}'`,
+        answer: [word.es.toLowerCase()],
+        hint: `${word.es.charAt(0)}...`
+      });
+    }
+  });
+
+  // D. CARTE STRUCTURE FINALE
+  content.push({
+    id: cardId++, type: "structure",
+    title: "Astuce Native",
+    formula: "Phrase type",
+    example: `Me gusta ${shuffled[0].es}`,
+    note: "Utilise ça dans une conversation !"
+  });
+
   return content;
 };
-const INITIAL_LESSONS_CONTENT = generateAllContent();
 
-const SENTENCE_STRUCTURES = [
-  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe + Complément", example_es: "Yo como una manzana.", example_en: "Je mange une pomme.", explanation: "Comme en français." },
-  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No hablo inglés.", example_en: "Je ne parle pas anglais.", explanation: "Juste 'No' avant." }
-];
+// 4. ASSEMBLAGE FINAL
+const FINAL_LESSONS_CONTENT = {};
+FULL_ROADMAP.forEach(lesson => {
+  FINAL_LESSONS_CONTENT[lesson.id] = generateLessonContent(lesson);
+});
 
-/* --- LOGIQUE INTELLIGENTE DE GÉNÉRATION DE TEST --- */
-// C'est ici que la magie opère pour créer des questions contextuelles
+
+/* --- LOGIQUE INTELLIGENTE DE TEST --- */
 const generateSmartTest = (completedLessons, userVocab) => {
   const questions = [];
   let qId = 9000;
 
-  // 1. Vocabulaire Inverse (Français -> Espagnol)
-  // On prend 5 mots au hasard dans le vocabulaire acquis
-  const vocabQuestions = userVocab
-    .filter(v => v.type === 'swipe')
-    .sort(() => 0.5 - Math.random())
-    .slice(0, 5)
-    .map(v => ({
-      id: qId++,
-      type: 'input',
-      question: `Traduis : '${v.en}'`,
-      answer: [v.es.toLowerCase()],
-      hint: `Commence par ${v.es.charAt(0).toUpperCase()}...`
-    }));
-  questions.push(...vocabQuestions);
-
-  // 2. Grammaire Contextuelle (Basée sur les leçons finies)
-  // Si leçon 1 finie (Être)
-  if (completedLessons.includes(1)) {
-    questions.push({
-      id: qId++, type: 'input',
-      question: "Complète : Yo ___ francés (Être)",
-      answer: ["soy"], hint: "Verbe Ser"
-    });
-  }
-  // Si leçon 2 finie (Avoir)
-  if (completedLessons.includes(2)) {
-    questions.push({
-      id: qId++, type: 'input',
-      question: "Traduis : J'ai un frère",
-      answer: ["tengo un hermano", "yo tengo un hermano"], hint: "Verbe Tener"
-    });
-  }
-  // Si leçon 3 finie (Négation) -> C'est là qu'on crée la phrase demandée !
-  if (completedLessons.includes(3)) {
-    questions.push({
-      id: qId++, type: 'input',
-      question: "Mets au négatif : 'Hablo español'",
-      answer: ["no hablo español", "no hablo"], hint: "Ajoute 'No'..."
-    });
-  }
-  // Si leçon 5 finie (Voyage/Aller) -> Futur Proche
-  if (completedLessons.includes(6)) { // Leçon 6 = En ville / Aller
-     questions.push({
-      id: qId++, type: 'input',
-      question: "Futur Proche : Je vais manger (Ir a comer)",
-      answer: ["voy a comer"], hint: "Voy a..."
-    });
-  }
-   // Si leçon 21 finie (Passé)
-  if (completedLessons.includes(21)) {
-     questions.push({
-      id: qId++, type: 'input',
-      question: "Passé : J'ai mangé (Comer)",
-      answer: ["he comido"], hint: "He..."
-    });
+  // 1. Questions de Vocabulaire (Basées sur ce qu'on a appris)
+  if (userVocab && userVocab.length > 0) {
+     const reviewWords = userVocab.filter(v => v.type === 'swipe').sort(() => 0.5 - Math.random()).slice(0, 5);
+     reviewWords.forEach(word => {
+       questions.push({
+         id: qId++, type: 'input',
+         question: `Traduis : '${word.en}'`,
+         answer: [word.es.toLowerCase()],
+         hint: `${word.es.substring(0,2)}...`
+       });
+     });
+  } else {
+    // Fallback si pas de vocab
+    questions.push({ id: qId++, type: 'input', question: "Hola", answer: ["bonjour"], hint: "Salutation" });
   }
 
-  // 3. Mélanger le tout
-  return questions.sort(() => 0.5 - Math.random());
+  // 2. Questions Grammaire Contextuelle
+  // Si l'utilisateur a fini des leçons A2 (donc id > 20), on pose des questions au passé
+  const maxLessonId = Math.max(0, ...completedLessons);
+  
+  if (maxLessonId >= 5) { // A vu le futur proche ?
+     questions.push({ id: qId++, type: 'input', question: "Futur : Je vais manger (Ir a comer)", answer: ["voy a comer"], hint: "Voy a..." });
+  }
+  if (maxLessonId >= 20) { // A vu le passé ?
+     questions.push({ id: qId++, type: 'input', question: "Passé : J'ai mangé (Haber)", answer: ["he comido"], hint: "He..." });
+  }
+  
+  // Si pas assez de questions, on complète
+  while (questions.length < 10) {
+      questions.push({ id: qId++, type: 'swipe', es: "Revisión", en: "Révision", context: "Continue d'apprendre !" });
+  }
+
+  return questions;
 };
 
+const SENTENCE_STRUCTURES = [
+  { id: 1, title: "Phrase Simple", formula: "Sujet + Verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Sujet souvent omis." },
+  { id: 2, title: "Négation", formula: "No + Verbe", example_es: "No hablo.", example_en: "Je ne parle pas.", explanation: "Simple 'No' devant." },
+  { id: 3, title: "Futur Proche", formula: "Ir + a + Infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Très courant à l'oral." },
+];
 
 /* --- APPLICATION --- */
 export default function EspanolSprintPro() {
@@ -189,18 +226,18 @@ export default function EspanolSprintPro() {
   const [loading, setLoading] = useState(true);
   const [activeLessonId, setActiveLessonId] = useState(1);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [authError, setAuthError] = useState(""); 
+  const [authError, setAuthError] = useState("");
   
-  // État pour le mode TEST
-  const [testMode, setTestMode] = useState(null);
-  
-  const [dynamicLessonsList, setDynamicLessonsList] = useState(INITIAL_LESSONS_LIST);
-  const [dynamicLessonsContent, setDynamicLessonsContent] = useState({});
+  // États dynamiques
+  const [dynamicLessonsList, setDynamicLessonsList] = useState(FULL_ROADMAP);
+  const [dynamicLessonsContent, setDynamicLessonsContent] = useState({}); // On chargera à la demande ou tout
+
+  // MODE TEST
+  const [isTestMode, setIsTestMode] = useState(false);
 
   useEffect(() => {
     const initApp = async (user) => {
-      try { await getRedirectResult(auth); } catch (e) { console.error("Redirect Error:", e); }
-
+      try { await getRedirectResult(auth); } catch (e) { console.error(e); }
       if (user) {
         setCurrentUser(user);
         const userRef = doc(db, "users", user.uid);
@@ -209,20 +246,27 @@ export default function EspanolSprintPro() {
           if (userSnap.exists()) {
             setUserData(userSnap.data());
           } else {
-            const name = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
-            const newProfile = { name: name, xp: 0, streak: 1, level: "A1", vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 } };
+            const name = user.displayName || user.email.split('@')[0];
+            const newProfile = { name, xp: 0, streak: 1, level: "A1", vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 } };
             await setDoc(userRef, newProfile);
             setUserData(newProfile);
           }
+          
+          // Chargement Roadmap Cloud
           const roadmapSnap = await getDoc(doc(db, "meta", "roadmap"));
           if (roadmapSnap.exists()) setDynamicLessonsList(roadmapSnap.data().lessons);
+          
+          // Chargement Contenu (On charge les 100 leçons pour fluidité, mais en prod on ferait du lazy loading)
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
           const lessonsData = {};
           lessonsSnapshot.forEach((doc) => { lessonsData[doc.id] = doc.data().content; });
+          
+          // Si le cloud est vide, on utilise le générateur local
           if (Object.keys(lessonsData).length > 0) setDynamicLessonsContent(lessonsData);
-          else setDynamicLessonsContent(INITIAL_LESSONS_CONTENT);
+          else setDynamicLessonsContent(FINAL_LESSONS_CONTENT);
+          
           setView('dashboard');
-        } catch (error) { console.error("Erreur chargement:", error); }
+        } catch (error) { console.error(error); }
       } else {
         setCurrentUser(null); setUserData(null); setView('landing');
       }
@@ -233,51 +277,34 @@ export default function EspanolSprintPro() {
   }, []);
 
   const uploadFullContentToCloud = async () => {
-    if (!confirm("ADMIN : Initialiser les 100 leçons ?")) return;
+    if (!confirm("ADMIN : Générer et envoyer les 100 leçons intelligentes ?")) return;
     try {
-      await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST });
+      await setDoc(doc(db, "meta", "roadmap"), { lessons: FULL_ROADMAP });
       let count = 0;
-      for (const [id, content] of Object.entries(INITIAL_LESSONS_CONTENT)) {
+      for (const [id, content] of Object.entries(FINAL_LESSONS_CONTENT)) {
         await setDoc(doc(db, "lessons", id), { content: content });
         count++;
       }
-      alert(`✅ ${count} Leçons mises à jour !`);
+      alert(`✅ ${count} Leçons générées et envoyées !`);
       window.location.reload(); 
     } catch (e) { alert("Erreur: " + e.message); }
   };
 
   const handleAuth = async (email, password, isSignUp) => {
-    setLoading(true);
-    setAuthError("");
+    setLoading(true); setAuthError("");
     const cleanEmail = email.trim();
-    if (!cleanEmail || !password) {
-        setAuthError("Email ou mot de passe vide.");
-        setLoading(false);
-        return;
-    }
+    if (!cleanEmail || !password) { setAuthError("Champs vides"); setLoading(false); return; }
     try {
       if (isSignUp) {
         const cred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
         await setDoc(doc(db, "users", cred.user.uid), { name: cleanEmail.split('@')[0], email: cleanEmail, xp: 0, streak: 1, level: "A1", vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 } });
       } else { await signInWithEmailAndPassword(auth, cleanEmail, password); }
-    } catch (error) { 
-        let msg = "Erreur inconnue";
-        if (error.code === 'auth/invalid-email') msg = "Format d'email invalide.";
-        if (error.code === 'auth/invalid-credential') msg = "Identifiants incorrects.";
-        setAuthError(msg); 
-        setLoading(false); 
-    }
+    } catch (error) { setAuthError(error.message); setLoading(false); }
   };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    setAuthError("");
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error) { 
-      setAuthError("Erreur Google : " + error.message); 
-      setLoading(false); 
-    }
+    try { await signInWithPopup(auth, googleProvider); } catch (error) { setAuthError(error.message); setLoading(false); }
   };
   
   const handleLogout = async () => { await signOut(auth); setView('landing'); };
@@ -288,75 +315,35 @@ export default function EspanolSprintPro() {
     if (isNewLesson && userData?.dailyLimit?.date === today && userData?.dailyLimit?.count >= 4) { 
       setShowLimitModal(true); return; 
     }
-    if (!dynamicLessonsContent[lessonId]) { alert("Leçon non disponible."); return; }
+    if (!dynamicLessonsContent[lessonId]) { alert("Leçon non chargée."); return; }
     setActiveLessonId(lessonId);
-    setTestMode(null);
+    setIsTestMode(false);
     setView('lesson');
   };
 
-  // --- FONCTION DÉCLENCHEUR DE TEST INTELLIGENT ---
-  const startTest = (mode) => {
-    let testContent = [];
-    
-    if (mode === 'training') {
-        // Appel au générateur intelligent
-        testContent = generateSmartTest(userData.completedLessons, userData.vocab || []);
-        
-        if (testContent.length < 3) {
-             // Fallback si pas assez de données
-             testContent = [
-                { id: 991, type: "input", question: "Traduis 'Bonjour'", answer: ["hola"], hint: "H..." },
-                { id: 992, type: "input", question: "Traduis 'Merci'", answer: ["gracias"], hint: "G..." },
-                { id: 993, type: "input", question: "Je suis (Ser)", answer: ["soy"], hint: "S..." },
-             ];
-        }
-    } 
-    else if (mode === 'levelup') {
-        // Examen : Plus dur, plus de phrases
-        testContent = [
-            { id: 991, type: "input", question: "Traduis 'Bonjour'", answer: ["hola"], hint: "H..." },
-            { id: 992, type: "input", question: "Conjugue : Tu as (Tener)", answer: ["tienes"], hint: "T..." },
-            { id: 993, type: "input", question: "Traduis : 'Ma maison'", answer: ["mi casa"], hint: "Possessif" },
-            { id: 994, type: "input", question: "Phrase : 'Je ne mange pas'", answer: ["no como", "yo no como"], hint: "Négation" },
-            { id: 995, type: "input", question: "Conjugue : Nous sommes (Ser)", answer: ["somos"], hint: "S..." },
-        ];
-    }
-
-    setTestMode(mode);
-    dynamicLessonsContent['9999'] = testContent; 
-    setActiveLessonId('9999');
+  const startTest = (type) => {
+    // Génération à la volée du test
+    const testQuestions = generateSmartTest(userData.completedLessons, userData.vocab);
+    // On stocke temporairement dans l'ID 'TEST'
+    dynamicLessonsContent['TEST'] = testQuestions;
+    setActiveLessonId('TEST');
+    setIsTestMode(true);
     setView('lesson');
   };
 
   const handleLessonComplete = async (xp, lessonContent, lessonId) => {
-    // GESTION FIN DE TEST
-    if (testMode) {
-        if (testMode === 'levelup') {
-            const levels = ["A1", "A2", "B1", "B2", "C1"];
-            const currentIdx = levels.indexOf(userData.level);
-            const nextLevel = levels[currentIdx + 1] || "C1";
-            
-            if (currentUser) {
-                const userRef = doc(db, "users", currentUser.uid);
-                await updateDoc(userRef, { 
-                    xp: increment(500),
-                    level: nextLevel 
-                });
-                setUserData(prev => ({ ...prev, level: nextLevel, xp: prev.xp + 500 }));
-            }
-        } else {
-             if (currentUser) {
-                const userRef = doc(db, "users", currentUser.uid);
-                await updateDoc(userRef, { xp: increment(50) });
-                setUserData(prev => ({ ...prev, xp: prev.xp + 50 }));
-            }
-        }
-        setTestMode(null);
-        setView('complete');
-        return;
+    // Gestion Fin de Test
+    if (isTestMode) {
+       if (currentUser) {
+          const userRef = doc(db, "users", currentUser.uid);
+          await updateDoc(userRef, { xp: increment(xp) });
+          setUserData(prev => ({ ...prev, xp: prev.xp + xp }));
+       }
+       setView('complete');
+       return;
     }
 
-    // GESTION FIN DE LEÇON NORMALE
+    // Gestion Fin de Leçon Normale
     const newItems = lessonContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
     const today = new Date().toDateString();
     if (currentUser) {
@@ -404,7 +391,7 @@ export default function EspanolSprintPro() {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center space-y-6">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500"><AlertCircle size={40} /></div>
-            <div><h3 className="text-2xl font-black text-slate-900">Repos ! 🧠</h3><p className="text-slate-500 mt-2">4 nouvelles leçons max. Révise les anciennes !</p></div>
+            <div><h3 className="text-2xl font-black text-slate-900">Repos ! 🧠</h3><p className="text-slate-500 mt-2">4 nouvelles leçons max.</p></div>
             <button onClick={() => setShowLimitModal(false)} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">Compris</button>
           </div>
         </div>
@@ -425,12 +412,12 @@ export default function EspanolSprintPro() {
               {view === 'notebook' && userData && <NotebookContent userVocab={userData.vocab} />}
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} />}
               
-              {/* VUE TEST */}
+              {/* VUE TEST & EXAMEN */}
               {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
 
               {view === 'profile' && userData && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} />}
               {view === 'lesson' && dynamicLessonsContent[activeLessonId] && <LessonEngine content={dynamicLessonsContent[activeLessonId]} onComplete={(xp) => handleLessonComplete(xp, dynamicLessonsContent[activeLessonId], activeLessonId)} onExit={() => setView('dashboard')} />}
-              {view === 'complete' && <LessonComplete xp={150} onHome={() => setView('dashboard')} onDownload={() => handlePrintPDF(activeLessonId)} isTest={!!testMode} />}
+              {view === 'complete' && <LessonComplete xp={150} onHome={() => setView('dashboard')} onDownload={() => handlePrintPDF(activeLessonId)} isTest={isTestMode} />}
             </div>
             {view !== 'lesson' && view !== 'complete' && <MobileBottomNav currentView={view} onChangeView={setView} />}
           </main>
@@ -446,8 +433,11 @@ const TestDashboard = ({ userData, onStartTest }) => {
     const levels = ["A1", "A2", "B1", "B2", "C1"];
     const currentIdx = levels.indexOf(userData.level || "A1");
     const nextLevel = levels[currentIdx + 1];
-    const lessonsDoneInLevel = userData.completedLessons.length;
-    const canTakeExam = lessonsDoneInLevel >= 20; 
+    // Condition pour passer l'examen : Avoir fini les 20 leçons du niveau
+    // Ici on vérifie si le nb de leçons finies > niveau actuel * 20
+    const lessonsDone = userData.completedLessons.length;
+    const requiredForExam = (currentIdx + 1) * 20;
+    const canTakeExam = lessonsDone >= requiredForExam;
 
     return (
         <div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-8">
@@ -456,22 +446,24 @@ const TestDashboard = ({ userData, onStartTest }) => {
                 <p className="text-slate-500">Valide tes acquis et passe au niveau supérieur.</p>
             </div>
 
+            {/* Carte Entraînement */}
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all cursor-pointer group" onClick={() => onStartTest('training')}>
                 <div className="flex items-center gap-6">
                     <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform"><BrainCircuit size={32} /></div>
-                    <div className="flex-1"><h3 className="text-xl font-bold text-slate-900">Entraînement Rapide</h3><p className="text-sm text-slate-500 mt-1">Révision personnalisée intelligente.</p></div>
+                    <div className="flex-1"><h3 className="text-xl font-bold text-slate-900">Entraînement Rapide</h3><p className="text-sm text-slate-500 mt-1">Questions basées sur tes leçons terminées.</p></div>
                     <ChevronRight className="text-slate-300" />
                 </div>
             </div>
 
+            {/* Carte Examen */}
             <div className={`bg-white p-8 rounded-3xl shadow-sm border border-slate-200 transition-all relative overflow-hidden ${!canTakeExam ? 'opacity-60 grayscale' : 'cursor-pointer hover:shadow-md group'}`} 
                  onClick={() => canTakeExam && onStartTest('levelup')}>
                 <div className="flex items-center gap-6">
                     <div className="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center text-yellow-600 group-hover:rotate-6 transition-transform"><Target size={32} /></div>
-                    <div className="flex-1"><h3 className="text-xl font-bold text-slate-900">Examen {nextLevel ? `${userData.level} ➔ ${nextLevel}` : "Final"}</h3><p className="text-sm text-slate-500 mt-1">Test de passage de niveau.</p></div>
+                    <div className="flex-1"><h3 className="text-xl font-bold text-slate-900">Examen {nextLevel ? `${userData.level} ➔ ${nextLevel}` : "Final"}</h3><p className="text-sm text-slate-500 mt-1">Valide les 20 leçons pour débloquer.</p></div>
                     {canTakeExam ? <ChevronRight className="text-slate-300" /> : <Lock className="text-slate-300" />}
                 </div>
-                {!canTakeExam && <div className="absolute bottom-2 right-4 text-xs font-bold text-red-400 bg-red-50 px-2 py-1 rounded">Finis le niveau d'abord</div>}
+                {!canTakeExam && <div className="absolute bottom-2 right-4 text-xs font-bold text-red-400 bg-red-50 px-2 py-1 rounded">Termine {requiredForExam - lessonsDone} leçons</div>}
             </div>
         </div>
     );
@@ -481,22 +473,34 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
   const levels = ["A1", "A2", "B1", "B2", "C1"];
   const safeLevel = (userData.level && levels.includes(userData.level)) ? userData.level : "A1";
   const currentLevelIndex = levels.indexOf(safeLevel);
+  
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="p-6 md:p-8"><h2 className="text-3xl font-black text-slate-900 mb-2">Ton Parcours</h2><p className="text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p></div>
+      <div className="p-6 md:p-8">
+        <h2 className="text-3xl font-black text-slate-900 mb-2">Ton Parcours</h2>
+        <p className="text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p>
+      </div>
+
       <div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-10 snap-x snap-mandatory flex gap-8">
         {levels.map((level, index) => {
           const isLocked = index > currentLevelIndex;
           const isCurrent = index === currentLevelIndex;
           const isCompleted = index < currentLevelIndex;
           const levelLessons = allLessons.filter(l => l.level === level);
+
           return (
             <div key={level} className={`snap-center shrink-0 w-[300px] md:w-[350px] h-full flex flex-col rounded-3xl border-4 ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} p-6 relative overflow-hidden`}>
-               <div className="flex justify-between items-center mb-8"><div><h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3><p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p></div>{isLocked && <Lock size={24} className="text-slate-400" />}{isCompleted && <div className="bg-green-500 text-white p-1 rounded-full"><Check size={16} /></div>}</div>
+               <div className="flex justify-between items-center mb-8">
+                 <div><h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3><p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p></div>
+                 {isLocked && <Lock size={24} className="text-slate-400" />}
+                 {isCompleted && <div className="bg-green-500 text-white p-1 rounded-full"><Check size={16} /></div>}
+               </div>
+
                <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-2 custom-scrollbar">
                  {levelLessons.map((lesson) => {
                    const isLessonDone = userData.completedLessons.includes(lesson.id);
                    const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id);
+                   
                    if (isCompleted) { return (<div key={lesson.id} className="w-full p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-4 opacity-70 cursor-not-allowed"><CheckCircle size={16} /><span className="text-sm font-bold truncate flex-1">{lesson.title}</span><span className="text-xs uppercase font-bold">Acquis</span></div>); }
                    return (<button key={lesson.id} disabled={!isAccessible} onClick={() => onStartLesson(lesson.id)} className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${isLessonDone ? 'bg-green-500 text-white shadow-md' : isAccessible ? 'bg-yellow-400 text-slate-900 shadow-lg scale-105 font-bold ring-4 ring-yellow-100' : 'bg-slate-200 text-slate-400'}`}><div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">{isLessonDone ? <Check size={16} /> : lesson.id}</div><div className="flex-1 truncate"><p className="text-sm truncate">{lesson.title}</p></div>{isAccessible && !isLessonDone && <PlayCircle size={20} />}</button>);
                  })}
