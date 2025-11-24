@@ -723,10 +723,12 @@ export const CONTENT_PART_1 = {
   ]
 };
 
+// On s'assure que la fonction est bien définie avant de l'utiliser
 export const generateAllContent = () => {
   const content = { ...CONTENT_PART_1 };
   for (let i = 3; i <= 100; i++) {
      if (!content[i]) {
+        // Appel direct de la fonction définie plus haut dans le même fichier
         content[i] = generateStructuredLesson(i);
      }
   }
