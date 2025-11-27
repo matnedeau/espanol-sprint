@@ -297,7 +297,7 @@ const StructuresContent = ({ structures }) => (<div className="max-w-3xl mx-auto
 const NotebookContent = ({ userVocab }) => {
   // 1. Sécurité absolue : Si userVocab est vide/null, on utilise un tableau vide.
   const safeList = userVocab || [];
-
+import { DATA_BANK } from './data'; // Ou le chemin vers ton fichier de données
   // 2. Dédoublonnage "Soft" : On garde ta logique .filter, et on ajoute un check d'index.
   // Ça vérifie : "Est-ce que c'est la première fois que je vois ce mot (t.es) ?"
   
@@ -306,22 +306,26 @@ const NotebookContent = ({ userVocab }) => {
   // 1. On vérifie si la liste existe. Si ce n'est pas un tableau, on prend un tableau vide.
   const sourceList = Array.isArray(userVocab) ? userVocab : [];
 
+  // --- BLOC DE FILTRAGE BASÉ SUR DATA_BANK ---
+
+  // 1. On crée la "Liste Noire" des verbes (ex: ["Comer", "Vivir", "Beber"...])
+  // On utilise un Set pour que la recherche soit instantanée
+  const FORBIDDEN_VERBS = new Set(DATA_BANK.verbs.map(v => v.es));
+
+  const sourceList = Array.isArray(userVocab) ? userVocab : [];
+
   const vocabItems = sourceList.filter(item => {
-      // Sécurité 1 : Si l'item est vide/null, on le jette sans planter
-      if (!item) return false;
+      // Sécurité anti-crash (écran noir)
+      if (!item || !item.es) return false;
 
-      // Sécurité 2 : Si l'item n'a pas de propriété 'es' (espagnol), on le jette
-      if (!item.es) return false;
+      // 2. LE VERDICT : Est-ce que ce mot est dans la liste des verbes ?
+      // Si oui (ex: "Comer"), on retourne false pour le cacher du vocabulaire.
+      if (FORBIDDEN_VERBS.has(item.es)) return false;
 
-      // FILTRE : Si c'est un verbe, on le cache (car il est dans la grammaire)
-      // On convertit en minuscule pour gérer "Verbe", "verbe", "VERBE"
-      const contextSafe = item.context ? item.context.toLowerCase() : "";
-      if (contextSafe === 'verbe') return false;
-
-      // Si on arrive ici, on garde le mot !
+      // Sinon, c'est un mot normal, on le garde !
       return true;
     })
-    // Dédoublonnage sécurisé
+    // 3. Dédoublonnage classique
     .filter((item, index, self) => 
       index === self.findIndex((t) => t.es === item.es)
     );
