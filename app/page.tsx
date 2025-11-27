@@ -270,7 +270,7 @@ export default function EspanolSprintPro() {
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
               {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} />}
               {view === 'notebook' && userData && <NotebookContent userVocab={userData.vocab} />}
-              {view === 'quiz' && <QuizZone onExit={() => setView('dashboard')} />}
+              {view === 'quiz' && <QuizZone onExit={() => setView('dashboard')} userData={userData} />}
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} />}
               {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
               {view === 'profile' && userData && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} />}
@@ -482,25 +482,26 @@ const StructureCard = ({ data, onNext }) => (<div className="w-full h-full bg-wh
 const LessonComplete = ({ xp, onHome, onDownload, isTest }) => (<div className="h-full w-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in duration-500"><div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform"><Trophy size={100} className="text-yellow-500 fill-yellow-500" /></div><div><h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">{isTest ? "Examen Réussi !" : "Increíble!"}</h2><p className="text-xl text-yellow-900 font-bold opacity-80">{isTest ? "Niveau Validé" : "Leçon terminée et sauvegardée."}</p></div><div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div><div className="flex flex-col gap-4 w-full max-w-sm"><button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all"><Download size={20} /> Télécharger le PDF</button><button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">Continuer</button></div></div>);
 // 👇 LE CODE COMPLET À COLLER EN BAS DE PAGE.TSX 👇
 
-const QuizZone = ({ onExit }) => {
+const QuizZone = ({ onExit, userData }) => {
   const [questions, setQuestions] = useState([]);
+  // ... (Garde tes états currentIdx, score, etc. inchangés) ...
   const [currentIdx, setCurrentIdx] = useState(0);
   const [score, setScore] = useState(0);
-  const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong'
+  const [feedback, setFeedback] = useState(null); 
   const [finished, setFinished] = useState(false);
-  
-  // États pour la saisie clavier
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef(null);
 
   useEffect(() => {
-    // On charge le moteur de quiz intelligemment
     import('./data/quizengine').then(module => {
-       // On utilise les leçons importées en haut du fichier (INITIAL_LESSONS_CONTENT)
-       const generated = module.generateSuperQuiz(INITIAL_LESSONS_CONTENT);
+       // MODIFICATION ICI : On passe "userData.completedLessons" au moteur
+       // On utilise aussi userData.vocab si tu veux mélanger, mais ici on se base sur les leçons finies
+       const completedIds = userData?.completedLessons || [];
+       
+       const generated = module.generateSuperQuiz(INITIAL_LESSONS_CONTENT, completedIds);
        setQuestions(generated);
     });
-  }, []);
+  }, [userData]); // On ajoute userData en dépendance
 
   // Focus auto sur l'input
   useEffect(() => {

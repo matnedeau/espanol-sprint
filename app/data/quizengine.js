@@ -1,30 +1,40 @@
 // @ts-nocheck
 import { INITIAL_LESSONS_CONTENT } from './content';
 
-// Fonction utilitaire pour mélanger
 const shuffleArray = (array) => {
   return array.sort(() => Math.random() - 0.5);
 };
 
-export const generateSuperQuiz = (allLessonsContent) => {
+// MODIFICATION ICI : On ajoute "completedIds" en argument
+export const generateSuperQuiz = (allLessonsContent, completedIds) => {
   let quizQuestions = [];
   
-  // 1. On récupère toutes les cartes de toutes les leçons
-  const allCards = Object.values(allLessonsContent).flat();
+  // 1. SÉCURITÉ : Si l'utilisateur n'a rien fini, on utilise la Leçon 1 par défaut
+  // Sinon, on utilise sa liste de leçons terminées.
+  const targetIds = (completedIds && completedIds.length > 0) ? completedIds : [1];
 
-  // 2. On filtre pour ne garder que le vocabulaire
+  // 2. FILTRAGE : On ne récupère QUE le contenu des leçons ciblées
+  const allCards = targetIds.flatMap(id => allLessonsContent[id] || []);
+
+  // 3. On filtre pour ne garder que le vocabulaire (swipe)
   const allVocab = allCards.filter(item => item.type === 'swipe');
   
-  // 3. On sélectionne 10 mots au hasard pour la session
+  // S'il n'y a pas assez de mots, on évite le crash
+  if (allVocab.length === 0) return [];
+
+  // 4. On sélectionne 10 mots au hasard parmi CEUX APPRIS
   const selectedItems = shuffleArray(allVocab).slice(0, 10);
 
   selectedItems.forEach(item => {
-    
-    // --- MODE 1 : QCM (On garde !) ---
-    // "Que veut dire ce mot ?" (Facile)
+    // TYPE A : QCM (On cherche les distracteurs parmi les mots connus aussi !)
     const distractors = shuffleArray(allVocab.filter(v => v.es !== item.es))
       .slice(0, 3)
       .map(v => v.en);
+
+    // Si on a pas assez de distracteurs connus (début du jeu), on complète avec du faux texte
+    while (distractors.length < 3) {
+        distractors.push("Autre mot");
+    }
 
     quizQuestions.push({
       id: `qcm-${item.id}`,
@@ -34,17 +44,15 @@ export const generateSuperQuiz = (allLessonsContent) => {
       options: shuffleArray([item.en, ...distractors])
     });
 
-    // --- MODE 2 : SAISIE (Nouveau !) ---
-    // "Écris ce mot en espagnol" (Difficile)
+    // TYPE B : SAISIE
     quizQuestions.push({
       id: `input-${item.id}`,
       type: 'input', 
       question: `Comment dit-on "${item.en}" ?`,
       correctAnswer: item.es,
-      hint: item.context // Petit indice (ex: "Cuisine")
+      hint: item.context 
     });
   });
 
-  // On mélange les questions QCM et Saisie
   return shuffleArray(quizQuestions);
 };
