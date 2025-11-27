@@ -1,7 +1,7 @@
 /* eslint-disable */
 // @ts-nocheck
 'use client';
-import { DATA_BANK } from './data'; // Ou le chemin correct vers ton fichier
+import { DATA_BANK } from './data/content'; // Ou le chemin correct vers ton fichier
 import { useState } from 'react'; // Si ce n'est pas déjà fait
 import { Table, Edit3, BookOpen } from 'lucide-react'; // Si tu utilises ces icônes
 import { 
