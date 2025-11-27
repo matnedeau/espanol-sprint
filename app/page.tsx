@@ -8,7 +8,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, 
   Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, 
-  Lock, Table 
+  Lock, Table, Loader2  // <--- J'ai ajouté Loader2 ici !
 } from 'lucide-react';
 
 import { 
