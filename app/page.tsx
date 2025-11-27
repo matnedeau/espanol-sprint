@@ -301,20 +301,32 @@ const NotebookContent = ({ userVocab }) => {
   // 2. Dédoublonnage "Soft" : On garde ta logique .filter, et on ajoute un check d'index.
   // Ça vérifie : "Est-ce que c'est la première fois que je vois ce mot (t.es) ?"
   
-  // On filtre les doublons ET on cache les verbes (car ils sont déjà dans la section grammaire)
-// Dédoublonnage intelligent et SÉCURISÉ
-  const vocabItems = safeVocab
-    // 1. SÉCURITÉ D'ABORD : On garde seulement les éléments qui existent (pas de null/undefined)
-    .filter(item => item && item.es) 
-    
-    // 2. FILTRE VERBE : On exclut les verbes (car ils sont en grammaire)
-    // Le "?" (optional chaining) empêche le crash si context n'existe pas
-    .filter(item => item.context !== 'Verbe') 
-    
-    // 3. ANTI-DOUBLON : On garde unique par mot espagnol
+// --- BLOC DE SÉCURITÉ MAXIMALE ---
+  
+  // 1. On vérifie si la liste existe. Si ce n'est pas un tableau, on prend un tableau vide.
+  const sourceList = Array.isArray(userVocab) ? userVocab : [];
+
+  const vocabItems = sourceList.filter(item => {
+      // Sécurité 1 : Si l'item est vide/null, on le jette sans planter
+      if (!item) return false;
+
+      // Sécurité 2 : Si l'item n'a pas de propriété 'es' (espagnol), on le jette
+      if (!item.es) return false;
+
+      // FILTRE : Si c'est un verbe, on le cache (car il est dans la grammaire)
+      // On convertit en minuscule pour gérer "Verbe", "verbe", "VERBE"
+      const contextSafe = item.context ? item.context.toLowerCase() : "";
+      if (contextSafe === 'verbe') return false;
+
+      // Si on arrive ici, on garde le mot !
+      return true;
+    })
+    // Dédoublonnage sécurisé
     .filter((item, index, self) => 
-        index === self.findIndex((t) => t.es === item.es)
+      index === self.findIndex((t) => t.es === item.es)
     );
+
+  // --- FIN DU BLOC ---
   const grammarItems = safeList
     .filter(c => c && c.type === 'grammar')
     .filter((item, index, self) => 
