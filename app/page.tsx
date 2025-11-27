@@ -1,7 +1,6 @@
 /* eslint-disable */
 // @ts-nocheck
 'use client';
-import QuizZone from './data/quizengine';
 import { 
   INITIAL_LESSONS_LIST, 
   INITIAL_LESSONS_CONTENT, 
@@ -162,10 +161,8 @@ export default function EspanolSprintPro() {
     setTestMode(null);
     setView('lesson');
   };
-  const startTest = (mode) => {
-  // On passe simplement en mode 'quiz', le composant QuizZone gérera le reste
-  setTestMode(mode); 
-  setView('quiz'); 
+ const startTest = (mode) => {
+  setView('quiz'); // On bascule simplement sur la vue "quiz"
 };
   const handleLessonComplete = async (xp, lessonContent, lessonId) => {
     if (testMode) {
@@ -483,7 +480,147 @@ const InputCard = ({ data, onNext }) => { const [val, setVal] = useState(''); co
 const GrammarCard = ({ data, onNext }) => (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500"><div className="bg-indigo-600 p-8 md:p-10 text-white text-center relative"><button onClick={(e) => { e.stopPropagation(); speak(data.title); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-white"><Volume2 size={20} /></button><h3 className="text-3xl md:text-4xl font-black">{data.title}</h3><p className="text-indigo-200 mt-2">{data.description}</p></div><div className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-slate-50"><div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">{data.conjugation.map((row, idx) => (<div key={idx} className="flex justify-between items-center p-4 border-b border-slate-100 last:border-0"><span className="text-slate-400 font-medium w-1/3">{row.pronoun}</span><span className="text-indigo-600 font-black text-xl w-1/3 text-center">{row.verb}</span><span className="text-slate-300 text-sm w-1/3 text-right italic">{row.fr}</span></div>))}</div><button onClick={onNext} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg hover:bg-yellow-300 active:scale-95 transition-all">J'ai compris</button></div></div>);
 const StructureCard = ({ data, onNext }) => (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500 border-b-[12px] border-slate-100"><div className="bg-amber-400 p-8 text-slate-900 text-center relative"><button onClick={(e) => { e.stopPropagation(); speak(data.example); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-slate-900"><Volume2 size={20} /></button><h3 className="text-2xl font-black uppercase tracking-wider">{data.title}</h3></div><div className="flex-1 p-8 flex flex-col justify-center items-center gap-6 bg-slate-50"><div className="bg-white p-6 rounded-xl border-2 border-slate-200 w-full text-center"><p className="font-mono text-indigo-600 font-bold text-lg mb-2">{data.formula}</p><p className="text-slate-500 text-sm">{data.note}</p></div><div className="text-center"><p className="text-2xl font-bold text-slate-800 mb-1">{data.example}</p><p className="text-sm text-slate-400 italic">Exemple</p></div><button onClick={onNext} className="w-full mt-auto bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-lg active:scale-95 transition-all">C'est noté !</button></div></div>);
 const LessonComplete = ({ xp, onHome, onDownload, isTest }) => (<div className="h-full w-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in duration-500"><div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform"><Trophy size={100} className="text-yellow-500 fill-yellow-500" /></div><div><h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">{isTest ? "Examen Réussi !" : "Increíble!"}</h2><p className="text-xl text-yellow-900 font-bold opacity-80">{isTest ? "Niveau Validé" : "Leçon terminée et sauvegardée."}</p></div><div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div><div className="flex flex-col gap-4 w-full max-w-sm"><button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all"><Download size={20} /> Télécharger le PDF</button><button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">Continuer</button></div></div>);
+// 👇 LE CODE COMPLET À COLLER EN BAS DE PAGE.TSX 👇
+
 const QuizZone = ({ onExit }) => {
   const [questions, setQuestions] = useState([]);
-  // ... tout le reste de ton code QuizZone
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [score, setScore] = useState(0);
+  const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong'
+  const [finished, setFinished] = useState(false);
+  
+  // États pour la saisie clavier
+  const [inputValue, setInputValue] = useState("");
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    // On charge le moteur de quiz intelligemment
+    import('./data/quizengine').then(module => {
+       // On utilise les leçons importées en haut du fichier (INITIAL_LESSONS_CONTENT)
+       const generated = module.generateSuperQuiz(INITIAL_LESSONS_CONTENT);
+       setQuestions(generated);
+    });
+  }, []);
+
+  // Focus auto sur l'input
+  useEffect(() => {
+    if (questions[currentIdx]?.type === 'input' && !feedback) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [currentIdx, questions, feedback]);
+
+  if (questions.length === 0) return <div className="p-10 text-center flex items-center justify-center h-full"><Loader2 className="animate-spin mr-2"/> Chargement...</div>;
+
+  const currentQ = questions[currentIdx];
+
+  // --- LOGIQUE ---
+
+  const handleNext = () => {
+    setFeedback(null);
+    setInputValue("");
+    if (currentIdx + 1 < questions.length) {
+      setCurrentIdx(p => p + 1);
+    } else {
+      setFinished(true);
+    }
+  };
+
+  const validateAnswer = (isCorrect) => {
+    if (isCorrect) {
+      setFeedback('correct');
+      setScore(s => s + 1);
+    } else {
+      setFeedback('wrong');
+    }
+    setTimeout(handleNext, 1500);
+  };
+
+  const handleOptionClick = (opt) => {
+    validateAnswer(opt === currentQ.correctAnswer);
+  };
+
+  const handleInputSubmit = (e) => {
+    e?.preventDefault();
+    if (!inputValue.trim()) return;
+    const userClean = inputValue.trim().toLowerCase();
+    const correctClean = currentQ.correctAnswer.trim().toLowerCase();
+    validateAnswer(userClean === correctClean);
+  };
+
+  const addChar = (char) => {
+    setInputValue(prev => prev + char);
+    inputRef.current?.focus();
+  };
+
+  // --- ÉCRAN DE FIN ---
+  if (finished) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in">
+        <div className="bg-white p-8 rounded-full shadow-xl">
+          <Trophy size={64} className="text-yellow-500" />
+        </div>
+        <div>
+          <h2 className="text-4xl font-black text-slate-900 mb-2">Quiz Terminé !</h2>
+          <p className="text-xl text-yellow-900 font-bold">Score : {score} / {questions.length}</p>
+        </div>
+        <button onClick={onExit} className="w-full max-w-xs bg-slate-900 text-white py-4 rounded-xl font-bold hover:scale-105 transition-all">
+          Retour au menu
+        </button>
+      </div>
+    );
+  }
+
+  // --- ÉCRAN DE JEU ---
+  return (
+    <div className="h-full flex flex-col bg-slate-50">
+      {/* Barre du haut */}
+      <div className="px-6 py-4 bg-white border-b border-slate-100 flex items-center justify-between">
+        <button onClick={onExit} className="p-2 hover:bg-slate-100 rounded-full text-slate-400"><X size={24} /></button>
+        <div className="flex-1 mx-4 h-3 bg-slate-100 rounded-full overflow-hidden">
+          <div className="h-full bg-indigo-500 transition-all duration-500" style={{ width: `${((currentIdx) / questions.length) * 100}%` }} />
+        </div>
+        <div className="font-black text-indigo-600">{score} pts</div>
+      </div>
+
+      {/* Question */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-md mx-auto w-full">
+        
+        <h2 className="text-2xl md:text-3xl font-black text-slate-800 text-center mb-2">
+          {currentQ.question}
+        </h2>
+        
+        {currentQ.type === 'input' && (
+          <p className="text-slate-400 text-sm mb-8 italic">Indice : {currentQ.hint}</p>
+        )}
+
+        {/* Feedback */}
+        {feedback === 'correct' && <div className="mb-6 px-6 py-2 bg-green-100 text-green-700 rounded-full font-bold animate-bounce">✨ Correct !</div>}
+        {feedback === 'wrong' && <div className="mb-6 px-6 py-2 bg-red-100 text-red-700 rounded-full font-bold animate-shake text-center">❌ Raté !<br/><span className="text-sm font-normal text-slate-600">Réponse : {currentQ.correctAnswer}</span></div>}
+
+        {/* MODE QCM */}
+        {currentQ.type === 'qcm' && !feedback && (
+          <div className="grid grid-cols-1 w-full gap-3 mt-4">
+            {currentQ.options.map((opt, i) => (
+              <button key={i} onClick={() => handleOptionClick(opt)} className="w-full p-5 rounded-2xl border-2 border-slate-200 bg-white hover:border-indigo-500 hover:bg-indigo-50 font-bold text-slate-700 transition-all text-lg shadow-sm active:scale-95">
+                {opt}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* MODE SAISIE */}
+        {currentQ.type === 'input' && !feedback && (
+          <form onSubmit={handleInputSubmit} className="w-full mt-4">
+            <div className="flex gap-2 justify-center mb-4">
+              {['á','é','í','ó','ú','ñ','¿','¡'].map(char => (
+                <button key={char} type="button" onClick={() => addChar(char)} className="w-10 h-10 bg-white border border-slate-200 shadow-sm hover:bg-indigo-50 text-slate-700 font-bold rounded-lg transition-colors text-lg">{char}</button>
+              ))}
+            </div>
+            <input ref={inputRef} type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder="Écris ta réponse..." className="w-full p-5 rounded-2xl border-2 border-slate-300 text-center text-xl font-bold text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all shadow-sm" autoComplete="off" autoCorrect="off" autoCapitalize="off" />
+            <button type="submit" className={`w-full mt-6 py-4 rounded-2xl font-bold text-lg text-white shadow-lg transition-all active:scale-95 ${inputValue ? 'bg-slate-900 hover:bg-slate-800' : 'bg-slate-300 cursor-not-allowed'}`} disabled={!inputValue}>Valider</button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
 };
