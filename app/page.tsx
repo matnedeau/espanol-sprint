@@ -1,36 +1,26 @@
 /* eslint-disable */
 // @ts-nocheck
 'use client';
+import { 
+  INITIAL_LESSONS_LIST, 
+  INITIAL_LESSONS_CONTENT, 
+  SENTENCE_STRUCTURES, 
+  generateSmartTest 
+} from './data/content';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, 
-  Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, 
-  Lock, Table, Loader2 
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table, Map, CheckCircle, Star, BrainCircuit, Target
 } from 'lucide-react';
 
-// --- IMPORTS DONNÉES SÉCURISÉS ---
-import { 
-  DATA_BANK,
-  INITIAL_LESSONS_LIST,
-  INITIAL_LESSONS_CONTENT,
-  SENTENCE_STRUCTURES,
-  generateSmartTest,
-  CURRICULUM // Assure-toi que CURRICULUM est bien exporté dans content.ts
-} from './data/content';
+// --- IMPORTATION FIREBASE ---
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, getRedirectResult } from "firebase/auth";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, increment, collection, getDocs } from "firebase/firestore";
 
-// --- IMPORTS FIREBASE ---
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { 
-  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-  signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup 
-} from "firebase/auth";
-import { 
-  getFirestore, doc, setDoc, getDoc, updateDoc, 
-  arrayUnion, increment, collection, getDocs 
-} from "firebase/firestore";
-
-// --- CONFIGURATION FIREBASE ---
+// ---------------------------------------------------------
+// 🟢 CONFIGURATION FIREBASE
+// ---------------------------------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyDPWOdxYtnvVrDB6wk68EF0Gz62fqVCwBE", 
   authDomain: "espanolsprint.firebaseapp.com",
@@ -40,21 +30,10 @@ const firebaseConfig = {
   appId: "1:54612821418:web:7af8de5ad1545ec1ba57d3"
 };
 
-// --- INITIALISATION BLINDÉE (Anti-Crash) ---
-let app, auth, db, googleProvider;
-
-try {
-  // On essaie de récupérer l'app existante, sinon on l'initialise
-  app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  googleProvider = new GoogleAuthProvider();
-} catch (error) {
-  console.error("Erreur critique Firebase:", error);
-  // On ne fait rien, le site continuera sans Firebase (mieux qu'un écran noir)
-}
-
-// --- FIN CONFIGURATION ---
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
 
 // Fonction Audio Améliorée (Voix plus naturelles + Fix Chrome)
 const speak = (text) => {
@@ -316,51 +295,45 @@ const TestDashboard = ({ userData, onStartTest }) => { const levels = ["A1", "A2
 const DashboardContent = ({ userData, allLessons, onStartLesson }) => { const levels = ["A1", "A2", "B1", "B2", "C1"]; const safeLevel = (userData.level && levels.includes(userData.level)) ? userData.level : "A1"; const currentLevelIndex = levels.indexOf(safeLevel); return (<div className="w-full h-full flex flex-col"><div className="p-6 md:p-8"><h2 className="text-3xl font-black text-slate-900 mb-2">Ton Parcours</h2><p className="text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p></div><div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-10 snap-x snap-mandatory flex gap-8">{levels.map((level, index) => { const isLocked = index > currentLevelIndex; const isCurrent = index === currentLevelIndex; const isCompleted = index < currentLevelIndex; const levelLessons = allLessons.filter(l => l.level === level); return (<div key={level} className={`snap-center shrink-0 w-[300px] md:w-[350px] h-full flex flex-col rounded-3xl border-4 ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} p-6 relative overflow-hidden`}><div className="flex justify-between items-center mb-8"><div><h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3><p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p></div>{isLocked && <Lock size={24} className="text-slate-400" />}{isCompleted && <div className="bg-green-500 text-white p-1 rounded-full"><Check size={16} /></div>}</div><div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-2 custom-scrollbar">{levelLessons.map((lesson) => { const isLessonDone = userData.completedLessons.includes(lesson.id); const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id); if (isCompleted) { return (<div key={lesson.id} className="w-full p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-4 opacity-70 cursor-not-allowed"><CheckCircle size={16} /><span className="text-sm font-bold truncate flex-1">{lesson.title}</span><span className="text-xs uppercase font-bold">Acquis</span></div>); } return (<button key={lesson.id} disabled={!isAccessible} onClick={() => onStartLesson(lesson.id)} className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${isLessonDone ? 'bg-green-500 text-white shadow-md' : isAccessible ? 'bg-yellow-400 text-slate-900 shadow-lg scale-105 font-bold ring-4 ring-yellow-100' : 'bg-slate-200 text-slate-400'}`}><div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">{isLessonDone ? <Check size={16} /> : lesson.id}</div><div className="flex-1 truncate"><p className="text-sm truncate">{lesson.title}</p></div>{isAccessible && !isLessonDone && <PlayCircle size={20} />}</button>); })}</div>{isLocked && (<div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[2px] flex items-center justify-center z-10"><div className="bg-white p-6 rounded-2xl shadow-xl text-center border border-slate-100"><Lock size={32} className="mx-auto text-slate-300 mb-2" /><h4 className="font-bold text-slate-800">Niveau Bloqué</h4></div></div>)}</div>); })}<div className="w-6 shrink-0"></div></div></div>); };
 const StructuresContent = ({ structures }) => (<div className="max-w-3xl mx-auto w-full p-6 pb-24"><h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2><div className="space-y-6">{structures.map((struct) => (<div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p></div>))}</div></div>);
 const NotebookContent = ({ userVocab }) => {
-  // --- 1. DEBUG (Ouvre ta console F12 pour voir ça) ---
-  // Si ça affiche "undefined" ou 0, c'est que l'import en haut est mauvais.
-  console.log("Nombre de verbes dans la banque :", DATA_BANK?.verbs?.length);
+  // 1. Sécurité absolue : Si userVocab est vide/null, on utilise un tableau vide.
+  const safeList = userVocab || [];
 
-  // --- 2. SÉCURITÉ & PRÉPARATION ---
+  // 2. Dédoublonnage "Soft" : On garde ta logique .filter, et on ajoute un check d'index.
+  // Ça vérifie : "Est-ce que c'est la première fois que je vois ce mot (t.es) ?"
+  
+// --- BLOC DE SÉCURITÉ MAXIMALE ---
+  
+  // 1. On vérifie si la liste existe. Si ce n'est pas un tableau, on prend un tableau vide.
   const sourceList = Array.isArray(userVocab) ? userVocab : [];
 
-  // --- 3. CRÉATION DE LA "LISTE NOIRE" (INSENSIBLE À LA CASSE) ---
-  // On met tout en minuscule (.toLowerCase) et on enlève les espaces (.trim)
-  // pour être sûr que "Comer" bloque "comer " ou "COMER".
-  const forbiddenVerbs = new Set(
-    (DATA_BANK?.verbs || []).map(v => v.es.toLowerCase().trim())
-  );
+  const vocabItems = sourceList.filter(item => {
+      // Sécurité 1 : Si l'item est vide/null, on le jette sans planter
+      if (!item) return false;
 
-  // --- 4. FILTRAGE DU VOCABULAIRE ---
-  const vocabItems = sourceList
-    .filter(item => {
-      // Sécurité anti-crash
-      if (!item || !item.es) return false;
+      // Sécurité 2 : Si l'item n'a pas de propriété 'es' (espagnol), on le jette
+      if (!item.es) return false;
 
-      // On ne veut que les cartes de type 'swipe'
-      if (item.type !== 'swipe') return false;
+      // FILTRE : Si c'est un verbe, on le cache (car il est dans la grammaire)
+      // On convertit en minuscule pour gérer "Verbe", "verbe", "VERBE"
+      const contextSafe = item.context ? item.context.toLowerCase() : "";
+      if (contextSafe === 'verbe') return false;
 
-      // NETTOYAGE DU MOT À TESTER
-      const wordToCheck = item.es.toLowerCase().trim();
-
-      // LE VERDICT :
-      // Si la liste noire contient ce mot (en minuscule), on le cache !
-      if (forbiddenVerbs.has(wordToCheck)) return false;
-
+      // Si on arrive ici, on garde le mot !
       return true;
     })
-    // Dédoublonnage
+    // Dédoublonnage sécurisé
     .filter((item, index, self) => 
       index === self.findIndex((t) => t.es === item.es)
     );
 
-  // --- 5. FILTRAGE GRAMMAIRE ---
-  const grammarItems = sourceList
-    .filter(item => item && item.type === 'grammar')
+  // --- FIN DU BLOC ---
+  const grammarItems = safeList
+    .filter(c => c && c.type === 'grammar')
     .filter((item, index, self) => 
       index === self.findIndex((t) => t.title === item.title)
     );
 
-  // --- 6. UI & AFFICHAGE ---
+  // Le reste de ton code reste IDENTIQUE
   const [showReference, setShowReference] = useState(false);
   
   const REFERENCE_VERBS = [
@@ -369,11 +342,11 @@ const NotebookContent = ({ userVocab }) => {
     { title: "Verbes en -IR", endings: ["-o", "-es", "-e", "-imos", "-en"], ex: "Vivir" }
   ];
 
+  // Calcul pour l'affichage (optionnel, tu peux garder userVocab?.length si tu préfères)
   const count = vocabItems.length + grammarItems.length;
 
   return (
     <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
-      {/* EN-TÊTE */}
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique</h2>
         <div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">
@@ -381,7 +354,6 @@ const NotebookContent = ({ userVocab }) => {
         </div>
       </div>
       
-      {/* BOUTON D'AIDE TERMINAISONS */}
       <div className="mb-8">
         <button onClick={() => setShowReference(!showReference)} className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors">
           <Table size={20} /> {showReference ? "Masquer" : "Voir les terminaisons"}
@@ -399,10 +371,7 @@ const NotebookContent = ({ userVocab }) => {
         )}
       </div>
 
-      {/* GRILLE DE CONTENU */}
       <div className="grid md:grid-cols-2 gap-8">
-        
-        {/* COLONNE 1 : VOCABULAIRE */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
             <Edit3 size={18} /> Vocabulaire Acquis
@@ -422,7 +391,6 @@ const NotebookContent = ({ userVocab }) => {
           ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
         </div>
 
-        {/* COLONNE 2 : GRAMMAIRE */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
             <BookOpen size={18} /> Grammaire Apprise
