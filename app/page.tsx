@@ -301,11 +301,12 @@ const NotebookContent = ({ userVocab }) => {
   // 2. Dédoublonnage "Soft" : On garde ta logique .filter, et on ajoute un check d'index.
   // Ça vérifie : "Est-ce que c'est la première fois que je vois ce mot (t.es) ?"
   
-  const vocabItems = safeList
-    .filter(c => c && c.type === 'swipe') // Le "c &&" protège contre les objets vides
-    .filter((item, index, self) => 
+  // On filtre les doublons ET on cache les verbes (car ils sont déjà dans la section grammaire)
+const vocabItems = safeVocab
+  .filter(item => item.context !== 'Verbe') // <--- C'est cette ligne magique qui retire les verbes !
+  .filter((item, index, self) => 
       index === self.findIndex((t) => t.es === item.es)
-    );
+  );
 
   const grammarItems = safeList
     .filter(c => c && c.type === 'grammar')
