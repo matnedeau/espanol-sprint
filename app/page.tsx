@@ -302,12 +302,19 @@ const NotebookContent = ({ userVocab }) => {
   // Ça vérifie : "Est-ce que c'est la première fois que je vois ce mot (t.es) ?"
   
   // On filtre les doublons ET on cache les verbes (car ils sont déjà dans la section grammaire)
-const vocabItems = safeVocab
-  .filter(item => item.context !== 'Verbe') // <--- C'est cette ligne magique qui retire les verbes !
-  .filter((item, index, self) => 
-      index === self.findIndex((t) => t.es === item.es)
-  );
-
+// Dédoublonnage intelligent et SÉCURISÉ
+  const vocabItems = safeVocab
+    // 1. SÉCURITÉ D'ABORD : On garde seulement les éléments qui existent (pas de null/undefined)
+    .filter(item => item && item.es) 
+    
+    // 2. FILTRE VERBE : On exclut les verbes (car ils sont en grammaire)
+    // Le "?" (optional chaining) empêche le crash si context n'existe pas
+    .filter(item => item.context !== 'Verbe') 
+    
+    // 3. ANTI-DOUBLON : On garde unique par mot espagnol
+    .filter((item, index, self) => 
+        index === self.findIndex((t) => t.es === item.es)
+    );
   const grammarItems = safeList
     .filter(c => c && c.type === 'grammar')
     .filter((item, index, self) => 
