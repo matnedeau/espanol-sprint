@@ -2,39 +2,35 @@
 // @ts-nocheck
 'use client';
 
-// 1. TOUS LES IMPORTS (Regroupés ici pour éviter les doublons)
 import React, { useState, useEffect, useRef } from 'react';
-
 import { 
   Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, 
   Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, 
-  Lock, Table, Loader2  // <--- J'ai ajouté Loader2 ici !
+  Lock, Table, Loader2 
 } from 'lucide-react';
 
+// --- IMPORTS DONNÉES SÉCURISÉS ---
 import { 
   DATA_BANK,
   INITIAL_LESSONS_LIST,
   INITIAL_LESSONS_CONTENT,
   SENTENCE_STRUCTURES,
-  generateSmartTest
+  generateSmartTest,
+  CURRICULUM // Assure-toi que CURRICULUM est bien exporté dans content.ts
 } from './data/content';
 
-// --- IMPORTS FIREBASE (Une seule fois !) ---
-import { initializeApp, getApps, getApp } from "firebase/app"; // <--- J'ai ajouté getApps et getApp
+// --- IMPORTS FIREBASE ---
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { 
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-  signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, 
-  getRedirectResult 
+  signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup 
 } from "firebase/auth";
 import { 
   getFirestore, doc, setDoc, getDoc, updateDoc, 
   arrayUnion, increment, collection, getDocs 
 } from "firebase/firestore";
 
-// ---------------------------------------------------------
-// 🟢 CONFIGURATION FIREBASE
-// ---------------------------------------------------------
-// 1. TA CONFIGURATION (NE CHANGE RIEN ICI)
+// --- CONFIGURATION FIREBASE ---
 const firebaseConfig = {
   apiKey: "AIzaSyDPWOdxYtnvVrDB6wk68EF0Gz62fqVCwBE", 
   authDomain: "espanolsprint.firebaseapp.com",
@@ -44,13 +40,21 @@ const firebaseConfig = {
   appId: "1:54612821418:web:7af8de5ad1545ec1ba57d3"
 };
 
-// 2. L'INITIALISATION ANTI-CRASH (C'EST ICI QU'EST LA MAGIE)
-// On vérifie si Firebase est déjà lancé avant de le relancer
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+// --- INITIALISATION BLINDÉE (Anti-Crash) ---
+let app, auth, db, googleProvider;
 
-const auth = getAuth(app);
-const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
+try {
+  // On essaie de récupérer l'app existante, sinon on l'initialise
+  app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  googleProvider = new GoogleAuthProvider();
+} catch (error) {
+  console.error("Erreur critique Firebase:", error);
+  // On ne fait rien, le site continuera sans Firebase (mieux qu'un écran noir)
+}
+
+// --- FIN CONFIGURATION ---
 
 // Fonction Audio Améliorée (Voix plus naturelles + Fix Chrome)
 const speak = (text) => {
