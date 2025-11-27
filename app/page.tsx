@@ -1,7 +1,7 @@
 /* eslint-disable */
 // @ts-nocheck
 'use client';
-import { DATA_BANK } from './data/content'; // Ou le chemin correct vers ton fichier
+import { DATA_BANK } from './data/content';// Ou le chemin correct vers ton fichier
 import { useState } from 'react'; // Si ce n'est pas déjà fait
 import { Table, Edit3, BookOpen } from 'lucide-react'; // Si tu utilises ces icônes
 import { 
@@ -299,12 +299,11 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => { const le
 const StructuresContent = ({ structures }) => (<div className="max-w-3xl mx-auto w-full p-6 pb-24"><h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2><div className="space-y-6">{structures.map((struct) => (<div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p></div>))}</div></div>);
 const NotebookContent = ({ userVocab }) => {
   // --- 1. SÉCURITÉ & PRÉPARATION ---
-  // On s'assure que la liste est un tableau valide
   const sourceList = Array.isArray(userVocab) ? userVocab : [];
 
   // --- 2. CRÉATION DE LA "LISTE NOIRE" (VERBES) ---
-  // On extrait tous les mots espagnols de ta base de verbes pour les bloquer
-  // Le "Set" permet une vérification instantanée
+  // On récupère la liste depuis DATA_BANK importé en haut.
+  // La sécurité "(DATA_BANK?.verbs || [])" empêche Vercel de planter si le fichier charge mal.
   const forbiddenVerbs = new Set((DATA_BANK?.verbs || []).map(v => v.es));
 
   // --- 3. FILTRAGE DU VOCABULAIRE ---
@@ -313,16 +312,16 @@ const NotebookContent = ({ userVocab }) => {
       // Sécurité anti-crash
       if (!item || !item.es) return false;
 
-      // TYPE : On ne veut que les cartes de type 'swipe' ici
+      // On ne veut que les cartes de type 'swipe' ici
       if (item.type !== 'swipe') return false;
 
-      // FILTRE VERBES : Si le mot est dans la liste des verbes de DATA_BANK, on le cache
+      // LE COEUR DU SYSTÈME :
+      // Si le mot est dans la liste des verbes interdits, on le cache (return false)
       if (forbiddenVerbs.has(item.es)) return false;
 
-      // Sinon, on garde le mot
       return true;
     })
-    // Dédoublonnage : On garde uniquement la première occurrence de chaque mot espagnol
+    // Dédoublonnage : On garde uniquement la première occurrence
     .filter((item, index, self) => 
       index === self.findIndex((t) => t.es === item.es)
     );
@@ -334,7 +333,7 @@ const NotebookContent = ({ userVocab }) => {
       index === self.findIndex((t) => t.title === item.title)
     );
 
-  // --- 5. ETATS & CONSTANTES D'AFFICHAGE ---
+  // --- 5. UI & AFFICHAGE ---
   const [showReference, setShowReference] = useState(false);
   
   const REFERENCE_VERBS = [
@@ -343,11 +342,12 @@ const NotebookContent = ({ userVocab }) => {
     { title: "Verbes en -IR", endings: ["-o", "-es", "-e", "-imos", "-en"], ex: "Vivir" }
   ];
 
+  // Calcul du nombre d'éléments RÉELLEMENT affichés
   const count = vocabItems.length + grammarItems.length;
 
   return (
     <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
-      {/* HEADER */}
+      {/* EN-TÊTE */}
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl md:text-3xl font-black text-slate-900">Lexique</h2>
         <div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm">
@@ -355,7 +355,7 @@ const NotebookContent = ({ userVocab }) => {
         </div>
       </div>
       
-      {/* BOUTON TERMINAISONS */}
+      {/* BOUTON D'AIDE TERMINAISONS */}
       <div className="mb-8">
         <button onClick={() => setShowReference(!showReference)} className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors">
           <Table size={20} /> {showReference ? "Masquer" : "Voir les terminaisons"}
@@ -376,7 +376,7 @@ const NotebookContent = ({ userVocab }) => {
       {/* GRILLE DE CONTENU */}
       <div className="grid md:grid-cols-2 gap-8">
         
-        {/* COLONNE VOCABULAIRE */}
+        {/* COLONNE 1 : VOCABULAIRE (Sans les verbes !) */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
             <Edit3 size={18} /> Vocabulaire Acquis
@@ -396,7 +396,7 @@ const NotebookContent = ({ userVocab }) => {
           ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
         </div>
 
-        {/* COLONNE GRAMMAIRE */}
+        {/* COLONNE 2 : GRAMMAIRE */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
             <BookOpen size={18} /> Grammaire Apprise
