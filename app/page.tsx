@@ -1,21 +1,30 @@
 /* eslint-disable */
 // @ts-nocheck
 'use client';
-import { DATA_BANK } from './data/content';// Ou le chemin correct vers ton fichier
-import { useState } from 'react'; // Si ce n'est pas déjà fait
-import { Table, Edit3, BookOpen } from 'lucide-react'; // Si tu utilises ces icônes
-import { 
-  INITIAL_LESSONS_LIST, 
-  INITIAL_LESSONS_CONTENT, 
-  SENTENCE_STRUCTURES, 
-  generateSmartTest 
-} from './data/content';
 
+// 1. IMPORTS REACT (Tout regroupé ici)
 import React, { useState, useEffect, useRef } from 'react';
+
+// 2. IMPORTS LUCIDE ICONS (Tout regroupé ici)
+// J'ai mis toutes les icônes que j'ai vues dans tes captures précédentes
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table, Map, CheckCircle, Star, BrainCircuit, Target
+  Table, Edit3, BookOpen, Flame, ChevronRight, X, Check, Trophy, 
+  User, Book, Zap, LogOut, Save, GraduationCap, PlayCircle, Lock 
 } from 'lucide-react';
 
+// 3. IMPORTS DONNÉES (Tout regroupé ici)
+// On importe DATA_BANK et le reste depuis le même fichier
+import { 
+  DATA_BANK,
+  INITIAL_LESSONS_LIST,
+  INITIAL_LESSONS_CONTENT,
+  SENTENCE_STRUCTURES,
+  generateSmartTest
+} from './data/content';
+
+// --- EN DESSOUS, GARDE TES IMPORTS FIREBASE INCHANGÉS ---
+import { initializeApp } from "firebase/app";
+// ... la suite de ton code ...
 // --- IMPORTATION FIREBASE ---
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, getRedirectResult } from "firebase/auth";
