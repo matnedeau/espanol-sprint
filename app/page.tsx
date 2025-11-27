@@ -1,6 +1,7 @@
 /* eslint-disable */
 // @ts-nocheck
 'use client';
+import QuizZone from './data/quizengine';
 import { 
   INITIAL_LESSONS_LIST, 
   INITIAL_LESSONS_CONTENT, 
@@ -161,15 +162,11 @@ export default function EspanolSprintPro() {
     setTestMode(null);
     setView('lesson');
   };
-
   const startTest = (mode) => {
-    const testQuestions = generateSmartTest(userData.completedLessons, userData.vocab);
-    setTestMode(mode);
-    dynamicLessonsContent['TEST'] = testQuestions; 
-    setActiveLessonId('TEST');
-    setView('lesson');
-  };
-
+  // On passe simplement en mode 'quiz', le composant QuizZone gérera le reste
+  setTestMode(mode); 
+  setView('quiz'); 
+};
   const handleLessonComplete = async (xp, lessonContent, lessonId) => {
     if (testMode) {
         if (testMode === 'levelup') {
@@ -276,6 +273,7 @@ export default function EspanolSprintPro() {
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
               {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} />}
               {view === 'notebook' && userData && <NotebookContent userVocab={userData.vocab} />}
+              {view === 'quiz' && <QuizZone onExit={() => setView('dashboard')} />}
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} />}
               {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
               {view === 'profile' && userData && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} />}
