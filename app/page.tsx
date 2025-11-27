@@ -2,18 +2,15 @@
 // @ts-nocheck
 'use client';
 
-// 1. IMPORTS REACT (Tout regroupé ici)
+// 1. TOUS LES IMPORTS (Regroupés ici pour éviter les doublons)
 import React, { useState, useEffect, useRef } from 'react';
 
-// 2. IMPORTS LUCIDE ICONS (Tout regroupé ici)
-// J'ai mis toutes les icônes que j'ai vues dans tes captures précédentes
 import { 
-  Table, Edit3, BookOpen, Flame, ChevronRight, X, Check, Trophy, 
-  User, Book, Zap, LogOut, Save, GraduationCap, PlayCircle, Lock 
+  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, 
+  Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, 
+  Lock, Table 
 } from 'lucide-react';
 
-// 3. IMPORTS DONNÉES (Tout regroupé ici)
-// On importe DATA_BANK et le reste depuis le même fichier
 import { 
   DATA_BANK,
   INITIAL_LESSONS_LIST,
@@ -22,13 +19,17 @@ import {
   generateSmartTest
 } from './data/content';
 
-// --- EN DESSOUS, GARDE TES IMPORTS FIREBASE INCHANGÉS ---
+// --- IMPORTS FIREBASE (Une seule fois !) ---
 import { initializeApp } from "firebase/app";
-// ... la suite de ton code ...
-// --- IMPORTATION FIREBASE ---
-import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, getRedirectResult } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, increment, collection, getDocs } from "firebase/firestore";
+import { 
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
+  signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, 
+  getRedirectResult 
+} from "firebase/auth";
+import { 
+  getFirestore, doc, setDoc, getDoc, updateDoc, 
+  arrayUnion, increment, collection, getDocs 
+} from "firebase/firestore";
 
 // ---------------------------------------------------------
 // 🟢 CONFIGURATION FIREBASE
