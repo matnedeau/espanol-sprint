@@ -291,40 +291,41 @@ const TestDashboard = ({ userData, onStartTest }) => { const levels = ["A1", "A2
 const DashboardContent = ({ userData, allLessons, onStartLesson }) => { const levels = ["A1", "A2", "B1", "B2", "C1"]; const safeLevel = (userData.level && levels.includes(userData.level)) ? userData.level : "A1"; const currentLevelIndex = levels.indexOf(safeLevel); return (<div className="w-full h-full flex flex-col"><div className="p-6 md:p-8"><h2 className="text-3xl font-black text-slate-900 mb-2">Ton Parcours</h2><p className="text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p></div><div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-10 snap-x snap-mandatory flex gap-8">{levels.map((level, index) => { const isLocked = index > currentLevelIndex; const isCurrent = index === currentLevelIndex; const isCompleted = index < currentLevelIndex; const levelLessons = allLessons.filter(l => l.level === level); return (<div key={level} className={`snap-center shrink-0 w-[300px] md:w-[350px] h-full flex flex-col rounded-3xl border-4 ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} p-6 relative overflow-hidden`}><div className="flex justify-between items-center mb-8"><div><h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3><p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p></div>{isLocked && <Lock size={24} className="text-slate-400" />}{isCompleted && <div className="bg-green-500 text-white p-1 rounded-full"><Check size={16} /></div>}</div><div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-2 custom-scrollbar">{levelLessons.map((lesson) => { const isLessonDone = userData.completedLessons.includes(lesson.id); const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id); if (isCompleted) { return (<div key={lesson.id} className="w-full p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-4 opacity-70 cursor-not-allowed"><CheckCircle size={16} /><span className="text-sm font-bold truncate flex-1">{lesson.title}</span><span className="text-xs uppercase font-bold">Acquis</span></div>); } return (<button key={lesson.id} disabled={!isAccessible} onClick={() => onStartLesson(lesson.id)} className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${isLessonDone ? 'bg-green-500 text-white shadow-md' : isAccessible ? 'bg-yellow-400 text-slate-900 shadow-lg scale-105 font-bold ring-4 ring-yellow-100' : 'bg-slate-200 text-slate-400'}`}><div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">{isLessonDone ? <Check size={16} /> : lesson.id}</div><div className="flex-1 truncate"><p className="text-sm truncate">{lesson.title}</p></div>{isAccessible && !isLessonDone && <PlayCircle size={20} />}</button>); })}</div>{isLocked && (<div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[2px] flex items-center justify-center z-10"><div className="bg-white p-6 rounded-2xl shadow-xl text-center border border-slate-100"><Lock size={32} className="mx-auto text-slate-300 mb-2" /><h4 className="font-bold text-slate-800">Niveau Bloqué</h4></div></div>)}</div>); })}<div className="w-6 shrink-0"></div></div></div>); };
 const StructuresContent = ({ structures }) => (<div className="max-w-3xl mx-auto w-full p-6 pb-24"><h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2><div className="space-y-6">{structures.map((struct) => (<div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p></div>))}</div></div>);
 const NotebookContent = ({ userVocab }) => {
-  // --- BLOC DE SÉCURITÉ & FILTRAGE ---
-  
   // 1. On sécurise la source
   const sourceList = Array.isArray(userVocab) ? userVocab : [];
 
-  // 2. On crée une "Liste Noire" de verbes pour être sûr de ne rien laisser passer
-  // On prend tous les verbes de ta banque de données + les irréguliers courants
+  // 2. LISTE NOIRE ÉTENDUE : On ajoute manuellement TOUS les verbes susceptibles d'apparaître
   const verbBlocklist = new Set([
-    ...(DATA_BANK.verbs ? DATA_BANK.verbs.map(v => v.es) : []), // Tous les verbes de la Data Bank
-    "Ir", "Ser", "Estar", "Tener", "Haber", "Hacer", "Poder", "Querer", "Decir", "Ver", "Dar", "Saber", "Salir" // Les stars irrégulières
+    // Les verbes de la banque de données (import automatique)
+    ...(DATA_BANK.verbs ? DATA_BANK.verbs.map(v => v.es) : []), 
+    
+    // Les irréguliers et verbes courants (ajout manuel pour être sûr)
+    "Ir", "Ser", "Estar", "Tener", "Haber", "Hacer", "Poder", "Querer", 
+    "Decir", "Ver", "Dar", "Saber", "Salir", "Poner", "Venir",
+    
+    // Les verbes réguliers qui passaient à travers le filtre
+    "Hablar", "Comer", "Vivir", "Beber", "Bailar", "Escuchar", 
+    "Estudiar", "Trabajar", "Jugar", "Dormir", "Caminar", "Correr",
+    "Leer", "Escribir", "Mirar", "Amar", "Viajar", "Comprar", "Reír"
   ]);
 
   const vocabItems = sourceList.filter(item => {
-      // Sécurité 1 : Item vide
       if (!item || !item.es) return false;
 
-      // --- FILTRES INTELLIGENTS ---
-
-      // A. Filtre par contexte (Ex: "Verbe régulier", "Verbe -AR")
+      // FILTRE 1 : Si le contexte contient "verbe" (ex: "Verbe régulier")
       const contextSafe = item.context ? item.context.toLowerCase() : "";
       if (contextSafe.includes('verbe')) return false;
 
-      // B. Filtre par liste noire (Ex: "Ir", "Comer" même si le contexte est "Voy a Madrid")
+      // FILTRE 2 : Si le mot espagnol est dans notre liste noire
       if (verbBlocklist.has(item.es)) return false;
 
-      // Si on arrive ici, c'est un vrai mot de vocabulaire (Nom, Adjectif, Expression)
       return true;
     })
-    // Dédoublonnage
     .filter((item, index, self) => 
       index === self.findIndex((t) => t.es === item.es)
     );
 
-  // Pour la grammaire, on garde la logique existante
+  // Pour la grammaire, on garde tout ce qui est étiqueté "grammar"
   const grammarItems = sourceList
     .filter(c => c && c.type === 'grammar')
     .filter((item, index, self) => 
@@ -368,7 +369,6 @@ const NotebookContent = ({ userVocab }) => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        {/* COLONNE VOCABULAIRE (Sans les verbes) */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
             <Edit3 size={18} /> Vocabulaire Acquis
@@ -388,7 +388,6 @@ const NotebookContent = ({ userVocab }) => {
           ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
         </div>
 
-        {/* COLONNE GRAMMAIRE */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
             <BookOpen size={18} /> Grammaire Apprise
