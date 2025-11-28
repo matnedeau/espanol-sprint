@@ -272,7 +272,7 @@ export default function EspanolSprintPro() {
               {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} />}
               {view === 'notebook' && userData && <NotebookContent userVocab={userData.vocab} />}
               {view === 'quiz' && <QuizZone onExit={() => setView('dashboard')} userData={userData} />}
-              {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} />}
+              {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
               {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
               {view === 'profile' && userData && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} />}
               {view === 'lesson' && dynamicLessonsContent[activeLessonId] && <LessonEngine content={dynamicLessonsContent[activeLessonId]} onComplete={(xp) => handleLessonComplete(xp, dynamicLessonsContent[activeLessonId], activeLessonId)} onExit={() => setView('dashboard')} />}
