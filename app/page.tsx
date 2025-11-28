@@ -293,20 +293,24 @@ const StructuresContent = ({ structures }) => (<div className="max-w-3xl mx-auto
 const NotebookContent = ({ userVocab }) => {
   // 1. On sécurise la source
   const sourceList = Array.isArray(userVocab) ? userVocab : [];
-
-  // 2. LISTE NOIRE ÉTENDUE : On ajoute manuellement TOUS les verbes susceptibles d'apparaître
+ // 2. LISTE NOIRE COMPLÈTE & DÉFINITIVE
   const verbBlocklist = new Set([
-    // Les verbes de la banque de données (import automatique)
+    // Import automatique depuis la banque de données
     ...(DATA_BANK.verbs ? DATA_BANK.verbs.map(v => v.es) : []), 
     
-    // Les irréguliers et verbes courants (ajout manuel pour être sûr)
+    // --- Irréguliers & Classiques ---
     "Ir", "Ser", "Estar", "Tener", "Haber", "Hacer", "Poder", "Querer", 
-    "Decir", "Ver", "Dar", "Saber", "Salir", "Poner", "Venir",
+    "Decir", "Ver", "Dar", "Saber", "Salir", "Poner", "Venir", "Llegar",
     
-    // Les verbes réguliers qui passaient à travers le filtre
+    // --- Verbes fréquents ---
     "Hablar", "Comer", "Vivir", "Beber", "Bailar", "Escuchar", 
     "Estudiar", "Trabajar", "Jugar", "Dormir", "Caminar", "Correr",
-    "Leer", "Escribir", "Mirar", "Amar", "Viajar", "Comprar", "Reír"
+    "Leer", "Escribir", "Mirar", "Amar", "Viajar", "Comprar", "Reír",
+    "Aprender", "Abrir", "Cerrar",
+
+    // --- Verbes trouvés dans les leçons manuelles (anciens + nouveaux) ---
+    "Pagar", "Enviar", "Celebrar", "Dudar", "Reciclar", "Descargar", 
+    "Votar", "Pintar", "Rezar", "Contratar", "Despedir", "Persuadir","Quedar", "Deber", "Necesitar" 
   ]);
 
   const vocabItems = sourceList.filter(item => {
