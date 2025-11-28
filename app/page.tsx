@@ -366,7 +366,71 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
     </div>
   ); 
 };
-const StructuresContent = ({ structures }) => (<div className="max-w-3xl mx-auto w-full p-6 pb-24"><h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2><div className="space-y-6">{structures.map((struct) => (<div key={struct.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4"><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation}</p></div>))}</div></div>);
+const StructuresContent = ({ structures, userVocab }) => {
+  // 1. Récupérer les structures apprises du profil utilisateur
+  // On sécurise l'accès à userVocab comme on l'a fait pour le lexique
+  const safeList = Array.isArray(userVocab) ? userVocab : [];
+  const learnedStructures = safeList.filter(item => item && item.type === 'structure');
+
+  // 2. Fusionner avec les structures de base
+  const allStructures = [...structures, ...learnedStructures];
+
+  // 3. Dédoublonnage (pour éviter d'avoir 2 fois la même si elle est dans la base et apprise)
+  const uniqueStructures = allStructures.filter((item, index, self) =>
+    index === self.findIndex((t) => t.title === item.title)
+  );
+
+  return (
+    <div className="max-w-3xl mx-auto w-full p-6 pb-24">
+      <h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2>
+      
+      <div className="space-y-6">
+        {uniqueStructures.map((struct, idx) => (
+          <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-yellow-100 rounded-lg text-yellow-700">
+                <Hammer size={20} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">{struct.title}</h3>
+            </div>
+            
+            <div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">
+              {struct.formula}
+            </div>
+            
+            <div className="space-y-2 mb-4">
+              {/* Gestion des deux formats de données (Base vs Leçons) */}
+              {struct.example_es ? (
+                /* Format Base de données */
+                <>
+                  <p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p>
+                  <p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p>
+                </>
+              ) : (
+                /* Format Leçons (souvent juste 'example' et 'note') */
+                <>
+                  <p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example}</p>
+                  {/* On n'a pas toujours la trad exacte ici, parfois dans la note */}
+                </>
+              )}
+            </div>
+            
+            <p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">
+              💡 {struct.explanation || struct.note}
+            </p>
+          </div>
+        ))}
+
+        {uniqueStructures.length === 0 && (
+            <div className="text-center text-slate-400 py-10">
+                <p>Aucune structure découverte pour le moment.</p>
+                <p className="text-sm">Avance dans les leçons pour en débloquer !</p>
+            </div>
+        )}
+      </div>
+    </div>
+  );
+};
 const NotebookContent = ({ userVocab }) => {
   // 1. On sécurise la source
   const sourceList = Array.isArray(userVocab) ? userVocab : [];
