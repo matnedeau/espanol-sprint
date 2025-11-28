@@ -507,3 +507,51 @@ levels.forEach(lvl => {
         INITIAL_LESSONS_LIST.push({ id: idCounter++, title: topic, level: lvl, desc: "Cours complet" });
     }
 });
+
+export const generateExamContent = (allContent, startId, endId, levelName, examId) => {
+  let pool = [];
+  
+  // 1. On récupère tout le contenu des leçons du niveau
+  for (let i = startId; i <= endId; i++) {
+    if (allContent[i]) {
+      // On garde uniquement le vocabulaire (swipe) et les exercices (input)
+      const validCards = allContent[i].filter(c => c.type === 'swipe' || c.type === 'input');
+      pool = [...pool, ...validCards];
+    }
+  }
+
+  // 2. Sécurité : si pas assez de contenu
+  if (pool.length < 10) {
+    return [
+      { id: examId * 1000, type: "structure", title: `EXAMEN ${levelName}`, formula: "Erreur", example: "Contenu insuffisant", note: "Contacte le support." }
+    ];
+  }
+
+  // 3. Tirage au sort de 20 questions
+  const selectedQuestions = pool.sort(() => 0.5 - Math.random()).slice(0, 20);
+
+  // 4. Formatage pour l'examen
+  const examContent = [
+    { 
+      id: examId * 1000, 
+      type: "structure", 
+      title: `EXAMEN ${levelName}`, 
+      formula: "Passage de Niveau", 
+      example: "20 Questions", 
+      note: "Objectif : 16/20 minimum !" 
+    },
+    ...selectedQuestions.map((item, index) => ({
+      ...item,
+      id: (examId * 1000) + index + 1, 
+      // Si c'est une carte 'input', on garde la question, sinon on adapte le vocabulaire
+      type: 'input', // On force tout en mode 'input' (question/réponse) pour l'examen ? Ou on mixe ? 
+      // Mieux : on garde le type original mais pour 'swipe', on le transforme en question QCM ou Input.
+      // Pour faire simple ici, on transforme les cartes 'swipe' en 'input' de traduction.
+      question: item.type === 'input' ? item.question : `Traduis "${item.en}"`,
+      answer: item.type === 'input' ? item.answer : [item.es.toLowerCase()],
+      hint: item.type === 'input' ? item.hint : "..."
+    }))
+  ];
+
+  return examContent;
+};
