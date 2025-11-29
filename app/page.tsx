@@ -681,7 +681,115 @@ const SwipeCard = ({ data, onNext, onPrev }) => {
     </div>
   );
 };
-const InputCard = ({ data, onNext }) => { const [val, setVal] = useState(''); const [status, setStatus] = useState('idle'); const checkAnswer = () => { const isCorrect = data.answer.includes(val.trim().toLowerCase()); setStatus(isCorrect ? 'success' : 'error'); if (isCorrect) { speak("¡Muy bien!"); setTimeout(onNext, 1500); } else { speak("Inténtalo de nuevo"); } }; return (<div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-8 md:p-12 justify-center space-y-8 animate-in zoom-in duration-300"><div className="text-center space-y-2"><span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Challenge</span><h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3></div><input type="text" value={val} onChange={(e) => { setVal(e.target.value); setStatus('idle'); }} className={`w-full text-center text-2xl md:text-3xl font-bold p-6 rounded-2xl border-4 outline-none transition-all ${status === 'error' ? 'border-red-400 bg-red-50 text-red-500' : status === 'success' ? 'border-green-400 bg-green-50 text-green-600' : 'border-slate-100 focus:border-yellow-400 focus:bg-yellow-50'}`} placeholder="Ta réponse..." /><button onClick={checkAnswer} className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl transition-all transform hover:scale-[1.02] active:scale-95 ${status === 'success' ? 'bg-green-500' : 'bg-slate-900'}`}>{status === 'success' ? 'Parfait ! 🎉' : 'Vérifier'}</button>{status === 'error' && <p className="text-center text-red-400 font-bold animate-shake">Essaie encore ! Indice : {data.hint}</p>}</div>); };
+const InputCard = ({ data, onNext, isExam, onScore }) => { 
+  const [val, setVal] = useState(''); 
+  const [status, setStatus] = useState('idle'); 
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const inputRef = useRef(null); // Référence pour garder le focus
+
+  // Fonction pour ajouter un accent
+  const addChar = (char) => {
+    if (isSubmitted) return;
+    setVal(prev => prev + char);
+    inputRef.current?.focus();
+  };
+
+  const checkAnswer = (e) => { 
+    if (e) e.preventDefault(); // Empêche le rechargement si c'est un formulaire
+    if (isSubmitted) return;
+
+    const userClean = val.trim().toLowerCase().replace(/[¿¡!.,]/g, '');
+    const answers = Array.isArray(data.answer) ? data.answer : [data.answer];
+    // Vérification souple
+    const isCorrect = answers.some(a => a.toLowerCase().includes(userClean) || userClean === a.toLowerCase());
+    
+    setStatus(isCorrect ? 'success' : 'error'); 
+    
+    if (isExam) {
+      // --- MODE EXAMEN ---
+      setIsSubmitted(true);
+      if (onScore) onScore(isCorrect); // On compte les points
+      
+      speak(isCorrect ? "¡Muy bien!" : "Incorrecto");
+      
+      // On affiche la correction (vert/rouge) pendant 2.5s puis ON PASSE À LA SUITE
+      // même si c'est faux !
+      setTimeout(() => {
+        onNext();
+      }, 2500); 
+
+    } else {
+      // --- MODE LEÇON (Entraînement) ---
+      // Ici on bloque tant que ce n'est pas juste pour l'apprentissage
+      if (isCorrect) { 
+        speak("¡Muy bien!"); 
+        setTimeout(onNext, 1500); 
+      } else { 
+        speak("Inténtalo de nuevo"); 
+      } 
+    }
+  }; 
+
+  return (
+    <div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-8 md:p-12 justify-center space-y-6 animate-in zoom-in duration-300">
+      <div className="text-center space-y-2">
+        <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+          {isExam ? "Question d'Examen" : "Challenge"}
+        </span>
+        <h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3>
+      </div>
+      
+      {/* BARRE D'ACCENTS (Nouveauté) */}
+      <div className="flex gap-2 justify-center flex-wrap">
+        {['á','é','í','ó','ú','ñ','¿','¡'].map(char => (
+          <button 
+            key={char} 
+            type="button" 
+            onClick={() => addChar(char)} 
+            disabled={isSubmitted}
+            className="w-10 h-10 bg-white border-2 border-slate-200 shadow-sm hover:border-indigo-400 hover:text-indigo-600 text-slate-700 font-bold rounded-xl transition-all text-lg active:scale-95 disabled:opacity-50"
+          >
+            {char}
+          </button>
+        ))}
+      </div>
+
+      <form onSubmit={checkAnswer} className="w-full space-y-6">
+        <input 
+          ref={inputRef}
+          type="text" 
+          value={val} 
+          onChange={(e) => { if(!isSubmitted) { setVal(e.target.value); setStatus('idle'); } }} 
+          disabled={isSubmitted}
+          className={`w-full text-center text-2xl md:text-3xl font-bold p-6 rounded-2xl border-4 outline-none transition-all ${status === 'error' ? 'border-red-400 bg-red-50 text-red-500' : status === 'success' ? 'border-green-400 bg-green-50 text-green-600' : 'border-slate-100 focus:border-yellow-400 focus:bg-yellow-50'}`} 
+          placeholder="Ta réponse..." 
+          autoComplete="off"
+        />
+        
+        <button 
+          type="submit"
+          disabled={isSubmitted || !val.trim()}
+          className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl transition-all transform hover:scale-[1.02] active:scale-95 ${status === 'success' ? 'bg-green-500' : status === 'error' ? 'bg-red-500' : 'bg-slate-900 disabled:bg-slate-300'}`}
+        >
+          {status === 'success' ? 'Validé !' : status === 'error' ? 'Suivant...' : 'Vérifier'}
+        </button>
+      </form>
+      
+      {/* Afficher la correction en mode examen si erreur */}
+      {status === 'error' && isExam && (
+        <div className="text-center animate-in fade-in slide-in-from-bottom-2">
+          <p className="text-red-400 font-bold">Dommage !</p>
+          <p className="text-slate-600 text-sm">La réponse était : <span className="font-bold">{Array.isArray(data.answer) ? data.answer[0] : data.answer}</span></p>
+        </div>
+      )}
+      
+      {/* En leçon, on donne juste un indice */}
+      {status === 'error' && !isExam && (
+        <p className="text-center text-red-400 font-bold animate-shake">Indice : {data.hint}</p>
+      )}
+    </div>
+  ); 
+};
 const GrammarCard = ({ data, onNext }) => (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500"><div className="bg-indigo-600 p-8 md:p-10 text-white text-center relative"><button onClick={(e) => { e.stopPropagation(); speak(data.title); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-white"><Volume2 size={20} /></button><h3 className="text-3xl md:text-4xl font-black">{data.title}</h3><p className="text-indigo-200 mt-2">{data.description}</p></div><div className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-slate-50"><div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">{data.conjugation.map((row, idx) => (<div key={idx} className="flex justify-between items-center p-4 border-b border-slate-100 last:border-0"><span className="text-slate-400 font-medium w-1/3">{row.pronoun}</span><span className="text-indigo-600 font-black text-xl w-1/3 text-center">{row.verb}</span><span className="text-slate-300 text-sm w-1/3 text-right italic">{row.fr}</span></div>))}</div><button onClick={onNext} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg hover:bg-yellow-300 active:scale-95 transition-all">J'ai compris</button></div></div>);
 const StructureCard = ({ data, onNext }) => (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500 border-b-[12px] border-slate-100"><div className="bg-amber-400 p-8 text-slate-900 text-center relative"><button onClick={(e) => { e.stopPropagation(); speak(data.example); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-slate-900"><Volume2 size={20} /></button><h3 className="text-2xl font-black uppercase tracking-wider">{data.title}</h3></div><div className="flex-1 p-8 flex flex-col justify-center items-center gap-6 bg-slate-50"><div className="bg-white p-6 rounded-xl border-2 border-slate-200 w-full text-center"><p className="font-mono text-indigo-600 font-bold text-lg mb-2">{data.formula}</p><p className="text-slate-500 text-sm">{data.note}</p></div><div className="text-center"><p className="text-2xl font-bold text-slate-800 mb-1">{data.example}</p><p className="text-sm text-slate-400 italic">Exemple</p></div><button onClick={onNext} className="w-full mt-auto bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-lg active:scale-95 transition-all">C'est noté !</button></div></div>);
 const LessonComplete = ({ xp, onHome, onDownload, isTest }) => (<div className="h-full w-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in duration-500"><div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform"><Trophy size={100} className="text-yellow-500 fill-yellow-500" /></div><div><h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">{isTest ? "Examen Réussi !" : "Increíble!"}</h2><p className="text-xl text-yellow-900 font-bold opacity-80">{isTest ? "Niveau Validé" : "Leçon terminée et sauvegardée."}</p></div><div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div><div className="flex flex-col gap-4 w-full max-w-sm"><button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all"><Download size={20} /> Télécharger le PDF</button><button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">Continuer</button></div></div>);
