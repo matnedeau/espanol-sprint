@@ -438,7 +438,7 @@ const StructuresContent = ({ structures, userVocab }) => {
     </div>
   );
 };
-const NotebookContent = ({ userVocab }) => {
+const NotebookContent = ({ userVocab, userData}) => {
   // 1. On sécurise la source
   const sourceList = Array.isArray(userVocab) ? userVocab : [];
  // 2. LISTE NOIRE COMPLÈTE & DÉFINITIVE
