@@ -528,7 +528,7 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
           <main className="flex-1 h-full overflow-hidden relative flex flex-col">
             <MobileHeader userData={userData} />
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
-              {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} />} onDownloadPDF={handlePrintPDF}
+              {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} onDownloadPDF={handlePrintPDF}/>}
               {view === 'notebook' && userData && <NotebookContent userVocab={userData.vocab} />}
               {view === 'quiz' && <QuizZone onExit={() => setView('dashboard')} userData={userData} />}
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
