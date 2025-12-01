@@ -193,34 +193,25 @@ export default function EspanolSprintPro() {
       setView('quiz'); // Mode entraînement rapide classique
     }
   };
- const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0) => {
-    // CAS 1 : C'est un EXAMEN (Level Up)
+const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0) => {
+    // --- CAS 1 : C'est un EXAMEN DE PASSAGE (Level Up) ---
     if (testMode === 'levelup') {
-        // Condition de réussite : 16/20
         const passed = finalScore >= 16;
         setLastExamResult({ score: finalScore, passed });
 
         if (passed) {
-            // 1. Calcul du niveau et de la plage de leçons (Ex: A1 = 1 à 20)
             const levels = ["A1", "A2", "B1", "B2", "C1"];
             const currentIdx = levels.indexOf(userData.level);
             const nextLevel = levels[currentIdx + 1] || "C1";
             
-            // On détermine quelles leçons viennent d'être validées par ce diplôme
-            // Si on était A1 (index 0), on valide 1 à 20. Si A2 (index 1), on valide 21 à 40.
             const startId = (currentIdx * 20) + 1;
             const endId = (currentIdx + 1) * 20;
 
-            // 2. RÉCUPÉRATION MASSIVE DU CONTENU
-            // On parcourt toutes les leçons du niveau pour tout débloquer d'un coup
             let levelItems = [];
             let levelLessonIds = [];
 
             for (let i = startId; i <= endId; i++) {
-                // On ajoute l'ID de la leçon pour qu'elle apparaisse comme "Fait" (verte)
                 levelLessonIds.push(i);
-
-                // On récupère le contenu de la leçon s'il existe
                 const lessonData = dynamicLessonsContent[i];
                 if (lessonData) {
                     const items = lessonData.filter(item => 
@@ -230,11 +221,8 @@ export default function EspanolSprintPro() {
                 }
             }
 
-            // 3. Filtrage des doublons (pour ne pas surcharger la base de données)
             const uniqueNewItems = levelItems.filter(item => {
-                // On ne garde que ce qu'on n'a pas déjà
                 const isIdPresent = userData.vocab.some(v => v.id === item.id);
-                // Double vérif par contenu pour être sûr
                 const isContentPresent = userData.vocab.some(v => {
                     if (item.type === 'swipe' && v.type === 'swipe') return v.es === item.es;
                     if (item.type === 'grammar' && v.type === 'grammar') return v.title === item.title;
@@ -244,19 +232,15 @@ export default function EspanolSprintPro() {
                 return !isIdPresent && !isContentPresent;
             });
 
-            // 4. SAUVEGARDE GLOBALE
             if (currentUser) {
                 const userRef = doc(db, "users", currentUser.uid);
                 await updateDoc(userRef, { 
-                    xp: increment(500), 
+                    xp: increment(500),
                     level: nextLevel,
-                    // On ajoute TOUT le vocabulaire/grammaire/structures du niveau d'un coup
                     vocab: arrayUnion(...uniqueNewItems),
-                    // On marque toutes les leçons du niveau comme "Terminées"
                     completedLessons: arrayUnion(...levelLessonIds)
                 });
                 
-                // Mise à jour locale pour affichage immédiat
                 setUserData(prev => ({ 
                     ...prev, 
                     level: nextLevel, 
@@ -266,45 +250,62 @@ export default function EspanolSprintPro() {
                 }));
             }
         } 
-        // Si raté, on ne fait rien de spécial (juste affichage du score)
-        
         setTestMode(null);
         setView('complete');
         return;
     }
 
-    // CAS 2 : Leçon normale (Code standard)
+    // --- CAS 2 : Leçon normale (CORRIGÉ ET ENRICHI) ---
+    // On récupère le contenu intéressant de la leçon actuelle
     const newItems = lessonContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
     const today = new Date().toDateString();
     
     if (currentUser) {
       const userRef = doc(db, "users", currentUser.uid);
+      
+      // FILTRAGE INTELLIGENT (Le même que pour l'examen)
       const uniqueNewItems = newItems.filter(item => {
+        // 1. Vérif par ID
         const isIdPresent = userData.vocab.some(v => v.id === item.id);
+        
+        // 2. Vérif par CONTENU (pour éviter les doublons si l'ID change)
         const isContentPresent = userData.vocab.some(v => {
+           // Pour le vocabulaire
            if (item.type === 'swipe' && v.type === 'swipe') return v.es === item.es;
+           // Pour la grammaire
            if (item.type === 'grammar' && v.type === 'grammar') return v.title === item.title;
+           // Pour les structures (C'était ce qu'il manquait !)
            if (item.type === 'structure' && v.type === 'structure') return v.title === item.title;
+           
            return false;
         });
+        
         return !isIdPresent && !isContentPresent;
       });
 
       const isNew = !userData.completedLessons.includes(lessonId);
       const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
       
+      // Mise à jour de la base de données
       const updateData = {
         xp: increment(xp),
         streak: increment(1),
-        vocab: arrayUnion(...uniqueNewItems), 
+        vocab: arrayUnion(...uniqueNewItems), // On ajoute les nouveaux éléments filtrés
         completedLessons: arrayUnion(lessonId),
         dailyLimit: { date: today, count: newCount }
       };
+      
       await updateDoc(userRef, updateData);
       
-      // Mise à jour locale simple
-      const newSnap = await getDoc(userRef);
-      setUserData(newSnap.data());
+      // Mise à jour locale (pour voir les changements tout de suite sans recharger)
+      setUserData(prev => ({
+        ...prev,
+        xp: prev.xp + xp,
+        streak: prev.streak + 1,
+        vocab: [...prev.vocab, ...uniqueNewItems],
+        completedLessons: isNew ? [...prev.completedLessons, lessonId] : prev.completedLessons,
+        dailyLimit: { date: today, count: newCount }
+      }));
     }
     setView('complete');
   };
