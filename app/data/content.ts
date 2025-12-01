@@ -555,3 +555,108 @@ export const generateExamContent = (allContent, startId, endId, levelName, examI
 
   return examContent;
 };
+// --- SECTION LECTURE DU JOUR (NIVEAUX A1 -> C1) ---
+
+export const DAILY_READINGS = [
+  // --- NIVEAU A1 (Phrases simples, présent) ---
+  {
+    id: 101,
+    level: "A1",
+    title_es: "Mi Gato Félix",
+    title_fr: "Mon Chat Félix",
+    text_es: "Tengo un gato. Se llama Félix. Es negro y blanco. A Félix le gusta dormir en el sofá. Come mucho pescado. Es un gato muy simpático y juega con una pelota roja.",
+    text_fr: "J'ai un chat. Il s'appelle Félix. Il est noir et blanc. Félix aime dormir sur le canapé. Il mange beaucoup de poisson. C'est un chat très sympathique et il joue avec une balle rouge.",
+    difficulty: "Débutant (A1)"
+  },
+  {
+    id: 102,
+    level: "A1",
+    title_es: "El Desayuno",
+    title_fr: "Le Petit Déjeuner",
+    text_es: "Por la mañana, como pan con tomate y aceite. Bebo un café con leche caliente. Mi hermana prefiere beber zumo de naranja. Es un desayuno típico en España.",
+    text_fr: "Le matin, je mange du pain avec de la tomate et de l'huile. Je bois un café au lait chaud. Ma soeur préfère boire du jus d'orange. C'est un petit déjeuner typique en Espagne.",
+    difficulty: "Débutant (A1)"
+  },
+
+  // --- NIVEAU A2 (Passé, habitudes, descriptions plus longues) ---
+  {
+    id: 201,
+    level: "A2",
+    title_es: "Mis Vacaciones Pasadas",
+    title_fr: "Mes Vacances Passées",
+    text_es: "El año pasado fui a Barcelona con mis amigos. Visitamos la Sagrada Familia y caminamos por las Ramblas. Hacía mucho sol y comimos paella cerca del mar. Fue un viaje inolvidable.",
+    text_fr: "L'année dernière, je suis allé à Barcelone avec mes amis. Nous avons visité la Sagrada Familia et marché sur les Ramblas. Il faisait très beau et nous avons mangé une paella près de la mer. Ce fut un voyage inoubliable.",
+    difficulty: "Élémentaire (A2)"
+  },
+  {
+    id: 202,
+    level: "A2",
+    title_es: "La Rutina de Sofía",
+    title_fr: "La Routine de Sofia",
+    text_es: "Sofía se levanta temprano, a las siete. Se ducha, se viste y va a trabajar en autobús. Normalmente almuerza a las dos de la tarde. Por la noche, le gusta leer un libro antes de dormir.",
+    text_fr: "Sofia se lève tôt, à sept heures. Elle se douche, s'habille et va travailler en bus. Normalement elle déjeune à 14h. Le soir, elle aime lire un livre avant de dormir.",
+    difficulty: "Élémentaire (A2)"
+  },
+
+  // --- NIVEAU B1 (Opinions, futur, subjonctif simple) ---
+  {
+    id: 301,
+    level: "B1",
+    title_es: "El Teletrabajo",
+    title_fr: "Le Télétravail",
+    text_es: "Creo que el teletrabajo tiene muchas ventajas. No tienes que viajar cada día y puedes organizar tu tiempo mejor. Sin embargo, a veces es difícil separar la vida laboral de la personal. Es importante tener un espacio tranquilo.",
+    text_fr: "Je crois que le télétravail a beaucoup d'avantages. Tu n'as pas à voyager chaque jour et tu peux mieux organiser ton temps. Cependant, il est parfois difficile de séparer la vie professionnelle de la personnelle. Il est important d'avoir un espace calme.",
+    difficulty: "Intermédiaire (B1)"
+  },
+  {
+    id: 302,
+    level: "B1",
+    title_es: "Planes para el Futuro",
+    title_fr: "Projets d'Avenir",
+    text_es: "Cuando termine mis estudios, viajaré por América del Sur. Quiero que mis padres vengan conmigo una semana. Espero poder visitar Machu Picchu y aprender más sobre la cultura inca.",
+    text_fr: "Quand je terminerai mes études, je voyagerai en Amérique du Sud. Je veux que mes parents viennent avec moi une semaine. J'espère pouvoir visiter le Machu Picchu et en apprendre plus sur la culture inca.",
+    difficulty: "Intermédiaire (B1)"
+  },
+
+  // --- NIVEAU B2 (Argumentation, nuances, passé complexe) ---
+  {
+    id: 401,
+    level: "B2",
+    title_es: "El Impacto de las Redes Sociales",
+    title_fr: "L'Impact des Réseaux Sociaux",
+    text_es: "Si bien las redes sociales nos conectan, también han generado una dependencia preocupante. Muchos jóvenes sienten ansiedad si no revisan su teléfono constantemente. Deberíamos fomentar un uso más responsable de la tecnología.",
+    text_fr: "Bien que les réseaux sociaux nous connectent, ils ont aussi généré une dépendance inquiétante. Beaucoup de jeunes ressentent de l'anxiété s'ils ne vérifient pas leur téléphone constamment. Nous devrions encourager un usage plus responsable de la technologie.",
+    difficulty: "Avancé (B2)"
+  },
+
+  // --- NIVEAU C1 (Littéraire, abstrait, idiomatique) ---
+  {
+    id: 501,
+    level: "C1",
+    title_es: "El Arte de la Sobremesa",
+    title_fr: "L'Art de la 'Sobremesa'",
+    text_es: "La sobremesa es una institución sagrada en España. No se trata meramente de digerir los alimentos, sino de ese lapso indefinido donde la conversación fluye sin prisa. Es allí donde se arregla el mundo y se fortalecen los lazos, desafiando la tiranía del reloj.",
+    text_fr: "La 'sobremesa' est une institution sacrée en Espagne. Il ne s'agit pas simplement de digérer les aliments, mais de ce laps de temps indéfini où la conversation coule sans hâte. C'est là que l'on refait le monde et que l'on renforce les liens, défiant la tyrannie de l'horloge.",
+    difficulty: "Expert (C1)"
+  }
+];
+
+// Fonction intelligente : Sélectionne une lecture basée sur le niveau ET la date
+export const getDailyReading = (userLevel) => {
+  // 1. Sécurité : Si pas de niveau, on met A1 par défaut
+  const targetLevel = userLevel || "A1";
+
+  // 2. Filtrage : On ne garde que les textes du niveau de l'utilisateur
+  // Si on ne trouve pas de texte pour ce niveau (ex: niveau inconnu), on prend tout (fallback)
+  const levelReadings = DAILY_READINGS.filter(r => r.level === targetLevel);
+  const pool = levelReadings.length > 0 ? levelReadings : DAILY_READINGS;
+
+  // 3. Rotation quotidienne
+  const today = new Date();
+  const dayIndex = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
+  
+  // Le modulo (%) permet de boucler sur les textes disponibles
+  const readingIndex = dayIndex % pool.length;
+  
+  return pool[readingIndex];
+};

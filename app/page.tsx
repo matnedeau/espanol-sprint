@@ -7,8 +7,11 @@ import {
   SENTENCE_STRUCTURES, 
   generateSmartTest,
   DATA_BANK,
-  generateExamContent
+  generateExamContent,
+  getDailyReading 
 } from './data/content';
+
+// Dans les imports lucide-react, assure-toi d'avoir 'BookOpen' ou ajoute 'BookOpenText'
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
@@ -348,6 +351,7 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
               {view === 'quiz' && <QuizZone onExit={() => setView('dashboard')} userData={userData} />}
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
               {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
+              {view === 'reading' && <DailyReadingContent userLevel={userData?.level} />}
               {view === 'profile' && userData && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} />}
               {view === 'lesson' && dynamicLessonsContent[activeLessonId] && (
   <LessonEngine 
@@ -867,7 +871,77 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
 const GrammarCard = ({ data, onNext }) => (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500"><div className="bg-indigo-600 p-8 md:p-10 text-white text-center relative"><button onClick={(e) => { e.stopPropagation(); speak(data.title); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-white"><Volume2 size={20} /></button><h3 className="text-3xl md:text-4xl font-black">{data.title}</h3><p className="text-indigo-200 mt-2">{data.description}</p></div><div className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-slate-50"><div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">{data.conjugation.map((row, idx) => (<div key={idx} className="flex justify-between items-center p-4 border-b border-slate-100 last:border-0"><span className="text-slate-400 font-medium w-1/3">{row.pronoun}</span><span className="text-indigo-600 font-black text-xl w-1/3 text-center">{row.verb}</span><span className="text-slate-300 text-sm w-1/3 text-right italic">{row.fr}</span></div>))}</div><button onClick={onNext} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg hover:bg-yellow-300 active:scale-95 transition-all">J'ai compris</button></div></div>);
 const StructureCard = ({ data, onNext }) => (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500 border-b-[12px] border-slate-100"><div className="bg-amber-400 p-8 text-slate-900 text-center relative"><button onClick={(e) => { e.stopPropagation(); speak(data.example); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-slate-900"><Volume2 size={20} /></button><h3 className="text-2xl font-black uppercase tracking-wider">{data.title}</h3></div><div className="flex-1 p-8 flex flex-col justify-center items-center gap-6 bg-slate-50"><div className="bg-white p-6 rounded-xl border-2 border-slate-200 w-full text-center"><p className="font-mono text-indigo-600 font-bold text-lg mb-2">{data.formula}</p><p className="text-slate-500 text-sm">{data.note}</p></div><div className="text-center"><p className="text-2xl font-bold text-slate-800 mb-1">{data.example}</p><p className="text-sm text-slate-400 italic">Exemple</p></div><button onClick={onNext} className="w-full mt-auto bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-lg active:scale-95 transition-all">C'est noté !</button></div></div>);
 const LessonComplete = ({ xp, onHome, onDownload, isTest }) => (<div className="h-full w-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in duration-500"><div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform"><Trophy size={100} className="text-yellow-500 fill-yellow-500" /></div><div><h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">{isTest ? "Examen Réussi !" : "Increíble!"}</h2><p className="text-xl text-yellow-900 font-bold opacity-80">{isTest ? "Niveau Validé" : "Leçon terminée et sauvegardée."}</p></div><div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div><div className="flex flex-col gap-4 w-full max-w-sm"><button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all"><Download size={20} /> Télécharger le PDF</button><button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">Continuer</button></div></div>);
-// 👇 LE CODE COMPLET À COLLER EN BAS DE PAGE.TSX 👇
+const DailyReadingContent = ({ userLevel }) => { // Ajout de la prop userLevel
+  // On passe le niveau à la fonction de récupération
+  const reading = getDailyReading(userLevel); 
+  const [showTranslation, setShowTranslation] = useState(false);
+
+  return (
+    <div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-8">
+      <div className="text-center">
+        <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+          Lecture du jour
+        </span>
+        <h2 className="text-3xl font-black text-slate-900 mt-2">{reading.title_es}</h2>
+        
+        {/* Affichage dynamique de la difficulté */}
+        <div className="flex justify-center gap-2 mt-2">
+            <span className="text-slate-400 italic text-sm">{reading.difficulty}</span>
+            {/* Petit badge pour confirmer que c'est adapté */}
+            <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded font-bold">Adapté à ton niveau</span>
+        </div>
+      </div>
+
+      {/* Carte Espagnol */}
+      <div className="bg-white p-8 rounded-3xl shadow-lg border-b-4 border-slate-100 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-xl">
+          Español
+        </div>
+        <button 
+          onClick={() => speak(reading.text_es)}
+          className="absolute top-6 right-6 p-3 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors"
+          title="Écouter le texte"
+        >
+          <Volume2 size={20} />
+        </button>
+        <p className="text-xl text-slate-800 leading-relaxed font-medium mt-4">
+          {reading.text_es}
+        </p>
+      </div>
+
+      {/* Bouton Toggle */}
+      <div className="flex justify-center">
+        <button 
+          onClick={() => setShowTranslation(!showTranslation)}
+          className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-bold transition-colors"
+        >
+          {showTranslation ? <div className="flex items-center gap-2"><X size={16}/> Masquer la traduction</div> : <div className="flex items-center gap-2"><Check size={16}/> Voir la traduction</div>}
+        </button>
+      </div>
+
+      {/* Carte Français (Révélée) */}
+      {showTranslation && (
+        <div className="bg-slate-50 p-8 rounded-3xl border-2 border-dashed border-slate-200 animate-in fade-in slide-in-from-top-4 duration-500">
+           <h3 className="text-slate-400 font-bold text-sm uppercase mb-2 tracking-wider">Français</h3>
+           <h4 className="text-lg font-bold text-slate-700 mb-2">{reading.title_fr}</h4>
+           <p className="text-slate-600 leading-relaxed">
+            {reading.text_fr}
+          </p>
+        </div>
+      )}
+      
+      <div className="bg-blue-50 p-4 rounded-xl flex gap-3 items-start">
+        <div className="bg-blue-100 p-2 rounded-lg text-blue-600 shrink-0">
+            <BrainCircuit size={20} />
+        </div>
+        <div>
+            <p className="font-bold text-blue-800 text-sm">Conseil du coach</p>
+            <p className="text-blue-600 text-xs mt-1">Lis le texte à haute voix 3 fois. La première fois pour déchiffrer, la deuxième pour comprendre, la troisième pour l'intonation.</p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const QuizZone = ({ onExit, userData }) => {
   const [questions, setQuestions] = useState([]);
