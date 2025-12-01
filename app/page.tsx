@@ -528,7 +528,7 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
           <main className="flex-1 h-full overflow-hidden relative flex flex-col">
             <MobileHeader userData={userData} />
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
-              {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} />}
+              {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} />} onDownloadPDF={handlePrintPDF}
               {view === 'notebook' && userData && <NotebookContent userVocab={userData.vocab} />}
               {view === 'quiz' && <QuizZone onExit={() => setView('dashboard')} userData={userData} />}
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
@@ -555,20 +555,19 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
 
 /* --- UI COMPONENTS --- */
 const TestDashboard = ({ userData, onStartTest }) => { const levels = ["A1", "A2", "B1", "B2", "C1"]; const currentIdx = levels.indexOf(userData.level || "A1"); const nextLevel = levels[currentIdx + 1]; const lessonsDone = userData.completedLessons.length; const canTakeExam = lessonsDone >= (currentIdx + 1) * 20; return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-8"><div className="text-center"><h2 className="text-3xl font-black text-slate-900 mb-2">Zone Test 🧠</h2><p className="text-slate-500">Valide tes acquis.</p></div><div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all cursor-pointer group" onClick={() => onStartTest('training')}><div className="flex items-center gap-6"><div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform"><BrainCircuit size={32} /></div><div className="flex-1"><h3 className="text-xl font-bold text-slate-900">Entraînement Rapide</h3><p className="text-sm text-slate-500 mt-1">Révision intelligente.</p></div><ChevronRight className="text-slate-300" /></div></div><div className={`bg-white p-8 rounded-3xl shadow-sm border border-slate-200 transition-all relative overflow-hidden ${!canTakeExam ? 'opacity-60 grayscale' : 'cursor-pointer hover:shadow-md group'}`} onClick={() => canTakeExam && onStartTest('levelup')}><div className="flex items-center gap-6"><div className="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center text-yellow-600 group-hover:rotate-6 transition-transform"><Target size={32} /></div><div className="flex-1"><h3 className="text-xl font-bold text-slate-900">Examen {nextLevel}</h3><p className="text-sm text-slate-500 mt-1">Passage de niveau.</p></div>{canTakeExam ? <ChevronRight className="text-slate-300" /> : <Lock className="text-slate-300" />}</div>{!canTakeExam && <div className="absolute bottom-2 right-4 text-xs font-bold text-red-400 bg-red-50 px-2 py-1 rounded">Finis le niveau d'abord</div>}</div></div>); };
-const DashboardContent = ({ userData, allLessons, onStartLesson }) => { 
+const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }) => { 
   const levels = ["A1", "A2", "B1", "B2", "C1"]; 
   const safeLevel = (userData.level && levels.includes(userData.level)) ? userData.level : "A1"; 
   const currentLevelIndex = levels.indexOf(safeLevel); 
   
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="p-6 md:p-8">
+      <div className="p-6 md:p-8 shrink-0">
         <h2 className="text-3xl font-black text-slate-900 mb-2">Ton Parcours</h2>
         <p className="text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p>
       </div>
       
-      {/* Container horizontal des niveaux */}
-      <div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-10 snap-x snap-mandatory flex gap-6 md:gap-8">
+      <div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-4 snap-x snap-mandatory flex gap-6 md:gap-8 items-start">
         {levels.map((level, index) => { 
           const isLocked = index > currentLevelIndex; 
           const isCurrent = index === currentLevelIndex; 
@@ -576,9 +575,20 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
           const levelLessons = allLessons.filter(l => l.level === level); 
           
           return (
-            <div key={level} className={`snap-center shrink-0 w-[320px] md:w-[380px] h-full flex flex-col rounded-3xl border-4 ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} p-5 md:p-6 relative overflow-hidden transition-all`}>
+            <div 
+              key={level} 
+              className={`
+                snap-center shrink-0 
+                w-[85vw] md:w-[380px] 
+                h-[calc(100dvh-260px)] md:h-[calc(100vh-200px)]
+                flex flex-col 
+                rounded-3xl border-4 
+                ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} 
+                p-5 md:p-6 relative overflow-hidden transition-all
+              `}
+            >
               
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex justify-between items-center mb-4 shrink-0">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p>
@@ -587,18 +597,33 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
                 {isCompleted && <div className="bg-green-500 text-white p-1 rounded-full"><Check size={16} /></div>}
               </div>
 
-              {/* Liste des leçons avec scrollbar améliorée */}
-              <div className="flex-1 overflow-y-auto space-y-3 pb-16 pr-2 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto space-y-3 pb-4 pr-2 custom-scrollbar">
                 {levelLessons.map((lesson) => { 
                   const isLessonDone = userData.completedLessons.includes(lesson.id); 
                   const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id); 
                   
+                  // --- C'EST ICI QUE TOUT CHANGE ---
                   if (isCompleted) { 
                     return (
-                      <div key={lesson.id} className="w-full p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-4 opacity-70 cursor-not-allowed">
-                        <CheckCircle size={16} />
-                        <span className="text-sm font-bold truncate flex-1">{lesson.title}</span>
-                        <span className="text-xs uppercase font-bold">Acquis</span>
+                      <div key={lesson.id} className="w-full flex gap-2 group">
+                         {/* Bouton pour REFAIRE la leçon */}
+                         <button 
+                            onClick={() => onStartLesson(lesson.id)} 
+                            className="flex-1 p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-4 hover:bg-green-200 transition-colors"
+                         >
+                            <CheckCircle size={16} />
+                            <span className="text-sm font-bold truncate flex-1 text-left">{lesson.title}</span>
+                            <span className="text-xs uppercase font-bold opacity-60 group-hover:opacity-100">Réviser</span>
+                         </button>
+                         
+                         {/* Bouton pour TÉLÉCHARGER le PDF direct */}
+                         <button 
+                            onClick={() => onDownloadPDF(lesson.id)} 
+                            className="p-4 rounded-2xl bg-white border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all" 
+                            title="Télécharger la fiche PDF"
+                         >
+                            <Download size={20} />
+                         </button>
                       </div>
                     ); 
                   } 
@@ -608,7 +633,7 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
                       <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">
                         {isLessonDone ? <Check size={16} /> : lesson.id}
                       </div>
-                      <div className="flex-1 min-w-0"> {/* min-w-0 permet au truncate de marcher dans un flex */}
+                      <div className="flex-1 min-w-0">
                         <p className="text-sm truncate">{lesson.title}</p>
                       </div>
                       {isAccessible && !isLessonDone && <PlayCircle size={20} className="shrink-0" />}
@@ -628,7 +653,7 @@ const DashboardContent = ({ userData, allLessons, onStartLesson }) => {
             </div>
           ); 
         })}
-        <div className="w-2 shrink-0"></div>
+        <div className="w-4 shrink-0"></div>
       </div>
     </div>
   ); 
