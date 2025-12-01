@@ -105,6 +105,7 @@ export default function EspanolSprintPro() {
           const lessonsSnapshot = await getDocs(collection(db, "lessons"));
           const lessonsData = {};
           lessonsSnapshot.forEach((doc) => { lessonsData[doc.id] = doc.data().content; });
+          setDynamicLessonsContent({ ...INITIAL_LESSONS_CONTENT, ...lessonsData });
           
           if (Object.keys(lessonsData).length > 0) setDynamicLessonsContent(lessonsData);
           else setDynamicLessonsContent(INITIAL_LESSONS_CONTENT);
@@ -192,49 +193,121 @@ export default function EspanolSprintPro() {
       setView('quiz'); // Mode entraînement rapide classique
     }
   };
-  const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0) => {
+ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0) => {
     // CAS 1 : C'est un EXAMEN (Level Up)
     if (testMode === 'levelup') {
-        const passed = finalScore >= 16; // La condition 16/20
-        
+        // Condition de réussite : 16/20
+        const passed = finalScore >= 16;
+        setLastExamResult({ score: finalScore, passed });
+
         if (passed) {
-            // SUCCÈS : On passe au niveau suivant
+            // 1. Calcul du niveau et de la plage de leçons (Ex: A1 = 1 à 20)
             const levels = ["A1", "A2", "B1", "B2", "C1"];
             const currentIdx = levels.indexOf(userData.level);
             const nextLevel = levels[currentIdx + 1] || "C1";
             
+            // On détermine quelles leçons viennent d'être validées par ce diplôme
+            // Si on était A1 (index 0), on valide 1 à 20. Si A2 (index 1), on valide 21 à 40.
+            const startId = (currentIdx * 20) + 1;
+            const endId = (currentIdx + 1) * 20;
+
+            // 2. RÉCUPÉRATION MASSIVE DU CONTENU
+            // On parcourt toutes les leçons du niveau pour tout débloquer d'un coup
+            let levelItems = [];
+            let levelLessonIds = [];
+
+            for (let i = startId; i <= endId; i++) {
+                // On ajoute l'ID de la leçon pour qu'elle apparaisse comme "Fait" (verte)
+                levelLessonIds.push(i);
+
+                // On récupère le contenu de la leçon s'il existe
+                const lessonData = dynamicLessonsContent[i];
+                if (lessonData) {
+                    const items = lessonData.filter(item => 
+                        ['swipe', 'grammar', 'structure'].includes(item.type)
+                    );
+                    levelItems = [...levelItems, ...items];
+                }
+            }
+
+            // 3. Filtrage des doublons (pour ne pas surcharger la base de données)
+            const uniqueNewItems = levelItems.filter(item => {
+                // On ne garde que ce qu'on n'a pas déjà
+                const isIdPresent = userData.vocab.some(v => v.id === item.id);
+                // Double vérif par contenu pour être sûr
+                const isContentPresent = userData.vocab.some(v => {
+                    if (item.type === 'swipe' && v.type === 'swipe') return v.es === item.es;
+                    if (item.type === 'grammar' && v.type === 'grammar') return v.title === item.title;
+                    if (item.type === 'structure' && v.type === 'structure') return v.title === item.title;
+                    return false;
+                });
+                return !isIdPresent && !isContentPresent;
+            });
+
+            // 4. SAUVEGARDE GLOBALE
             if (currentUser) {
                 const userRef = doc(db, "users", currentUser.uid);
-                await updateDoc(userRef, { xp: increment(500), level: nextLevel });
-                setUserData(prev => ({ ...prev, level: nextLevel, xp: prev.xp + 500 }));
+                await updateDoc(userRef, { 
+                    xp: increment(500), 
+                    level: nextLevel,
+                    // On ajoute TOUT le vocabulaire/grammaire/structures du niveau d'un coup
+                    vocab: arrayUnion(...uniqueNewItems),
+                    // On marque toutes les leçons du niveau comme "Terminées"
+                    completedLessons: arrayUnion(...levelLessonIds)
+                });
+                
+                // Mise à jour locale pour affichage immédiat
+                setUserData(prev => ({ 
+                    ...prev, 
+                    level: nextLevel, 
+                    xp: prev.xp + 500,
+                    vocab: [...prev.vocab, ...uniqueNewItems],
+                    completedLessons: [...new Set([...prev.completedLessons, ...levelLessonIds])]
+                }));
             }
-            alert(`Félicitations ! Tu passes au niveau ${nextLevel} avec ${finalScore}/20 !`);
-        } else {
-            // ÉCHEC
-            alert(`Raté... Tu as eu ${finalScore}/20. Il faut 16/20 pour passer.`);
-        }
+        } 
+        // Si raté, on ne fait rien de spécial (juste affichage du score)
         
         setTestMode(null);
-        setView('complete'); // Tu peux personnaliser cette vue pour afficher le score
+        setView('complete');
         return;
     }
 
-    // CAS 2 : Leçon normale (Ton code existant)
+    // CAS 2 : Leçon normale (Code standard)
     const newItems = lessonContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
-    // ... (Le reste de ta logique de sauvegarde de leçon normale) ...
-    // Pour simplifier, je mets juste la fin ici, garde ton code de filtrage vocabulaire existant
+    const today = new Date().toDateString();
+    
     if (currentUser) {
-        const userRef = doc(db, "users", currentUser.uid);
-        // ... Logique de sauvegarde ...
-        await updateDoc(userRef, { 
-            xp: increment(xp), 
-            completedLessons: arrayUnion(lessonId) 
-            // etc...
+      const userRef = doc(db, "users", currentUser.uid);
+      const uniqueNewItems = newItems.filter(item => {
+        const isIdPresent = userData.vocab.some(v => v.id === item.id);
+        const isContentPresent = userData.vocab.some(v => {
+           if (item.type === 'swipe' && v.type === 'swipe') return v.es === item.es;
+           if (item.type === 'grammar' && v.type === 'grammar') return v.title === item.title;
+           if (item.type === 'structure' && v.type === 'structure') return v.title === item.title;
+           return false;
         });
+        return !isIdPresent && !isContentPresent;
+      });
+
+      const isNew = !userData.completedLessons.includes(lessonId);
+      const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
+      
+      const updateData = {
+        xp: increment(xp),
+        streak: increment(1),
+        vocab: arrayUnion(...uniqueNewItems), 
+        completedLessons: arrayUnion(lessonId),
+        dailyLimit: { date: today, count: newCount }
+      };
+      await updateDoc(userRef, updateData);
+      
+      // Mise à jour locale simple
+      const newSnap = await getDoc(userRef);
+      setUserData(newSnap.data());
     }
     setView('complete');
   };
-
   const handlePrintPDF = (lessonId) => {
     const content = dynamicLessonsContent[lessonId];
     if(!content) return;
