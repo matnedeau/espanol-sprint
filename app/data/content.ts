@@ -397,7 +397,7 @@ export const generateStructuredLesson = (id) => {
   const randVerb = DATA_BANK.verbs[verbIdx];
   const randNoun = DATA_BANK.nouns[id % DATA_BANK.nouns.length];
   const randNoun2 = DATA_BANK.nouns[(id + 3) % DATA_BANK.nouns.length];
-  const randNoun3 = DATA_BANK.nouns[(id + 7) % DATA_BANK.nouns.length];
+  const randNoun3 = DATA_BANK.nouns[(id + 7) % DATA_BANK.nouns.length]; // Nouveau mot
   const randAdj = DATA_BANK.adjectives[id % DATA_BANK.adjectives.length];
   const randConn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
   
@@ -424,65 +424,67 @@ export const generateStructuredLesson = (id) => {
   const exerciseQuestion = isPluralCycle ? `Vous ${randVerb.en.toLowerCase()}ez` : `Il ${randVerb.en.toLowerCase()}`;
   const exerciseAnswer = isPluralCycle ? [randVerb.vos.toLowerCase()] : [randVerb.el.toLowerCase()];
 
+  // GÉNÉRATION ENRICHIE AVEC PHRASES (sentence)
   return [
     { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Focus : ${randVerb.es}`, note: `Niveau ${level}` },
     
-    // Vocabulaire 1 avec Phrase de contexte
+    // Vocabulaire 1 + Phrase
     { 
-      id: cardId++, 
-      type: "swipe", 
-      es: randNoun.es, 
-      en: randNoun.en, 
-      context: "Vocabulaire clé",
-      sentence: `Tengo ${randNoun.es.toLowerCase()}.` // Ex: "Tengo el libro" (J'ai le livre)
+        id: cardId++, 
+        type: "swipe", 
+        es: randNoun.es, 
+        en: randNoun.en, 
+        context: "Vocabulaire clé",
+        sentence: `Tengo ${randNoun.es.toLowerCase()}.` // "J'ai le..."
     },
-
+    
     { id: cardId++, type: "grammar", title: grammarTitle, description: grammarDesc, conjugation: grammarConjugation },
     { id: cardId++, type: "input", question: exerciseQuestion, answer: exerciseAnswer, hint: `Verbe ${randVerb.es}` },
     
-    // Adjectif avec Phrase de contexte
+    // Adjectif + Phrase
     { 
-      id: cardId++, 
-      type: "swipe", 
-      es: randAdj.es, 
-      en: randAdj.en, 
-      context: "Adjectif utile",
-      sentence: `Es muy ${randAdj.es.toLowerCase()}.` // Ex: "Es muy grande" (C'est très grand)
+        id: cardId++, 
+        type: "swipe", 
+        es: randAdj.es, 
+        en: randAdj.en, 
+        context: "Description",
+        sentence: `Es muy ${randAdj.es.toLowerCase()}.` // "C'est très..."
     },
-
+    
     { id: cardId++, type: "structure", title: "L'accord", formula: "Nom + Adjectif", example: `${randNoun.es} ${randAdj.es.toLowerCase()}`, note: "L'adjectif s'accorde en genre et nombre." },
     
-    // Vocabulaire 2 avec Phrase de contexte
+    // Vocabulaire 2 + Phrase
     { 
-      id: cardId++, 
-      type: "swipe", 
-      es: randNoun2.es, 
-      en: randNoun2.en, 
-      context: "Vocabulaire extra",
-      sentence: `Veo ${randNoun2.es.toLowerCase()}.` // Ex: "Veo la casa" (Je vois la maison)
+        id: cardId++, 
+        type: "swipe", 
+        es: randNoun2.es, 
+        en: randNoun2.en, 
+        context: "Vocabulaire extra",
+        sentence: `Veo ${randNoun2.es.toLowerCase()}.` // "Je vois..."
     },
-
-    // Vocabulaire 3 avec Phrase de contexte
+    
+    // Vocabulaire 3 + Phrase
     { 
-      id: cardId++, 
-      type: "swipe", 
-      es: randNoun3.es, 
-      en: randNoun3.en, 
-      context: "Nouveau mot",
-      sentence: `Quiero ${randNoun3.es.toLowerCase()}.` // Ex: "Quiero el coche" (Je veux la voiture)
+        id: cardId++, 
+        type: "swipe", 
+        es: randNoun3.es, 
+        en: randNoun3.en, 
+        context: "Nouveau mot",
+        sentence: `Quiero ${randNoun3.es.toLowerCase()}.` // "Je veux..."
     },
-
-    // Connecteur avec Phrase de contexte
+    
+    // Connecteur + Phrase
     { 
-      id: cardId++, 
-      type: "swipe", 
-      es: randConn.es, 
-      en: randConn.en, 
-      context: "Mot de liaison",
-      sentence: `${randConn.es}, es importante.` // Ex: "Pero, es importante" (Mais c'est important)
+        id: cardId++, 
+        type: "swipe", 
+        es: randConn.es, 
+        en: randConn.en, 
+        context: "Mot de liaison",
+        sentence: `${randConn.es}, es importante.` // "..., c'est important"
     },
-
+    
     { id: cardId++, type: "structure", title: "Astuce Pro 💡", formula: "Culture & Langue", example: randTip, note: "Bon à savoir !" },
+    
     { 
       id: cardId++, 
       type: "structure", 
@@ -493,6 +495,7 @@ export const generateStructuredLesson = (id) => {
         : `Él ${randVerb.el.toLowerCase()} ${randNoun.es.toLowerCase()}`,
       note: "Répète à voix haute pour la prononciation." 
     },
+    
     { id: cardId++, type: "input", question: `Traduis '${randNoun.en}'`, answer: [randNoun.es.toLowerCase()], hint: `${randNoun.es.substring(0,3)}...` }
   ];
 };
