@@ -312,129 +312,102 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
     }
     setView('complete');
   };
-  const handlePrintPDF = (lessonId) => {
+  const handlePrintPDF = async (lessonId) => {
     const content = dynamicLessonsContent[lessonId];
     if(!content) return;
 
-    // On trie le contenu pour avoir une belle mise en page
+    // 1. Import dynamique de la librairie (nécessite 'npm install html2pdf.js')
+    let html2pdf;
+    try {
+        // On utilise 'await import' car html2pdf ne fonctionne que sur le navigateur (client)
+        html2pdf = (await import('html2pdf.js')).default;
+    } catch (e) {
+        alert("Erreur : La librairie 'html2pdf.js' n'est pas installée. Lancez 'npm install html2pdf.js' dans votre terminal.");
+        return;
+    }
+
+    // 2. Préparation des données
     const vocab = content.filter(c => c.type === 'swipe');
     const grammar = content.filter(c => c.type === 'grammar');
     const structures = content.filter(c => c.type === 'structure');
 
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-        alert("Veuillez autoriser les pop-ups pour générer le PDF.");
-        return;
-    }
-
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Leçon ${lessonId} - EspañolSprint</title>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-          
-          body {
+    // 3. Création du contenu HTML (Invisible pour l'utilisateur)
+    const element = document.createElement('div');
+    
+    // On garde exactement TON style, mais adapté pour le format A4
+    element.innerHTML = `
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        .pdf-container {
             font-family: 'Inter', sans-serif;
             color: #1e293b;
-            margin: 0;
-            padding: 40px;
             background-color: white;
-            -webkit-print-color-adjust: exact;
-          }
-          
-          .header {
+            padding: 20px;
+            width: 100%;
+        }
+        
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 4px solid #facc15; /* Jaune du site */
+            border-bottom: 4px solid #facc15;
             padding-bottom: 20px;
-            margin-bottom: 40px;
-          }
-          
-          .logo {
-            font-size: 24px;
-            font-weight: 900;
-            color: #0f172a;
-          }
-          .logo span { color: #dc2626; } /* Rouge du "Sprint" */
-          
-          .title-box {
-            text-align: right;
-          }
-          
-          h1 { font-size: 16px; margin: 0; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
-          .lesson-id { font-size: 40px; font-weight: 900; color: #4f46e5; line-height: 1; }
+            margin-bottom: 30px;
+        }
+        
+        .logo { font-size: 24px; font-weight: 900; color: #0f172a; }
+        .logo span { color: #dc2626; }
+        
+        .title-box { text-align: right; }
+        h1 { font-size: 14px; margin: 0; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
+        .lesson-id { font-size: 32px; font-weight: 900; color: #4f46e5; line-height: 1; }
 
-          h2 {
-            font-size: 18px;
-            color: #4f46e5;
-            text-transform: uppercase;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 8px;
-            margin-top: 30px;
-            margin-bottom: 20px;
-          }
+        h2 {
+            font-size: 16px; color: #4f46e5; text-transform: uppercase;
+            border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;
+            margin-top: 25px; margin-bottom: 15px;
+            page-break-after: avoid;
+        }
 
-          /* GRILLE VOCABULAIRE */
-          .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* 2 colonnes */
-            gap: 15px;
-          }
-          
-          .card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-left: 4px solid #facc15; /* Bordure jaune */
-            border-radius: 8px;
-            padding: 15px;
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        .card {
+            background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #facc15;
+            border-radius: 8px; padding: 12px; 
             page-break-inside: avoid;
-          }
-          
-          .es { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
-          .fr { font-size: 14px; color: #64748b; font-weight: 600; }
-          .context { font-size: 12px; color: #94a3b8; font-style: italic; margin-top: 6px; }
+        }
+        
+        .es { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+        .fr { font-size: 14px; color: #64748b; font-weight: 600; }
+        .context { font-size: 11px; color: #94a3b8; font-style: italic; margin-top: 6px; }
 
-          /* BOITE GRAMMAIRE */
-          .grammar-box {
-            background: #eef2ff;
-            border: 2px solid #c7d2fe;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+        .grammar-box {
+            background: #eef2ff; border: 2px solid #c7d2fe; border-radius: 12px;
+            padding: 15px; margin-bottom: 15px; 
             page-break-inside: avoid;
-          }
-          .grammar-title { color: #3730a3; font-weight: 800; margin-bottom: 10px; font-size: 18px; }
-          
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          td { padding: 8px; border-bottom: 1px solid #cbd5e1; }
-          td:first-child { color: #64748b; width: 30%; }
-          td:nth-child(2) { font-weight: 800; color: #1e293b; }
-          
-          /* STRUCTURE */
-          .structure-box {
-            background: #fff;
-            border: 2px dashed #94a3b8;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            text-align: center;
-          }
-          .formula { font-family: monospace; background: #f1f5f9; padding: 5px 10px; border-radius: 4px; color: #dc2626; font-weight: bold; }
+        }
+        .grammar-title { color: #3730a3; font-weight: 800; margin-bottom: 8px; font-size: 16px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        td { padding: 6px; border-bottom: 1px solid #cbd5e1; font-size: 13px; }
+        td:first-child { color: #64748b; width: 30%; }
+        td:nth-child(2) { font-weight: 800; color: #1e293b; }
+        
+        .structure-box {
+            background: #fff; border: 2px dashed #94a3b8; border-radius: 12px;
+            padding: 15px; margin-bottom: 15px; text-align: center; 
+            page-break-inside: avoid;
+        }
+        .formula { font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; color: #dc2626; font-weight: bold; font-size: 13px; }
 
-          .footer {
-            margin-top: 60px;
-            text-align: center;
-            font-size: 11px;
-            color: #cbd5e1;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-          }
-        </style>
-      </head>
-      <body>
+        .footer {
+            margin-top: 40px; text-align: center; font-size: 10px; color: #cbd5e1;
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+      </style>
+
+      <div class="pdf-container">
         <div class="header">
           <div class="logo">Español<span>Sprint</span></div>
           <div class="title-box">
@@ -461,13 +434,13 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
           ${grammar.map(g => `
             <div class="grammar-box">
               <div class="grammar-title">${g.title}</div>
-              <p style="margin:0; color:#4338ca; font-size:14px;">${g.description}</p>
+              <p style="margin:0; color:#4338ca; font-size:13px;">${g.description}</p>
               <table>
                 ${g.conjugation.map(row => `
                   <tr>
                     <td>${row.pronoun}</td>
                     <td>${row.verb}</td>
-                    <td style="text-align:right; font-style:italic; color:#94a3b8; font-size:12px;">${row.fr}</td>
+                    <td style="text-align:right; font-style:italic; color:#94a3b8;">${row.fr}</td>
                   </tr>
                 `).join('')}
               </table>
@@ -481,8 +454,8 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
             <div class="structure-box">
               <div style="font-weight:800; margin-bottom:5px;">${s.title}</div>
               <span class="formula">${s.formula}</span>
-              <p style="margin-top:10px; font-size:14px;">Ex: <strong>${s.example}</strong></p>
-              <div style="font-size:12px; color:#64748b; margin-top:5px;">💡 ${s.note}</div>
+              <p style="margin-top:8px; font-size:13px;">Ex: <strong>${s.example}</strong></p>
+              <div style="font-size:11px; color:#64748b; margin-top:4px;">💡 ${s.note}</div>
             </div>
           `).join('')}
         ` : ''}
@@ -490,17 +463,20 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
         <div class="footer">
           Généré par EspañolSprint • Apprends vite, parle mieux.
         </div>
-
-        <script>
-          // Lance l'impression dès que la fenêtre s'ouvre
-          window.print();
-        </script>
-      </body>
-      </html>
+      </div>
     `;
 
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
+    // 4. Configuration et génération du PDF
+    const opt = {
+      margin:       10,
+      filename:     `Lecon-${lessonId}-EspanolSprint.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true }, // scale:2 améliore la netteté
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // C'est cette ligne qui télécharge le fichier au lieu d'ouvrir une fenêtre
+    html2pdf().set(opt).from(element).save();
   };
 
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-yellow-400"><Loader2 size={48} className="animate-spin text-white" /></div>;
