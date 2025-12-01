@@ -315,9 +315,191 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
   const handlePrintPDF = (lessonId) => {
     const content = dynamicLessonsContent[lessonId];
     if(!content) return;
+
+    // On trie le contenu pour avoir une belle mise en page
+    const vocab = content.filter(c => c.type === 'swipe');
+    const grammar = content.filter(c => c.type === 'grammar');
+    const structures = content.filter(c => c.type === 'structure');
+
     const printWindow = window.open('', '_blank');
-    const vocabHTML = content.filter(c => c.type === 'swipe').map(c => `<li><b>${c.es}</b> = ${c.en}</li>`).join('');
-    printWindow.document.write(`<html><body><h1>Leçon ${lessonId}</h1><ul>${vocabHTML}</ul><script>window.print()</script></body></html>`);
+    if (!printWindow) {
+        alert("Veuillez autoriser les pop-ups pour générer le PDF.");
+        return;
+    }
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Leçon ${lessonId} - EspañolSprint</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+          
+          body {
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 40px;
+            background-color: white;
+            -webkit-print-color-adjust: exact;
+          }
+          
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #facc15; /* Jaune du site */
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+          }
+          
+          .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: #0f172a;
+          }
+          .logo span { color: #dc2626; } /* Rouge du "Sprint" */
+          
+          .title-box {
+            text-align: right;
+          }
+          
+          h1 { font-size: 16px; margin: 0; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
+          .lesson-id { font-size: 40px; font-weight: 900; color: #4f46e5; line-height: 1; }
+
+          h2 {
+            font-size: 18px;
+            color: #4f46e5;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+          }
+
+          /* GRILLE VOCABULAIRE */
+          .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2 colonnes */
+            gap: 15px;
+          }
+          
+          .card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #facc15; /* Bordure jaune */
+            border-radius: 8px;
+            padding: 15px;
+            page-break-inside: avoid;
+          }
+          
+          .es { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+          .fr { font-size: 14px; color: #64748b; font-weight: 600; }
+          .context { font-size: 12px; color: #94a3b8; font-style: italic; margin-top: 6px; }
+
+          /* BOITE GRAMMAIRE */
+          .grammar-box {
+            background: #eef2ff;
+            border: 2px solid #c7d2fe;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+          }
+          .grammar-title { color: #3730a3; font-weight: 800; margin-bottom: 10px; font-size: 18px; }
+          
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          td { padding: 8px; border-bottom: 1px solid #cbd5e1; }
+          td:first-child { color: #64748b; width: 30%; }
+          td:nth-child(2) { font-weight: 800; color: #1e293b; }
+          
+          /* STRUCTURE */
+          .structure-box {
+            background: #fff;
+            border: 2px dashed #94a3b8;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+          }
+          .formula { font-family: monospace; background: #f1f5f9; padding: 5px 10px; border-radius: 4px; color: #dc2626; font-weight: bold; }
+
+          .footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 11px;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">Español<span>Sprint</span></div>
+          <div class="title-box">
+            <h1>Fiche de révision</h1>
+            <div class="lesson-id">#${lessonId}</div>
+          </div>
+        </div>
+
+        ${vocab.length > 0 ? `
+          <h2>📚 Vocabulaire</h2>
+          <div class="grid">
+            ${vocab.map(v => `
+              <div class="card">
+                <div class="es">${v.es}</div>
+                <div class="fr">${v.en}</div>
+                ${v.sentence ? `<div class="context">"${v.sentence}"</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        ${grammar.length > 0 ? `
+          <h2>🧠 Grammaire</h2>
+          ${grammar.map(g => `
+            <div class="grammar-box">
+              <div class="grammar-title">${g.title}</div>
+              <p style="margin:0; color:#4338ca; font-size:14px;">${g.description}</p>
+              <table>
+                ${g.conjugation.map(row => `
+                  <tr>
+                    <td>${row.pronoun}</td>
+                    <td>${row.verb}</td>
+                    <td style="text-align:right; font-style:italic; color:#94a3b8; font-size:12px;">${row.fr}</td>
+                  </tr>
+                `).join('')}
+              </table>
+            </div>
+          `).join('')}
+        ` : ''}
+
+        ${structures.length > 0 ? `
+          <h2>🏗️ Structures Clés</h2>
+          ${structures.map(s => `
+            <div class="structure-box">
+              <div style="font-weight:800; margin-bottom:5px;">${s.title}</div>
+              <span class="formula">${s.formula}</span>
+              <p style="margin-top:10px; font-size:14px;">Ex: <strong>${s.example}</strong></p>
+              <div style="font-size:12px; color:#64748b; margin-top:5px;">💡 ${s.note}</div>
+            </div>
+          `).join('')}
+        ` : ''}
+
+        <div class="footer">
+          Généré par EspañolSprint • Apprends vite, parle mieux.
+        </div>
+
+        <script>
+          // Lance l'impression dès que la fenêtre s'ouvre
+          window.print();
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
     printWindow.document.close();
   };
 
