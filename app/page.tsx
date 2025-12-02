@@ -543,7 +543,7 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
         <p className="text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p>
       </div>
       
-      <div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-4 snap-x snap-mandatory flex gap-6 md:gap-8 items-start">
+      <div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-6 snap-x snap-mandatory flex gap-6 md:gap-10 items-start">
         {levels.map((level, index) => { 
           const isLocked = index > currentLevelIndex; 
           const isCurrent = index === currentLevelIndex; 
@@ -555,22 +555,22 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
               key={level} 
               className={`
                 snap-center shrink-0 
-                w-[85vw] md:w-[380px] 
-                h-[calc(100dvh-260px)] md:h-[calc(100vh-200px)]
+                w-[85vw] md:w-[380px] /* Plus large (85% sur mobile, 380px sur PC) */
+                h-[calc(100dvh-240px)] md:h-[calc(100vh-200px)] /* Hauteur optimisée */
                 flex flex-col 
                 rounded-3xl border-4 
                 ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} 
-                p-5 md:p-6 relative overflow-hidden transition-all
+                p-5 md:p-6 relative overflow-hidden transition-all shadow-sm
               `}
             >
               
-              <div className="flex justify-between items-center mb-4 shrink-0">
+              <div className="flex justify-between items-center mb-5 shrink-0">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p>
                 </div>
                 {isLocked && <Lock size={24} className="text-slate-400" />}
-                {isCompleted && <div className="bg-green-500 text-white p-1 rounded-full"><Check size={16} /></div>}
+                {isCompleted && <div className="bg-green-500 text-white p-1.5 rounded-full"><Check size={18} /></div>}
               </div>
 
               <div className="flex-1 overflow-y-auto space-y-3 pb-4 pr-2 custom-scrollbar">
@@ -578,25 +578,22 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
                   const isLessonDone = userData.completedLessons.includes(lesson.id); 
                   const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id); 
                   
-                  // --- C'EST ICI QUE TOUT CHANGE ---
                   if (isCompleted) { 
                     return (
                       <div key={lesson.id} className="w-full flex gap-2 group">
-                         {/* Bouton pour REFAIRE la leçon */}
                          <button 
                             onClick={() => onStartLesson(lesson.id)} 
-                            className="flex-1 p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-4 hover:bg-green-200 transition-colors"
+                            className="flex-1 p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-3 hover:bg-green-200 transition-colors"
                          >
-                            <CheckCircle size={16} />
+                            <CheckCircle size={18} className="shrink-0" />
                             <span className="text-sm font-bold truncate flex-1 text-left">{lesson.title}</span>
-                            <span className="text-xs uppercase font-bold opacity-60 group-hover:opacity-100">Réviser</span>
+                            <span className="text-[10px] uppercase font-bold opacity-60 group-hover:opacity-100 hidden sm:inline">Réviser</span>
                          </button>
                          
-                         {/* Bouton pour TÉLÉCHARGER le PDF direct */}
                          <button 
                             onClick={() => onDownloadPDF(lesson.id)} 
                             className="p-4 rounded-2xl bg-white border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all" 
-                            title="Télécharger la fiche PDF"
+                            title="Télécharger PDF"
                          >
                             <Download size={20} />
                          </button>
@@ -610,9 +607,9 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
                         {isLessonDone ? <Check size={16} /> : lesson.id}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm truncate">{lesson.title}</p>
+                        <p className="text-sm font-bold truncate">{lesson.title}</p>
                       </div>
-                      {isAccessible && !isLessonDone && <PlayCircle size={20} className="shrink-0" />}
+                      {isAccessible && !isLessonDone && <PlayCircle size={22} className="shrink-0" />}
                     </button>
                   ); 
                 })}
