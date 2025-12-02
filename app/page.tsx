@@ -538,12 +538,12 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
   
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="p-6 md:p-8 shrink-0">
-        <h2 className="text-3xl font-black text-slate-900 mb-2">Ton Parcours</h2>
-        <p className="text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p>
+      <div className="p-4 md:p-6 shrink-0"> {/* Padding réduit ici */}
+        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-1">Ton Parcours</h2>
+        <p className="text-sm text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p>
       </div>
       
-      <div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-4 snap-x snap-mandatory flex gap-6 md:gap-8 items-start">
+      <div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-4 pb-4 snap-x snap-mandatory flex gap-4 md:gap-6 items-start">
         {levels.map((level, index) => { 
           const isLocked = index > currentLevelIndex; 
           const isCurrent = index === currentLevelIndex; 
@@ -555,64 +555,61 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
               key={level} 
               className={`
                 snap-center shrink-0 
-                w-[85vw] md:w-[380px] 
-                h-[calc(100dvh-260px)] md:h-[calc(100vh-200px)]
+                w-[80vw] md:w-[320px]  /* Largeur réduite (380 -> 320) */
+                h-[calc(100dvh-180px)] md:h-[calc(100vh-160px)] /* Hauteur ajustée pour voir plus */
                 flex flex-col 
-                rounded-3xl border-4 
+                rounded-2xl border-4 /* Arrondis un peu moins prononcés */
                 ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} 
-                p-5 md:p-6 relative overflow-hidden transition-all
+                p-4 relative overflow-hidden transition-all /* Padding interne réduit (p-6 -> p-4) */
               `}
             >
               
-              <div className="flex justify-between items-center mb-4 shrink-0">
+              <div className="flex justify-between items-center mb-3 shrink-0">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3>
-                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p>
+                  <h3 className="text-xl font-black text-slate-800">Niveau {level}</h3>
+                  <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p>
                 </div>
-                {isLocked && <Lock size={24} className="text-slate-400" />}
-                {isCompleted && <div className="bg-green-500 text-white p-1 rounded-full"><Check size={16} /></div>}
+                {isLocked && <Lock size={20} className="text-slate-400" />}
+                {isCompleted && <div className="bg-green-500 text-white p-1 rounded-full"><Check size={14} /></div>}
               </div>
 
-              <div className="flex-1 overflow-y-auto space-y-3 pb-4 pr-2 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto space-y-2 pb-4 pr-2 custom-scrollbar"> {/* Espace entre leçons réduit (space-y-3 -> 2) */}
                 {levelLessons.map((lesson) => { 
                   const isLessonDone = userData.completedLessons.includes(lesson.id); 
                   const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id); 
                   
-                  // --- C'EST ICI QUE TOUT CHANGE ---
                   if (isCompleted) { 
                     return (
                       <div key={lesson.id} className="w-full flex gap-2 group">
-                         {/* Bouton pour REFAIRE la leçon */}
                          <button 
                             onClick={() => onStartLesson(lesson.id)} 
-                            className="flex-1 p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-4 hover:bg-green-200 transition-colors"
+                            className="flex-1 p-3 rounded-xl bg-green-100 text-green-800 flex items-center gap-3 hover:bg-green-200 transition-colors"
                          >
                             <CheckCircle size={16} />
-                            <span className="text-sm font-bold truncate flex-1 text-left">{lesson.title}</span>
-                            <span className="text-xs uppercase font-bold opacity-60 group-hover:opacity-100">Réviser</span>
+                            <span className="text-xs font-bold truncate flex-1 text-left">{lesson.title}</span>
+                            <span className="text-[10px] uppercase font-bold opacity-60 group-hover:opacity-100">Réviser</span>
                          </button>
                          
-                         {/* Bouton pour TÉLÉCHARGER le PDF direct */}
                          <button 
                             onClick={() => onDownloadPDF(lesson.id)} 
-                            className="p-4 rounded-2xl bg-white border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all" 
-                            title="Télécharger la fiche PDF"
+                            className="p-3 rounded-xl bg-white border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all" 
+                            title="Télécharger PDF"
                          >
-                            <Download size={20} />
+                            <Download size={16} />
                          </button>
                       </div>
                     ); 
                   } 
                   
                   return (
-                    <button key={lesson.id} disabled={!isAccessible} onClick={() => onStartLesson(lesson.id)} className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${isLessonDone ? 'bg-green-500 text-white shadow-md' : isAccessible ? 'bg-yellow-400 text-slate-900 shadow-lg scale-[1.02] font-bold ring-4 ring-yellow-100' : 'bg-slate-200 text-slate-400'}`}>
-                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">
-                        {isLessonDone ? <Check size={16} /> : lesson.id}
+                    <button key={lesson.id} disabled={!isAccessible} onClick={() => onStartLesson(lesson.id)} className={`w-full p-3 rounded-xl flex items-center gap-3 text-left transition-all ${isLessonDone ? 'bg-green-500 text-white shadow-sm' : isAccessible ? 'bg-yellow-400 text-slate-900 shadow-md scale-[1.01] font-bold ring-2 ring-yellow-100' : 'bg-slate-200 text-slate-400'}`}>
+                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs shrink-0">
+                        {isLessonDone ? <Check size={12} /> : lesson.id}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm truncate">{lesson.title}</p>
+                        <p className="text-xs font-bold truncate">{lesson.title}</p> {/* Texte plus petit */}
                       </div>
-                      {isAccessible && !isLessonDone && <PlayCircle size={20} className="shrink-0" />}
+                      {isAccessible && !isLessonDone && <PlayCircle size={18} className="shrink-0" />}
                     </button>
                   ); 
                 })}
@@ -620,16 +617,16 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
 
               {isLocked && (
                 <div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[2px] flex items-center justify-center z-10">
-                  <div className="bg-white p-6 rounded-2xl shadow-xl text-center border border-slate-100">
-                    <Lock size={32} className="mx-auto text-slate-300 mb-2" />
-                    <h4 className="font-bold text-slate-800">Niveau Bloqué</h4>
+                  <div className="bg-white p-4 rounded-xl shadow-lg text-center border border-slate-100">
+                    <Lock size={24} className="mx-auto text-slate-300 mb-1" />
+                    <h4 className="font-bold text-sm text-slate-800">Bloqué</h4>
                   </div>
                 </div>
               )}
             </div>
           ); 
         })}
-        <div className="w-4 shrink-0"></div>
+        <div className="w-2 shrink-0"></div>
       </div>
     </div>
   ); 
