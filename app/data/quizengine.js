@@ -8,10 +8,7 @@ const shuffleArray = (array) => {
 export const generateSuperQuiz = (allLessonsContent, completedIds) => {
   let quizQuestions = [];
   
-  // 1. SÉCURITÉ : Si rien n'est fait, on prend la leçon 1
   const targetIds = (completedIds && completedIds.length > 0) ? completedIds : [1];
-
-  // 2. RÉCUPÉRATION DU CONTENU (Vocabulaire + Grammaire)
   const allCards = targetIds.flatMap(id => allLessonsContent[id] || []);
   
   const vocabCards = allCards.filter(item => item.type === 'swipe');
@@ -19,8 +16,7 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
   
   if (vocabCards.length === 0 && grammarCards.length === 0) return [];
 
-  // --- PARTIE 1 : VOCABULAIRE (8 Questions) ---
-  // On privilégie les phrases à trous, sinon traduction directe
+  // --- 1. VOCABULAIRE (8 Questions) ---
   const selectedVocab = shuffleArray(vocabCards).slice(0, 8);
 
   selectedVocab.forEach(item => {
@@ -29,8 +25,7 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
     let hintText = "";
 
     if (hasSentence) {
-        // MODE DIFFICILE : Phrase à trous
-        // On cache le mot dans la phrase (insensible à la casse)
+        // Phrase à trous
         try {
             const escapedWord = item.es.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(escapedWord, 'gi');
@@ -39,35 +34,29 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
             questionText = `Complète la phrase :\n"${maskedSentence}"`;
             hintText = `Traduction du mot : ${item.en}`;
         } catch (e) {
-            // Fallback si erreur
             questionText = `Comment dit-on "${item.en}" ?`;
             hintText = item.context;
         }
     } else {
-        // MODE STANDARD : Traduction
         questionText = `Comment dit-on "${item.en}" ?`;
         hintText = item.context;
     }
 
     quizQuestions.push({
       id: `vocab-${item.id}`,
-      type: 'input', // Toujours Input, plus de QCM
+      type: 'input',
       question: questionText,
       correctAnswer: item.es,
       hint: hintText
     });
   });
 
-  // --- PARTIE 2 : GRAMMAIRE (4 Questions) ---
-  // C'est nouveau ! On teste les conjugaisons apprises.
-  const selectedGrammar = shuffleArray(grammarCards).slice(0, 4);
+  // --- 2. GRAMMAIRE (6 Questions) ---
+  const selectedGrammar = shuffleArray(grammarCards).slice(0, 6);
 
   selectedGrammar.forEach(item => {
       if (item.conjugation && item.conjugation.length > 0) {
-          // On choisit une ligne de conjugaison au hasard (ex: "Nosotros")
           const line = item.conjugation[Math.floor(Math.random() * item.conjugation.length)];
-          
-          // On nettoie le titre (ex: "Être (Ser)" -> "Ser")
           const verbName = item.title.split('(').pop().replace(')', '').trim();
 
           quizQuestions.push({
@@ -80,11 +69,21 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
       }
   });
 
-  // Si on n'a pas assez de questions (début de progression), on complète
-  if (quizQuestions.length < 5) {
-     // On peut doubler certaines questions de vocabulaire si besoin
-     // Mais généralement le filtre initial suffit.
-  }
+  // --- 3. TRADUCTION DE PHRASE COMPLÈTE (6 Questions) ---
+  // On cherche les cartes qui ont une traduction de phrase disponible
+  const sentenceCards = vocabCards.filter(item => item.sentence && item.sentence_trans);
+  const selectedSentences = shuffleArray(sentenceCards).slice(0, 6);
 
+  selectedSentences.forEach(item => {
+      quizQuestions.push({
+          id: `sentence-${item.id}`,
+          type: 'input',
+          question: `Que veut dire la phrase suivante :\n"${item.sentence}" ?`,
+          correctAnswer: item.sentence_trans, // La réponse attendue est la phrase en français
+          hint: `Traduction littérale : ${item.en}...`
+      });
+  });
+
+  // Total visé : ~20 questions
   return shuffleArray(quizQuestions);
 };
