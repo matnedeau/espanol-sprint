@@ -510,7 +510,14 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
               {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
               {view === 'reading' && <DailyReadingContent userLevel={userData?.level} />}
-              {view === 'profile' && userData && (<ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} onUpload={handleUploadContent} />)}
+              {view === 'profile' && userData && (
+  <ProfileContent 
+    userData={userData} 
+    email={currentUser.email} 
+    onLogout={handleLogout} 
+    onUpload={uploadFullContentToCloud} /* <--- C'est ça qui manquait */
+  />
+)}
               {view === 'lesson' && dynamicLessonsContent[activeLessonId] && (
   <LessonEngine 
      content={dynamicLessonsContent[activeLessonId]} 
@@ -857,47 +864,48 @@ const MobileBottomNav = ({ currentView, onChangeView }) => (
   </div>
 );
 const NavBtn = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex flex-col items-center p-2 transition-colors ${active ? 'text-indigo-600' : 'hover:text-slate-600'}`}><Icon size={24} strokeWidth={active ? 2.5 : 2} /><span className="text-[10px] font-bold mt-1">{label}</span></button>);
+// On ajoute 'onUpload' ici
 const ProfileContent = ({ userData, email, onLogout, onUpload }) => (
-  <div className="max-w-md mx-auto w-full p-6 pb-24 space-y-8">
-    <div className="text-center">
-      <div className="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
-        👤
-      </div>
-      <h2 className="text-2xl font-black text-slate-900">Mon Profil</h2>
-      <p className="text-slate-500">{email}</p>
-    </div>
-
-    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
-      <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-        <span className="text-slate-500 font-medium">Niveau</span>
-        <span className="font-black text-indigo-600 text-xl">{userData.level}</span>
-      </div>
-      <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-        <span className="text-slate-500 font-medium">Série (Streak)</span>
-        <div className="flex items-center gap-2 text-orange-500 font-black text-xl">
-          <Flame size={24} className="fill-orange-500" /> {userData.streak}
+  <div className="max-w-2xl mx-auto w-full p-6 md:p-12 space-y-8">
+    <h2 className="text-3xl font-black text-slate-900">Mon Compte</h2>
+    <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center text-2xl font-bold text-indigo-600">
+          {userData?.name?.charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <p className="font-bold text-slate-900 text-lg">{userData?.name}</p>
+          <p className="text-slate-400 text-sm">{email}</p>
         </div>
       </div>
-      <div className="flex justify-between items-center">
-        <span className="text-slate-500 font-medium">Total XP</span>
-        <span className="font-black text-slate-800 text-xl">{userData.xp} pts</span>
+      <div className="grid grid-cols-3 gap-4 text-center py-4 border-y border-slate-100">
+        <div>
+          <p className="text-2xl font-black text-slate-900">{userData?.xp}</p>
+          <p className="text-xs text-slate-400 uppercase font-bold">XP Total</p>
+        </div>
+        <div>
+          <p className="text-2xl font-black text-slate-900">{userData?.streak}</p>
+          <p className="text-xs text-slate-400 uppercase font-bold">Série</p>
+        </div>
+        <div>
+          <p className="text-2xl font-black text-slate-900">{userData?.level}</p>
+          <p className="text-xs text-slate-400 uppercase font-bold">Niveau</p>
+        </div>
       </div>
+
+      {/* --- LE BOUTON MAGIQUE EST ICI --- */}
+      <button 
+        onClick={onUpload} 
+        className="w-full bg-indigo-50 text-indigo-600 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors border border-indigo-100"
+      >
+        <CloudUpload size={20} />
+        Réinitialiser le Contenu
+      </button>
+
+      <button onClick={onLogout} className="w-full text-red-500 font-bold py-3 rounded-xl hover:bg-red-50 transition-colors flex items-center justify-center gap-2">
+        <LogOut size={20} /> Se déconnecter
+      </button>
     </div>
-
-    {/* NOUVEAU BOUTON : Initialiser le contenu */}
-    <button 
-      onClick={onUpload} 
-      className="w-full bg-indigo-50 text-indigo-600 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors border border-indigo-100"
-    >
-      <CloudUpload size={20} />
-      Réinitialiser le Contenu
-    </button>
-
-    <button onClick={onLogout} className="w-full bg-slate-100 text-slate-400 py-4 rounded-2xl font-bold hover:bg-red-50 hover:text-red-500 transition-colors flex items-center justify-center gap-2">
-      <LogOut size={20} /> Se déconnecter
-    </button>
-    
-    <p className="text-center text-xs text-slate-300">Version 1.2 • EspañolSprint</p>
   </div>
 );
 const LessonEngine = ({ content, onComplete, onExit, isExam }) => { 
