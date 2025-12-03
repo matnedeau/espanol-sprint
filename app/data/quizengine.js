@@ -19,7 +19,7 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
   
   if (vocabCards.length === 0 && grammarCards.length === 0) return [];
 
-  // --- PARTIE 1 : VOCABULAIRE EN CONTEXTE (8 Questions) ---
+  // --- PARTIE 1 : VOCABULAIRE (8 Questions min) ---
   const selectedVocab = shuffleArray(vocabCards).slice(0, 8);
 
   selectedVocab.forEach(item => {
@@ -60,27 +60,29 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
       if (item.conjugation && item.conjugation.length > 0) {
           const line = item.conjugation[Math.floor(Math.random() * item.conjugation.length)];
           
-          // --- NETTOYAGE DU TITRE ---
+          // NETTOYAGE DU TITRE (ex: "Ir (Rappel)" -> "Ir")
           let verbName = item.title;
-          const ignoreList = ["Rappel", "Météo", "Auxiliaire", "Singulier", "Pluriel", "Intro", "Nuances"];
+          const ignoreList = ["Rappel", "Météo", "Auxiliaire", "Singulier", "Pluriel", "Intro", "Nuances", "Terminaison"];
           
           if (ignoreList.some(word => verbName.includes(word))) {
-              // Cas "Ir (Rappel)" -> Garde "Ir"
               verbName = verbName.replace(/\s*\(.*?\)/, '');
           } else if (verbName.includes("(")) {
-              // Cas "Être (Ser)" -> Garde "Ser"
               verbName = verbName.split('(').pop().replace(')', '');
           }
           verbName = verbName.replace(/Verbe\s*:?/i, "").trim();
 
-          // --- ADAPTATION DE LA QUESTION ---
+          // ADAPTATION DE LA QUESTION
           let questionText = `Conjugue "${verbName}" :\n${line.pronoun} ...`;
 
-          // Cas Spécial : L'heure (pour éviter "Conjugue L'heure")
-          if (item.title.includes("L'heure") || item.title.includes("Heure")) {
+          // 1. Cas des terminaisons (ex: -o, -as)
+          if (line.verb.startsWith('-')) {
+              questionText = `Quelle est la terminaison pour "${verbName}" avec "${line.pronoun}" ?`;
+          }
+          // 2. Cas de l'heure
+          else if (item.title.includes("Heure")) {
                questionText = `Quelle heure est-il ?\n${line.pronoun} ...`;
           }
-          // Cas Spécial : Pronoms (COD, COI...)
+          // 3. Cas des pronoms
           else if (item.title.includes("Pronom") || item.title.includes("COD")) {
                questionText = `Traduis avec le bon pronom :\n${line.pronoun} ...`;
           }
@@ -95,7 +97,7 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
       }
   });
 
-  // --- PARTIE 3 : TRADUCTION DE PHRASE (6 Questions) ---
+  // --- PARTIE 3 : TRADUCTION DE PHRASE (Jusqu'à 6 questions) ---
   const sentenceCards = vocabCards.filter(item => item.sentence && item.sentence_trans);
   const selectedSentences = shuffleArray(sentenceCards).slice(0, 6);
 
@@ -109,5 +111,28 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
       });
   });
 
-  return shuffleArray(quizQuestions);
+  // --- PARTIE 4 : REMPLISSAGE AUTOMATIQUE (FILLER) ---
+  // C'est ce qui garantit d'avoir 20 questions même si les phrases manquent
+  
+  // On prend tout le vocabulaire disponible pour combler les trous
+  const fillerVocab = shuffleArray(vocabCards);
+  let fillerIndex = 0;
+
+  while (quizQuestions.length < 20 && fillerIndex < fillerVocab.length) {
+      const item = fillerVocab[fillerIndex];
+      
+      // On évite de poser deux fois la même question vocabulaire exacte
+      if (!quizQuestions.some(q => q.id === `vocab-${item.id}`)) {
+           quizQuestions.push({
+              id: `filler-${item.id}`,
+              type: 'input',
+              question: `Rappel : Comment dit-on "${item.en}" ?`,
+              correctAnswer: item.es,
+              hint: item.context || "..."
+           });
+      }
+      fillerIndex++;
+  }
+
+  return shuffleArray(quizQuestions).slice(0, 20);
 };
