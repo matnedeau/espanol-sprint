@@ -703,62 +703,70 @@ const StructuresContent = ({ structures, userVocab }) => {
     </div>
   );
 };
-const NotebookContent = ({ userVocab, userData}) => {
-  // 1. Sécurisation de la source
+const NotebookContent = ({ userVocab, userData }) => {
+  const [activeTense, setActiveTense] = useState("Présent");
+  const [showReference, setShowReference] = useState(false);
+
+  // 1. SÉCURISATION & FILTRES
   const sourceList = Array.isArray(userVocab) ? userVocab : [];
 
-  // 2. LISTE DES VERBES (Filtre)
-  const verbBlocklist = new Set([
-    ...(DATA_BANK.verbs ? DATA_BANK.verbs.map(v => v.es) : []), 
-    "Ir", "Ser", "Estar", "Tener", "Haber", "Hacer", "Poder", "Querer", 
-    "Decir", "Ver", "Dar", "Saber", "Salir", "Poner", "Venir", "Llegar",
-    "Hablar", "Comer", "Vivir", "Beber", "Bailar", "Escuchar", 
-    "Estudiar", "Trabajar", "Jugar", "Dormir", "Caminar", "Correr",
-    "Leer", "Escribir", "Mirar", "Amar", "Viajar", "Comprar", "Reír",
-    "Aprender", "Abrir", "Cerrar", "Pagar", "Enviar", "Celebrar", 
-    "Dudar", "Reciclar", "Descargar", "Votar", "Pintar", "Rezar", 
-    "Contratar", "Despedir", "Persuadir", "Quedar", "Deber", "Necesitar" 
+  // Liste des verbes irréguliers importants à afficher
+  const IRREGULAR_VERBS = new Set([
+    "Ser", "Estar", "Ir", "Tener", "Haber", "Hacer", "Poder", "Querer", 
+    "Decir", "Ver", "Dar", "Saber", "Salir", "Poner", "Venir", "Oír", 
+    "Traer", "Conocer", "Caber", "Andar"
   ]);
 
-  // --- TRI DU CONTENU ---
-
-  // A. VOCABULAIRE (Tout sauf les verbes)
+  // Filtre pour le Vocabulaire (On cache tous les verbes)
   const vocabItems = sourceList.filter(item => {
       if (!item || !item.es || item.type !== 'swipe') return false;
       const contextSafe = item.context ? item.context.toLowerCase() : "";
-      if (contextSafe.includes('verbe')) return false;
-      if (verbBlocklist.has(item.es)) return false;
+      // On cache tout ce qui est verbe (régulier ou non) dans la colonne vocabulaire
+      if (contextSafe.includes('verbe') || DATA_BANK.verbs.some(v => v.es === item.es)) return false;
       return true;
-    }).filter((item, index, self) => 
-      index === self.findIndex((t) => t.es === item.es)
-    );
+  }).filter((item, index, self) => index === self.findIndex((t) => t.es === item.es));
 
-  // B. VERBES (Ceux qu'on a filtrés plus haut)
-  const verbItems = sourceList.filter(item => {
+  // Filtre pour les Verbes d'Action (On affiche les verbes réguliers ici, pour le vocabulaire)
+  const actionVerbItems = sourceList.filter(item => {
       if (!item || !item.es || item.type !== 'swipe') return false;
-      // On garde ici ceux qui SONT dans la liste noire ou ont le contexte verbe
-      const contextSafe = item.context ? item.context.toLowerCase() : "";
-      return verbBlocklist.has(item.es) || contextSafe.includes('verbe');
-  }).filter((item, index, self) => 
-      index === self.findIndex((t) => t.es === item.es)
-  );
+      const isVerb = DATA_BANK.verbs.some(v => v.es === item.es);
+      return isVerb; 
+  });
 
-  // C. GRAMMAIRE (Règles)
+  // Filtre pour la Grammaire (ON NE GARDE QUE LES IRRÉGULIERS)
   const grammarItems = sourceList
     .filter(c => c && c.type === 'grammar')
-    .filter((item, index, self) => 
-      index === self.findIndex((t) => t.title === item.title)
-    );
+    .filter(item => {
+        // On essaie de trouver le nom du verbe
+        let vName = item.verb;
+        if (!vName) vName = item.title.split('(').pop().replace(')', '').trim();
+        
+        // On garde seulement si c'est un irrégulier
+        return IRREGULAR_VERBS.has(vName);
+    })
+    .filter((item, index, self) => index === self.findIndex((t) => t.title === item.title));
 
-  const [showReference, setShowReference] = useState(false);
-  
-  const REFERENCE_VERBS = [
-    { title: "Verbes en -AR", endings: ["-o", "-as", "-a", "-amos", "-an"], ex: "Hablar" },
-    { title: "Verbes en -ER", endings: ["-o", "-es", "-e", "-emos", "-en"], ex: "Comer" },
-    { title: "Verbes en -IR", endings: ["-o", "-es", "-e", "-imos", "-en"], ex: "Vivir" }
-  ];
+  // DONNÉES DE RÉFÉRENCE (Tableaux de conjugaison)
+  const TENSES_DATA = {
+    "Présent": [
+      { title: "-AR (Hablar)", endings: ["-o", "-as", "-a", "-amos", "-an"] },
+      { title: "-ER (Comer)", endings: ["-o", "-es", "-e", "-emos", "-en"] },
+      { title: "-IR (Vivir)", endings: ["-o", "-es", "-e", "-imos", "-en"] }
+    ],
+    "Imparfait": [
+      { title: "-AR (Hablaba)", endings: ["-aba", "-abas", "-aba", "-ábamos", "-aban"] },
+      { title: "-ER / -IR (Comía)", endings: ["-ía", "-ías", "-ía", "-íamos", "-ían"] }
+    ],
+    "Futur": [
+      { title: "Tous les verbes", endings: ["Infinitif +", "-é", "-ás", "-á", "-emos", "-án"] }
+    ],
+    "Passé Simple": [
+      { title: "-AR (Hablé)", endings: ["-é", "-aste", "-ó", "-amos", "-aron"] },
+      { title: "-ER / -IR (Comí)", endings: ["-í", "-iste", "-ió", "-imos", "-ieron"] }
+    ]
+  };
 
-  const count = vocabItems.length + verbItems.length + grammarItems.length;
+  const count = vocabItems.length + grammarItems.length;
 
   return (
     <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
@@ -769,31 +777,67 @@ const NotebookContent = ({ userVocab, userData}) => {
         </div>
       </div>
       
-      <div className="mb-8">
-        <button onClick={() => setShowReference(!showReference)} className="w-full p-4 bg-yellow-100 text-yellow-800 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-yellow-200 transition-colors">
-          <Table size={20} /> {showReference ? "Masquer" : "Voir les terminaisons"}
-        </button>
+      {/* --- SECTION TERMINAISONS (Onglets) --- */}
+      <div className="mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+        <div className="flex justify-between items-center mb-6">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                <Table size={20} className="text-indigo-600"/> 
+                Tableaux de Conjugaison
+            </h3>
+            <button 
+                onClick={() => setShowReference(!showReference)} 
+                className="text-sm text-indigo-600 font-bold hover:underline"
+            >
+                {showReference ? "Masquer" : "Afficher"}
+            </button>
+        </div>
+
         {showReference && (
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 fade-in duration-300">
-            {REFERENCE_VERBS.map((v, i) => (
-              <div key={i} className="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm">
-                <h4 className="font-bold text-center mb-2 text-indigo-600">{v.title}</h4>
-                <p className="text-xs text-center text-gray-400 italic mb-2">{v.ex}</p>
-                <div className="space-y-1 text-sm text-center">{v.endings.map(e => <div key={e} className="bg-slate-50 py-1 rounded">{e}</div>)}</div>
-              </div>
-            ))}
-          </div>
+            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                {/* Onglets des temps */}
+                <div className="flex gap-2 overflow-x-auto pb-4 mb-2 no-scrollbar">
+                    {Object.keys(TENSES_DATA).map(tense => (
+                        <button
+                            key={tense}
+                            onClick={() => setActiveTense(tense)}
+                            className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${
+                                activeTense === tense 
+                                ? 'bg-indigo-600 text-white shadow-md' 
+                                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                            }`}
+                        >
+                            {tense}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Cartes des terminaisons */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {TENSES_DATA[activeTense].map((group, idx) => (
+                        <div key={idx} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <h4 className="font-bold text-indigo-600 mb-3 text-center text-sm">{group.title}</h4>
+                            <div className="flex flex-wrap justify-center gap-2">
+                                {group.endings.map((end, i) => (
+                                    <span key={i} className="bg-white px-2 py-1 rounded text-slate-700 text-xs font-mono border border-slate-100 shadow-sm">
+                                        {end}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
         )}
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        {/* SECTION 1 : VOCABULAIRE */}
+        {/* COLONNE 1 : VOCABULAIRE */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
             <Edit3 size={18} /> Vocabulaire
           </h3>
           {vocabItems.length > 0 ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[400px] overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[500px] overflow-y-auto">
               {vocabItems.map((item, idx) => (
                 <div key={`vocab-${idx}`} className="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 hover:bg-slate-50">
                   <div>
@@ -804,50 +848,37 @@ const NotebookContent = ({ userVocab, userData}) => {
                 </div>
               ))}
             </div>
-          ) : <div className="p-6 text-center text-slate-300 border-2 border-dashed rounded-xl text-sm">Aucun mot</div>}
+          ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
         </div>
 
-        <div className="space-y-8">
-           {/* SECTION 2 : VERBES (NOUVEAU) */}
-           <div className="space-y-4">
-            <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
-                <Zap size={18} /> Verbes d'action
-            </h3>
-            {verbItems.length > 0 ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[300px] overflow-y-auto">
-                {verbItems.map((item, idx) => (
-                    <div key={`verb-${idx}`} className="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                    <div>
-                        <p className="font-bold text-slate-800">{item.es}</p>
-                    </div>
-                    <span className="text-orange-600 font-medium bg-orange-50 px-3 py-1 rounded-full text-sm">{item.en}</span>
-                    </div>
-                ))}
+        {/* COLONNE 2 : GRAMMAIRE (Seulement irréguliers) */}
+        <div className="space-y-4">
+          <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
+            <BookOpen size={18} /> Verbes Irréguliers
+          </h3>
+          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+            {grammarItems.length > 0 ? grammarItems.map((item, index) => (
+              <div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div className="flex justify-between items-center mb-3">
+                    <h4 className="font-bold text-indigo-600">{item.title}</h4>
+                    <span className="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold uppercase">Irrégulier</span>
                 </div>
-            ) : <div className="p-6 text-center text-slate-300 border-2 border-dashed rounded-xl text-sm">Aucun verbe</div>}
-           </div>
-
-           {/* SECTION 3 : GRAMMAIRE */}
-           <div className="space-y-4">
-            <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
-                <BookOpen size={18} /> Grammaire & Conjugaison
-            </h3>
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
-                {grammarItems.map((item, index) => (
-                <div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                    <h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4>
-                    <div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">
-                    {item.conjugation && item.conjugation.map((row, idx) => (
-                        <div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
-                        <span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span>
-                        <span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span>
-                        <span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span>
-                        </div>
-                    ))}
+                
+                <div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">
+                  {item.conjugation && item.conjugation.map((row, idx) => (
+                    <div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                      <span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span>
+                      <span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span>
+                      <span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span>
                     </div>
+                  ))}
                 </div>
-                ))}
-            </div>
+              </div>
+            )) : (
+                <div className="p-6 text-center text-slate-400 border-2 border-dashed rounded-xl text-sm">
+                    Aucun verbe irrégulier appris pour le moment.
+                </div>
+            )}
           </div>
         </div>
       </div>
