@@ -506,7 +506,13 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
               {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} onDownloadPDF={handlePrintPDF}/>}
               {view === 'notebook' && userData && <NotebookContent userVocab={userData.vocab} />}
-              {view === 'quiz' && <QuizZone onExit={() => setView('dashboard')} userData={userData} />}
+              {view === 'quiz' && (
+  <QuizZone 
+    onExit={() => setView('dashboard')} 
+    userData={userData} 
+    lessonsContent={dynamicLessonsContent}
+  />
+)}
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
               {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
               {view === 'reading' && <DailyReadingContent userLevel={userData?.level} />}
@@ -1255,9 +1261,8 @@ const DailyReadingContent = ({ userLevel }) => { // Ajout de la prop userLevel
   );
 };
 
-const QuizZone = ({ onExit, userData }) => {
+const QuizZone = ({ onExit, userData, lessonsContent }) => {
   const [questions, setQuestions] = useState([]);
-  // ... (Garde tes états currentIdx, score, etc. inchangés) ...
   const [currentIdx, setCurrentIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState(null); 
@@ -1266,28 +1271,34 @@ const QuizZone = ({ onExit, userData }) => {
   const inputRef = useRef(null);
 
   useEffect(() => {
+    // Import dynamique du moteur
     import('./data/quizengine').then(module => {
-       // MODIFICATION ICI : On passe "userData.completedLessons" au moteur
-       // On utilise aussi userData.vocab si tu veux mélanger, mais ici on se base sur les leçons finies
        const completedIds = userData?.completedLessons || [];
        
-       const generated = module.generateSuperQuiz(INITIAL_LESSONS_CONTENT, completedIds);
+       // SÉCURITÉ : Si lessonsContent est vide (chargement), on utilise INITIAL_LESSONS_CONTENT
+       // Cela évite le crash si la base de données met du temps à répondre
+       const sourceContent = (lessonsContent && Object.keys(lessonsContent).length > 0) 
+          ? lessonsContent 
+          : INITIAL_LESSONS_CONTENT;
+
+       // On génère le quiz avec le contenu À JOUR (celui qui a les phrases)
+       const generated = module.generateSuperQuiz(sourceContent, completedIds);
        setQuestions(generated);
     });
-  }, [userData]); // On ajoute userData en dépendance
+  }, [userData, lessonsContent]); // On recharge si les données changent
 
-  // Focus auto sur l'input
+  // Focus automatique
   useEffect(() => {
     if (questions[currentIdx]?.type === 'input' && !feedback) {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [currentIdx, questions, feedback]);
 
-  if (questions.length === 0) return <div className="p-10 text-center flex items-center justify-center h-full"><Loader2 className="animate-spin mr-2"/> Chargement...</div>;
+  if (questions.length === 0) return <div className="p-10 text-center flex items-center justify-center h-full"><Loader2 className="animate-spin mr-2"/> Chargement du quiz...</div>;
 
   const currentQ = questions[currentIdx];
 
-  // --- LOGIQUE ---
+  // --- LOGIQUE DE JEU ---
 
   const handleNext = () => {
     setFeedback(null);
@@ -1303,21 +1314,23 @@ const QuizZone = ({ onExit, userData }) => {
     if (isCorrect) {
       setFeedback('correct');
       setScore(s => s + 1);
+      speak("¡Correcto!");
     } else {
       setFeedback('wrong');
+      speak("Incorrecto");
     }
-    setTimeout(handleNext, 1500);
-  };
-
-  const handleOptionClick = (opt) => {
-    validateAnswer(opt === currentQ.correctAnswer);
+    // On laisse un peu de temps pour voir la correction
+    setTimeout(handleNext, 2000);
   };
 
   const handleInputSubmit = (e) => {
     e?.preventDefault();
     if (!inputValue.trim()) return;
-    const userClean = inputValue.trim().toLowerCase();
-    const correctClean = currentQ.correctAnswer.trim().toLowerCase();
+    
+    const userClean = inputValue.trim().toLowerCase().replace(/[¿¡!.,]/g, '');
+    const correctClean = currentQ.correctAnswer.toLowerCase().replace(/[¿¡!.,]/g, '');
+    
+    // Tolérance pour les fautes de frappe mineures ou casse
     validateAnswer(userClean === correctClean);
   };
 
@@ -1344,10 +1357,10 @@ const QuizZone = ({ onExit, userData }) => {
     );
   }
 
-  // --- ÉCRAN DE JEU ---
+  // --- INTERFACE QUESTION ---
   return (
     <div className="h-full flex flex-col bg-slate-50">
-      {/* Barre du haut */}
+      {/* Barre de progression */}
       <div className="px-6 py-4 bg-white border-b border-slate-100 flex items-center justify-between">
         <button onClick={onExit} className="p-2 hover:bg-slate-100 rounded-full text-slate-400"><X size={24} /></button>
         <div className="flex-1 mx-4 h-3 bg-slate-100 rounded-full overflow-hidden">
@@ -1356,42 +1369,63 @@ const QuizZone = ({ onExit, userData }) => {
         <div className="font-black text-indigo-600">{score} pts</div>
       </div>
 
-      {/* Question */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-md mx-auto w-full">
         
-        <h2 className="text-2xl md:text-3xl font-black text-slate-800 text-center mb-2">
-          {currentQ.question}
-        </h2>
-        
-        {currentQ.type === 'input' && (
-          <p className="text-slate-400 text-sm mb-8 italic">Indice : {currentQ.hint}</p>
+        {/* Enoncé */}
+        <div className="text-center mb-8 space-y-2">
+            <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                Question {currentIdx + 1}
+            </span>
+            <h2 className="text-2xl md:text-3xl font-black text-slate-800 whitespace-pre-line leading-snug">
+            {currentQ.question}
+            </h2>
+            <p className="text-slate-500 font-medium text-sm">{currentQ.hint}</p>
+        </div>
+
+        {/* Feedback Visuel */}
+        {feedback === 'correct' && (
+            <div className="mb-6 px-6 py-3 bg-green-100 text-green-700 rounded-2xl font-bold animate-bounce flex items-center gap-2">
+                <CheckCircle size={20}/> Bonne réponse !
+            </div>
+        )}
+        {feedback === 'wrong' && (
+            <div className="mb-6 px-6 py-4 bg-red-50 text-red-600 rounded-2xl text-center border-2 border-red-100 animate-shake">
+                <div className="font-bold mb-1 flex items-center justify-center gap-2"><AlertCircle size={18}/> Raté...</div>
+                <div className="text-sm text-slate-600">La réponse était : <span className="font-bold text-slate-900">{currentQ.correctAnswer}</span></div>
+            </div>
         )}
 
-        {/* Feedback */}
-        {feedback === 'correct' && <div className="mb-6 px-6 py-2 bg-green-100 text-green-700 rounded-full font-bold animate-bounce">✨ Correct !</div>}
-        {feedback === 'wrong' && <div className="mb-6 px-6 py-2 bg-red-100 text-red-700 rounded-full font-bold animate-shake text-center">❌ Raté !<br/><span className="text-sm font-normal text-slate-600">Réponse : {currentQ.correctAnswer}</span></div>}
-
-        {/* MODE QCM */}
-        {currentQ.type === 'qcm' && !feedback && (
-          <div className="grid grid-cols-1 w-full gap-3 mt-4">
-            {currentQ.options.map((opt, i) => (
-              <button key={i} onClick={() => handleOptionClick(opt)} className="w-full p-5 rounded-2xl border-2 border-slate-200 bg-white hover:border-indigo-500 hover:bg-indigo-50 font-bold text-slate-700 transition-all text-lg shadow-sm active:scale-95">
-                {opt}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* MODE SAISIE */}
-        {currentQ.type === 'input' && !feedback && (
-          <form onSubmit={handleInputSubmit} className="w-full mt-4">
-            <div className="flex gap-2 justify-center mb-4">
+        {/* Zone de saisie */}
+        {!feedback && (
+          <form onSubmit={handleInputSubmit} className="w-full">
+            {/* Clavier accents */}
+            <div className="flex gap-2 justify-center mb-6 flex-wrap">
               {['á','é','í','ó','ú','ñ','¿','¡'].map(char => (
-                <button key={char} type="button" onClick={() => addChar(char)} className="w-10 h-10 bg-white border border-slate-200 shadow-sm hover:bg-indigo-50 text-slate-700 font-bold rounded-lg transition-colors text-lg">{char}</button>
+                <button key={char} type="button" onClick={() => addChar(char)} className="w-10 h-10 bg-white border-2 border-slate-200 shadow-sm hover:border-indigo-400 hover:text-indigo-600 text-slate-700 font-bold rounded-xl transition-all text-lg active:scale-95">
+                    {char}
+                </button>
               ))}
             </div>
-            <input ref={inputRef} type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder="Écris ta réponse..." className="w-full p-5 rounded-2xl border-2 border-slate-300 text-center text-xl font-bold text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all shadow-sm" autoComplete="off" autoCorrect="off" autoCapitalize="off" />
-            <button type="submit" className={`w-full mt-6 py-4 rounded-2xl font-bold text-lg text-white shadow-lg transition-all active:scale-95 ${inputValue ? 'bg-slate-900 hover:bg-slate-800' : 'bg-slate-300 cursor-not-allowed'}`} disabled={!inputValue}>Valider</button>
+            
+            <input 
+                ref={inputRef} 
+                type="text" 
+                value={inputValue} 
+                onChange={(e) => setInputValue(e.target.value)} 
+                placeholder="Ta réponse..." 
+                className="w-full p-5 rounded-2xl border-2 border-slate-300 text-center text-xl font-bold text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all shadow-sm mb-4" 
+                autoComplete="off" 
+                autoCorrect="off" 
+                autoCapitalize="off" 
+            />
+            
+            <button 
+                type="submit" 
+                className={`w-full py-4 rounded-2xl font-bold text-lg text-white shadow-lg transition-all active:scale-95 ${inputValue ? 'bg-slate-900 hover:bg-slate-800' : 'bg-slate-300 cursor-not-allowed'}`} 
+                disabled={!inputValue}
+            >
+                Valider
+            </button>
           </form>
         )}
       </div>
