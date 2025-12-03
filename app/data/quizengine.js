@@ -8,10 +8,10 @@ const shuffleArray = (array) => {
 export const generateSuperQuiz = (allLessonsContent, completedIds) => {
   let quizQuestions = [];
   
-  // 1. SÉCURITÉ : Si l'utilisateur n'a rien fini, on utilise la Leçon 1 par défaut
+  // 1. SÉCURITÉ
   const targetIds = (completedIds && completedIds.length > 0) ? completedIds : [1];
 
-  // 2. RÉCUPÉRATION DU CONTENU GLOBAL
+  // 2. RÉCUPÉRATION DU CONTENU
   const allCards = targetIds.flatMap(id => allLessonsContent[id] || []);
   
   const vocabCards = allCards.filter(item => item.type === 'swipe');
@@ -19,8 +19,8 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
   
   if (vocabCards.length === 0 && grammarCards.length === 0) return [];
 
-  // --- PARTIE 1 : VOCABULAIRE & CONTEXTE (8 Questions) ---
-  // On privilégie les phrases à trous (Fill-in-the-blank)
+  // --- PARTIE 1 : VOCABULAIRE EN CONTEXTE (8 Questions) ---
+  // Objectif : Trouver le mot manquant dans la phrase espagnole
   const selectedVocab = shuffleArray(vocabCards).slice(0, 8);
 
   selectedVocab.forEach(item => {
@@ -29,23 +29,20 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
     let hintText = "";
 
     if (hasSentence) {
-        // MODE PHRASE À TROUS
-        // On essaie de masquer le mot espagnol dans la phrase
+        // Phrase à trous (Le cerveau doit deviner le mot grâce au contexte espagnol)
         try {
-            // Échappement des caractères spéciaux pour la Regex
             const escapedWord = item.es.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(escapedWord, 'gi');
             const maskedSentence = item.sentence.replace(regex, '_______');
             
             questionText = `Complète la phrase :\n"${maskedSentence}"`;
-            hintText = `(Traduction du mot : ${item.en})`;
+            // Indice : la traduction du mot seul, pour guider sans donner la réponse
+            hintText = `Mot recherché : ${item.en}`;
         } catch (e) {
-            // Fallback si erreur technique
             questionText = `Comment dit-on "${item.en}" ?`;
             hintText = item.context;
         }
     } else {
-        // MODE STANDARD (Si pas de phrase dispo)
         questionText = `Comment dit-on "${item.en}" ?`;
         hintText = item.context;
     }
@@ -59,31 +56,28 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
     });
   });
 
-  // --- PARTIE 2 : GRAMMAIRE (6 Questions) ---
-  // On teste des conjugaisons précises
+  // --- PARTIE 2 : GRAMMAIRE PURE (6 Questions) ---
+  // Objectif : Conjuguer correctement
   const selectedGrammar = shuffleArray(grammarCards).slice(0, 6);
 
   selectedGrammar.forEach(item => {
       if (item.conjugation && item.conjugation.length > 0) {
-          // On choisit une ligne de conjugaison au hasard (ex: "Nosotros")
           const line = item.conjugation[Math.floor(Math.random() * item.conjugation.length)];
-          
-          // Nettoyage du titre (ex: "Être (Ser)" -> "Ser")
           const verbName = item.title.split('(').pop().replace(')', '').trim();
 
           quizQuestions.push({
               id: `gram-${item.id}-${line.pronoun}`,
               type: 'input',
-              question: `Conjugue "${verbName}" :\n${line.pronoun} ...`,
+              question: `Conjugue "${verbName}" au présent :\n${line.pronoun} ...`,
               correctAnswer: line.verb,
               hint: `Sens : ${line.fr}`
           });
       }
   });
 
-  // --- PARTIE 3 : TRADUCTION DE PHRASE COMPLÈTE (6 Questions) ---
-  // On demande de traduire une phrase entière vue en cours
-  // On filtre ceux qui ont une traduction disponible (sentence_trans)
+  // --- PARTIE 3 : TRADUCTION DE PHRASE (6 Questions) ---
+  // Objectif : Construire une phrase complète en espagnol
+  // On ne demande plus de traduire vers le français, mais vers l'espagnol !
   const sentenceCards = vocabCards.filter(item => item.sentence && item.sentence_trans);
   const selectedSentences = shuffleArray(sentenceCards).slice(0, 6);
 
@@ -91,12 +85,11 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
       quizQuestions.push({
           id: `sentence-${item.id}`,
           type: 'input',
-          question: `Que veut dire la phrase suivante :\n"${item.sentence}" ?`,
-          correctAnswer: item.sentence_trans, // La réponse attendue est en français
-          hint: `Traduction littérale : ${item.en}...`
+          question: `Traduis cette phrase en espagnol :\n"${item.sentence_trans}"`,
+          correctAnswer: item.sentence, // La réponse attendue est maintenant en ESPAGNOL
+          hint: `Indice : ${item.es}...` // On donne le mot clé comme indice
       });
   });
 
-  // On mélange le tout pour que les types de questions soient alternés
   return shuffleArray(quizQuestions);
 };
