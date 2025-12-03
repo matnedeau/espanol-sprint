@@ -8,88 +8,83 @@ const shuffleArray = (array) => {
 export const generateSuperQuiz = (allLessonsContent, completedIds) => {
   let quizQuestions = [];
   
-  // 1. SÉCURITÉ : Si l'utilisateur n'a rien fini, on utilise la Leçon 1 par défaut
+  // 1. SÉCURITÉ : Si rien n'est fait, on prend la leçon 1
   const targetIds = (completedIds && completedIds.length > 0) ? completedIds : [1];
 
-  // 2. FILTRAGE : On ne récupère QUE le contenu des leçons ciblées
+  // 2. RÉCUPÉRATION DU CONTENU (Vocabulaire + Grammaire)
   const allCards = targetIds.flatMap(id => allLessonsContent[id] || []);
-
-  // 3. On filtre pour ne garder que le vocabulaire (swipe)
-  const allVocab = allCards.filter(item => item.type === 'swipe');
   
-  // S'il n'y a pas assez de mots, on évite le crash
-  if (allVocab.length === 0) return [];
+  const vocabCards = allCards.filter(item => item.type === 'swipe');
+  const grammarCards = allCards.filter(item => item.type === 'grammar');
+  
+  if (vocabCards.length === 0 && grammarCards.length === 0) return [];
 
-  // 4. On sélectionne 10 mots au hasard parmi CEUX APPRIS
-  const selectedItems = shuffleArray(allVocab).slice(0, 10);
+  // --- PARTIE 1 : VOCABULAIRE (8 Questions) ---
+  // On privilégie les phrases à trous, sinon traduction directe
+  const selectedVocab = shuffleArray(vocabCards).slice(0, 8);
 
-  selectedItems.forEach(item => {
-    // -- PRÉPARATION DES DISTRACTEURS (QCM) --
-    const distractors = shuffleArray(allVocab.filter(v => v.es !== item.es))
-      .slice(0, 3)
-      .map(v => v.en);
-
-    while (distractors.length < 3) {
-        distractors.push("Autre mot");
-    }
-
-    // -- LOGIQUE DE CONTEXTE AVANCÉE --
-    
-    // Est-ce qu'on a une phrase d'exemple ? (Générée dans les nouvelles leçons)
+  selectedVocab.forEach(item => {
     const hasSentence = !!item.sentence;
-    
-    // Création de la phrase à trous (On remplace le mot espagnol par _______)
-    // On utilise une Regex insensible à la casse pour trouver "El libro" dans "Tengo el libro."
-    let maskedSentence = "";
+    let questionText = "";
+    let hintText = "";
+
     if (hasSentence) {
+        // MODE DIFFICILE : Phrase à trous
+        // On cache le mot dans la phrase (insensible à la casse)
         try {
-            // On échappe les caractères spéciaux au cas où
             const escapedWord = item.es.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(escapedWord, 'gi');
-            maskedSentence = item.sentence.replace(regex, '_______');
+            const maskedSentence = item.sentence.replace(regex, '_______');
+            
+            questionText = `Complète la phrase :\n"${maskedSentence}"`;
+            hintText = `Traduction du mot : ${item.en}`;
         } catch (e) {
-            maskedSentence = item.sentence; // Fallback si erreur regex
+            // Fallback si erreur
+            questionText = `Comment dit-on "${item.en}" ?`;
+            hintText = item.context;
         }
+    } else {
+        // MODE STANDARD : Traduction
+        questionText = `Comment dit-on "${item.en}" ?`;
+        hintText = item.context;
     }
-
-    // --- TYPE A : QCM (Compréhension) ---
-    // Si phrase dispo : "Dans cette phrase, que veut dire... ?"
-    // Sinon : "Que signifie... ?"
-    const qcmQuestion = hasSentence 
-        ? `Dans la phrase : "${item.sentence}"\nQue signifie "${item.es}" ?`
-        : `Que signifie "${item.es}" ?\n(Indice : ${item.context})`;
 
     quizQuestions.push({
-      id: `qcm-${item.id}`,
-      type: 'qcm',
-      question: qcmQuestion,
-      correctAnswer: item.en,
-      options: shuffleArray([item.en, ...distractors])
+      id: `vocab-${item.id}`,
+      type: 'input', // Toujours Input, plus de QCM
+      question: questionText,
+      correctAnswer: item.es,
+      hint: hintText
     });
-
-    // --- TYPE B : SAISIE (Production / Texte à trous) ---
-    // Si phrase dispo : "Complète la phrase : Tengo _______."
-    // Sinon : "Comment dit-on... ?"
-    
-    if (hasSentence) {
-        quizQuestions.push({
-            id: `input-${item.id}`,
-            type: 'input', 
-            question: `Complète la phrase :\n"${maskedSentence}"`,
-            correctAnswer: item.es,
-            hint: `Traduction : ${item.en}` // L'indice devient la traduction française
-        });
-    } else {
-        // Fallback pour les anciennes leçons sans phrase
-        quizQuestions.push({
-            id: `input-${item.id}`,
-            type: 'input', 
-            question: `Comment dit-on "${item.en}" ?`,
-            correctAnswer: item.es,
-            hint: item.context 
-        });
-    }
   });
+
+  // --- PARTIE 2 : GRAMMAIRE (4 Questions) ---
+  // C'est nouveau ! On teste les conjugaisons apprises.
+  const selectedGrammar = shuffleArray(grammarCards).slice(0, 4);
+
+  selectedGrammar.forEach(item => {
+      if (item.conjugation && item.conjugation.length > 0) {
+          // On choisit une ligne de conjugaison au hasard (ex: "Nosotros")
+          const line = item.conjugation[Math.floor(Math.random() * item.conjugation.length)];
+          
+          // On nettoie le titre (ex: "Être (Ser)" -> "Ser")
+          const verbName = item.title.split('(').pop().replace(')', '').trim();
+
+          quizQuestions.push({
+              id: `gram-${item.id}-${line.pronoun}`,
+              type: 'input',
+              question: `Conjugue "${verbName}" :\n${line.pronoun} ...`,
+              correctAnswer: line.verb,
+              hint: `Sens : ${line.fr}`
+          });
+      }
+  });
+
+  // Si on n'a pas assez de questions (début de progression), on complète
+  if (quizQuestions.length < 5) {
+     // On peut doubler certaines questions de vocabulaire si besoin
+     // Mais généralement le filtre initial suffit.
+  }
 
   return shuffleArray(quizQuestions);
 };
