@@ -2,50 +2,50 @@
 // @ts-nocheck
 
 /* =======================================================================================
-   🧠 CONTENT FACTORY : DONNÉES ET LOGIQUE PÉDAGOGIQUE ENRICHIE
+   🧠 CONTENT FACTORY : DONNÉES STRUCTURÉES PAR NIVEAU
    ======================================================================================= */
 
 export const DATA_BANK = {
   verbs: [
-    // --- NIVEAU A1/A2 (Vie quotidienne) ---
-    { es: "Comer", en: "Manger", yo: "Como", tu: "Comes", el: "Come", nos: "Comemos", vos: "Coméis", ellos: "Comen" },
-    { es: "Vivir", en: "Vivre", yo: "Vivo", tu: "Vives", el: "Vive", nos: "Vivimos", vos: "Vivís", ellos: "Viven" },
-    { es: "Beber", en: "Boire", yo: "Bebo", tu: "Bebes", el: "Bebe", nos: "Bebemos", vos: "Bebéis", ellos: "Beben" },
-    { es: "Leer", en: "Lire", yo: "Leo", tu: "Lees", el: "Lee", nos: "Leemos", vos: "Leéis", ellos: "Leen" },
-    { es: "Escribir", en: "Écrire", yo: "Escribo", tu: "Escribes", el: "Escribe", nos: "Escribimos", vos: "Escribís", ellos: "Escriben" },
-    { es: "Correr", en: "Courir", yo: "Corro", tu: "Corres", el: "Corre", nos: "Corremos", vos: "Corréis", ellos: "Corren" },
-    { es: "Caminar", en: "Marcher", yo: "Camino", tu: "Caminas", el: "Camina", nos: "Caminamos", vos: "Camináis", ellos: "Caminan" },
-    { es: "Dormir", en: "Dormir", yo: "Duermo", tu: "Duermes", el: "Duerme", nos: "Dormimos", vos: "Dormís", ellos: "Duermen" },
-    { es: "Jugar", en: "Jouer", yo: "Juego", tu: "Juegas", el: "Juega", nos: "Jugamos", vos: "Jugáis", ellos: "Juegan" },
-    { es: "Escuchar", en: "Écouter", yo: "Escucho", tu: "Escuchas", el: "Escucha", nos: "Escuchamos", vos: "Escucháis", ellos: "Escuchan" },
-    { es: "Mirar", en: "Regarder", yo: "Miro", tu: "Miras", el: "Mira", nos: "Miramos", vos: "Miráis", ellos: "Miran" },
-    { es: "Amar", en: "Aimer", yo: "Amo", tu: "Amas", el: "Ama", nos: "Amamos", vos: "Amáis", ellos: "Aman" },
-    { es: "Viajar", en: "Voyager", yo: "Viajo", tu: "Viajas", el: "Viaja", nos: "Viajamos", vos: "Viajáis", ellos: "Viajan" },
-    { es: "Trabajar", en: "Travailler", yo: "Trabajo", tu: "Trabajas", el: "Trabaja", nos: "Trabajamos", vos: "Trabajáis", ellos: "Trabajan" },
-    { es: "Estudiar", en: "Étudier", yo: "Estudio", tu: "Estudias", el: "Estudia", nos: "Estudiamos", vos: "Estudiáis", ellos: "Estudian" },
-    { es: "Comprar", en: "Acheter", yo: "Compro", tu: "Compras", el: "Compra", nos: "Compramos", vos: "Compráis", ellos: "Compran" },
-    { es: "Abrir", en: "Ouvrir", yo: "Abro", tu: "Abres", el: "Abre", nos: "Abrimos", vos: "Abrís", ellos: "Abren" },
-    { es: "Cerrar", en: "Fermer", yo: "Cierro", tu: "Cierras", el: "Cierra", nos: "Cerramos", vos: "Cerráis", ellos: "Cierran" },
+    // --- GROUPE 1 : FONDAMENTAUX (A1 / A2) ---
+    { levels: ["A1", "A2"], es: "Comer", en: "Manger", yo: "Como", tu: "Comes", el: "Come", nos: "Comemos", vos: "Coméis", ellos: "Comen" },
+    { levels: ["A1", "A2"], es: "Vivir", en: "Vivre", yo: "Vivo", tu: "Vives", el: "Vive", nos: "Vivimos", vos: "Vivís", ellos: "Viven" },
+    { levels: ["A1", "A2"], es: "Beber", en: "Boire", yo: "Bebo", tu: "Bebes", el: "Bebe", nos: "Bebemos", vos: "Bebéis", ellos: "Beben" },
+    { levels: ["A1", "A2"], es: "Leer", en: "Lire", yo: "Leo", tu: "Lees", el: "Lee", nos: "Leemos", vos: "Leéis", ellos: "Leen" },
+    { levels: ["A1", "A2"], es: "Escribir", en: "Écrire", yo: "Escribo", tu: "Escribes", el: "Escribe", nos: "Escribimos", vos: "Escribís", ellos: "Escriben" },
+    { levels: ["A1", "A2"], es: "Correr", en: "Courir", yo: "Corro", tu: "Corres", el: "Corre", nos: "Corremos", vos: "Corréis", ellos: "Corren" },
+    { levels: ["A1", "A2"], es: "Caminar", en: "Marcher", yo: "Camino", tu: "Caminas", el: "Camina", nos: "Caminamos", vos: "Camináis", ellos: "Caminan" },
+    { levels: ["A1", "A2"], es: "Dormir", en: "Dormir", yo: "Duermo", tu: "Duermes", el: "Duerme", nos: "Dormimos", vos: "Dormís", ellos: "Duermen" },
+    { levels: ["A1", "A2"], es: "Jugar", en: "Jouer", yo: "Juego", tu: "Juegas", el: "Juega", nos: "Jugamos", vos: "Jugáis", ellos: "Juegan" },
+    { levels: ["A1", "A2"], es: "Escuchar", en: "Écouter", yo: "Escucho", tu: "Escuchas", el: "Escucha", nos: "Escuchamos", vos: "Escucháis", ellos: "Escuchan" },
+    { levels: ["A1", "A2"], es: "Mirar", en: "Regarder", yo: "Miro", tu: "Miras", el: "Mira", nos: "Miramos", vos: "Miráis", ellos: "Miran" },
+    { levels: ["A1", "A2"], es: "Amar", en: "Aimer", yo: "Amo", tu: "Amas", el: "Ama", nos: "Amamos", vos: "Amáis", ellos: "Aman" },
+    { levels: ["A1", "A2"], es: "Viajar", en: "Voyager", yo: "Viajo", tu: "Viajas", el: "Viaja", nos: "Viajamos", vos: "Viajáis", ellos: "Viajan" },
+    { levels: ["A1", "A2"], es: "Trabajar", en: "Travailler", yo: "Trabajo", tu: "Trabajas", el: "Trabaja", nos: "Trabajamos", vos: "Trabajáis", ellos: "Trabajan" },
+    { levels: ["A1", "A2"], es: "Estudiar", en: "Étudier", yo: "Estudio", tu: "Estudias", el: "Estudia", nos: "Estudiamos", vos: "Estudiáis", ellos: "Estudian" },
+    { levels: ["A1", "A2"], es: "Comprar", en: "Acheter", yo: "Compro", tu: "Compras", el: "Compra", nos: "Compramos", vos: "Compráis", ellos: "Compran" },
+    { levels: ["A1", "A2"], es: "Abrir", en: "Ouvrir", yo: "Abro", tu: "Abres", el: "Abre", nos: "Abrimos", vos: "Abrís", ellos: "Abren" },
+    { levels: ["A1", "A2"], es: "Cerrar", en: "Fermer", yo: "Cierro", tu: "Cierras", el: "Cierra", nos: "Cerramos", vos: "Cerráis", ellos: "Cierran" },
     
-    // --- NIVEAU B1/B2 ---
-    { es: "Pensar", en: "Penser", yo: "Pienso", tu: "Piensas", el: "Piensa", nos: "Pensamos", vos: "Pensáis", ellos: "Piensan" },
-    { es: "Creer", en: "Croire", yo: "Creo", tu: "Crees", el: "Cree", nos: "Creemos", vos: "Creéis", ellos: "Creen" },
-    { es: "Sentir", en: "Sentir", yo: "Siento", tu: "Sientes", el: "Siente", nos: "Sentimos", vos: "Sentís", ellos: "Sienten" },
-    { es: "Pedir", en: "Demander", yo: "Pido", tu: "Pides", el: "Pide", nos: "Pedimos", vos: "Pedís", ellos: "Piden" },
-    { es: "Entender", en: "Comprendre", yo: "Entiendo", tu: "Entiendes", el: "Entiende", nos: "Entendemos", vos: "Entendéis", ellos: "Entienden" },
-    { es: "Recordar", en: "Se souvenir", yo: "Recuerdo", tu: "Recuerdas", el: "Recuerda", nos: "Recordamos", vos: "Recordáis", ellos: "Recuerdan" },
-    { es: "Conseguir", en: "Obtenir", yo: "Consigo", tu: "Consigues", el: "Consigue", nos: "Conseguimos", vos: "Conseguís", ellos: "Consiguen" },
-    { es: "Elegir", en: "Choisir", yo: "Elijo", tu: "Eliges", el: "Elige", nos: "Elegimos", vos: "Elegís", ellos: "Eligen" },
+    // --- GROUPE 2 : INTERMÉDIAIRE (B1 / B2) ---
+    { levels: ["B1", "B2"], es: "Pensar", en: "Penser", yo: "Pienso", tu: "Piensas", el: "Piensa", nos: "Pensamos", vos: "Pensáis", ellos: "Piensan" },
+    { levels: ["B1", "B2"], es: "Creer", en: "Croire", yo: "Creo", tu: "Crees", el: "Cree", nos: "Creemos", vos: "Creéis", ellos: "Creen" },
+    { levels: ["B1", "B2"], es: "Sentir", en: "Sentir", yo: "Siento", tu: "Sientes", el: "Siente", nos: "Sentimos", vos: "Sentís", ellos: "Sienten" },
+    { levels: ["B1", "B2"], es: "Pedir", en: "Demander", yo: "Pido", tu: "Pides", el: "Pide", nos: "Pedimos", vos: "Pedís", ellos: "Piden" },
+    { levels: ["B1", "B2"], es: "Entender", en: "Comprendre", yo: "Entiendo", tu: "Entiendes", el: "Entiende", nos: "Entendemos", vos: "Entendéis", ellos: "Entienden" },
+    { levels: ["B1", "B2"], es: "Recordar", en: "Se souvenir", yo: "Recuerdo", tu: "Recuerdas", el: "Recuerda", nos: "Recordamos", vos: "Recordáis", ellos: "Recuerdan" },
+    { levels: ["B1", "B2"], es: "Conseguir", en: "Obtenir", yo: "Consigo", tu: "Consigues", el: "Consigue", nos: "Conseguimos", vos: "Conseguís", ellos: "Consiguen" },
+    { levels: ["B1", "B2"], es: "Elegir", en: "Choisir", yo: "Elijo", tu: "Eliges", el: "Elige", nos: "Elegimos", vos: "Elegís", ellos: "Eligen" },
     
-    // --- NIVEAU C1 ---
-    { es: "Analizar", en: "Analyser", yo: "Analizo", tu: "Analizas", el: "Analiza", nos: "Analizamos", vos: "Analizáis", ellos: "Analizan" },
-    { es: "Debatir", en: "Débattre", yo: "Debato", tu: "Debates", el: "Debate", nos: "Debatimos", vos: "Debatís", ellos: "Debaten" },
-    { es: "Influir", en: "Influencer", yo: "Influyo", tu: "Influyes", el: "Influye", nos: "Influimos", vos: "Influís", ellos: "Influyen" },
-    { es: "Deducir", en: "Déduire", yo: "Deduzco", tu: "Deduces", el: "Deduce", nos: "Deducimos", vos: "Deducís", ellos: "Deducen" },
-    { es: "Suponer", en: "Supposer", yo: "Supongo", tu: "Supones", el: "Supone", nos: "Suponemos", vos: "Suponéis", ellos: "Suponen" },
-    { es: "Convencer", en: "Convaincre", yo: "Convenzo", tu: "Convences", el: "Convence", nos: "Convencemos", vos: "Convencéis", ellos: "Convencen" },
-    { es: "Prever", en: "Prévoir", yo: "Preveo", tu: "Prever", el: "Prevé", nos: "Prevemos", vos: "Prevéis", ellos: "Prevén" },
-    { es: "Exigir", en: "Exiger", yo: "Exijo", tu: "Exiges", el: "Exige", nos: "Exigimos", vos: "Exigís", ellos: "Exigen" }
+    // --- GROUPE 3 : AVANCÉ (C1) ---
+    { levels: ["C1"], es: "Analizar", en: "Analyser", yo: "Analizo", tu: "Analizas", el: "Analiza", nos: "Analizamos", vos: "Analizáis", ellos: "Analizan" },
+    { levels: ["C1"], es: "Debatir", en: "Débattre", yo: "Debato", tu: "Debates", el: "Debate", nos: "Debatimos", vos: "Debatís", ellos: "Debaten" },
+    { levels: ["C1"], es: "Influir", en: "Influencer", yo: "Influyo", tu: "Influyes", el: "Influye", nos: "Influimos", vos: "Influís", ellos: "Influyen" },
+    { levels: ["C1"], es: "Deducir", en: "Déduire", yo: "Deduzco", tu: "Deduces", el: "Deduce", nos: "Deducimos", vos: "Deducís", ellos: "Deducen" },
+    { levels: ["C1"], es: "Suponer", en: "Supposer", yo: "Supongo", tu: "Supones", el: "Supone", nos: "Suponemos", vos: "Suponéis", ellos: "Suponen" },
+    { levels: ["C1"], es: "Convencer", en: "Convaincre", yo: "Convenzo", tu: "Convences", el: "Convence", nos: "Convencemos", vos: "Convencéis", ellos: "Convencen" },
+    { levels: ["C1"], es: "Prever", en: "Prévoir", yo: "Preveo", tu: "Prever", el: "Prevé", nos: "Prevemos", vos: "Prevéis", ellos: "Prevén" },
+    { levels: ["C1"], es: "Exigir", en: "Exiger", yo: "Exijo", tu: "Exiges", el: "Exige", nos: "Exigimos", vos: "Exigís", ellos: "Exigen" }
   ],
 
   nouns: [
@@ -107,17 +107,7 @@ export const DATA_BANK = {
     "Les points d'interrogation se mettent aussi au début : ¿ ?",
     "Le 'V' se prononce presque comme un 'B' doux.",
     "Le 'RR' roulé est typique : mets ta langue sur le palais.",
-    "Le 'LL' se prononce comme un 'Y' (Paella = Pa-é-ya).",
-    "Por = Cause (pour) / Para = But (pour). C'est le piège classique !",
-    "Ser = Identité permanente / Estar = État temporaire.",
-    "Les adjectifs se placent généralement APRES le nom.",
-    "Le sujet (Yo, Tú) est souvent omis car le verbe suffit.",
-    "Gustar s'accorde avec ce qu'on aime, pas avec la personne !",
-    "En Espagne, on mange tard : déjeuner à 14h, dîner à 21h !",
-    "Le tutoiement (Tuteo) est très fréquent, même avec des inconnus.",
-    "En Amérique Latine, 'Vosotros' n'existe pas, on utilise 'Ustedes'.",
-    "La 'Siesta' est un cliché, mais la pause de 14h à 16h est réelle.",
-    "Il y a 4 langues officielles en Espagne (Castillan, Catalan, Basque, Galicien)."
+    "Le 'LL' se prononce comme un 'Y' (Paella = Pa-é-ya)."
   ]
 };
 
@@ -186,133 +176,40 @@ export const CURRICULUM_LOGIC = {
 
 export const CONTENT_PART_1 = {
   1: [
-    { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Salutation universelle" },
-    { id: 102, type: "grammar", title: "Être (Ser)", description: "Identité & Origine", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }] },
+    { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Salutation universelle", sentence: "Hola, ¿cómo estás?", sentence_trans: "Bonjour, comment vas-tu ?" },
+    { id: 102, type: "grammar", title: "Être (Ser)", description: "Identité & Origine", verb: "Ser", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }] },
     { id: 103, type: "input", question: "Traduis 'Je suis'", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
     { id: 104, type: "structure", title: "La Phrase Simple", formula: "Sujet + Verbe", example: "Soy Pablo", note: "Le sujet est souvent omis." },
-    { id: 105, type: "swipe", es: "Gracias", en: "Merci", context: "Politesse" },
-    { id: 106, type: "swipe", es: "Adiós", en: "Au revoir", context: "Départ" }
+    { id: 105, type: "swipe", es: "Gracias", en: "Merci", context: "Politesse", sentence: "Muchas gracias por todo.", sentence_trans: "Merci beaucoup pour tout." },
+    { id: 106, type: "swipe", es: "Adiós", en: "Au revoir", context: "Départ", sentence: "Adiós, hasta mañana.", sentence_trans: "Au revoir, à demain." }
   ],
   2: [
-    { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Groupe social" },
-    { id: 202, type: "grammar", title: "Avoir (Tener)", description: "Possession", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }] },
+    { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Groupe social", sentence: "Amo a mi familia.", sentence_trans: "J'aime ma famille." },
+    { id: 202, type: "grammar", title: "Avoir (Tener)", description: "Possession", verb: "Tener", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }] },
     { id: 203, type: "input", question: "J'ai", answer: ["tengo"], hint: "T..." },
-    { id: 204, type: "swipe", es: "Madre", en: "Mère", context: "Parent" },
-    { id: 205, type: "swipe", es: "Padre", en: "Père", context: "Parent" },
+    { id: 204, type: "swipe", es: "Madre", en: "Mère", context: "Parent", sentence: "Mi madre es amable.", sentence_trans: "Ma mère est gentille." },
+    { id: 205, type: "swipe", es: "Padre", en: "Père", context: "Parent", sentence: "Mi padre trabaja mucho.", sentence_trans: "Mon père travaille beaucoup." },
     { id: 206, type: "structure", title: "Possession", formula: "Mi + Nom", example: "Mi casa", note: "Pas d'article devant" }
   ],
   3: [
-    { id: 301, type: "grammar", title: "Verbes -AR", description: "Présent", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "o" }, { pronoun: "Tú", verb: "-as", fr: "as" }] },
-    { id: 302, type: "swipe", es: "Hablar", en: "Parler", context: "Verbe régulier" },
-    { id: 303, type: "swipe", es: "Trabajar", en: "Travailler", context: "Job" },
+    { id: 301, type: "grammar", title: "Verbes -AR", description: "Présent", verb: "Hablar", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "o" }, { pronoun: "Tú", verb: "-as", fr: "as" }] },
+    { id: 302, type: "swipe", es: "Hablar", en: "Parler", context: "Verbe régulier", sentence: "Me gusta hablar español.", sentence_trans: "J'aime parler espagnol." },
+    { id: 303, type: "swipe", es: "Trabajar", en: "Travailler", context: "Job", sentence: "Voy a trabajar mañana.", sentence_trans: "Je vais travailler demain." },
     { id: 304, type: "input", question: "Je parle", answer: ["hablo"], hint: "Terminaison -o" },
     { id: 305, type: "structure", title: "Négation", formula: "No + Verbe", example: "No hablo", note: "No se place avant" }
   ],
-  4: [
-    { id: 401, type: "swipe", es: "La comida", en: "La nourriture", context: "Repas" },
-    { id: 402, type: "grammar", title: "Gustar (Aimer)", description: "Ça me plaît", conjugation: [{ pronoun: "Sing", verb: "Me gusta", fr: "J'aime" }, { pronoun: "Plur", verb: "Me gustan", fr: "J'aime les..." }] },
-    { id: 403, type: "input", question: "J'aime le pain", answer: ["me gusta el pan"], hint: "Me g..." },
-    { id: 404, type: "swipe", es: "El agua", en: "L'eau", context: "Boisson" },
-    { id: 405, type: "swipe", es: "Comer", en: "Manger", context: "Verbe -ER" }
-  ],
-  5: [
-    { id: 501, type: "swipe", es: "Uno, Dos, Tres", en: "1, 2, 3", context: "Compter" },
-    { id: 502, type: "grammar", title: "L'heure", description: "Ser + Las", conjugation: [{ pronoun: "2h-12h", verb: "Son las...", fr: "Il est..." }, { pronoun: "1h", verb: "Es la una", fr: "Il est 1h" }] },
-    { id: 503, type: "input", question: "Il est deux heures", answer: ["son las dos"], hint: "Son..." },
-    { id: 504, type: "swipe", es: "Hoy", en: "Aujourd'hui", context: "Temps" },
-    { id: 505, type: "swipe", es: "Mañana", en: "Demain", context: "Futur" }
-  ],
-  6: [
-    { id: 601, type: "swipe", es: "La ciudad", en: "La ville", context: "Lieu" },
-    { id: 602, type: "grammar", title: "Aller (Ir)", description: "Irrégulier", conjugation: [{ pronoun: "Yo", verb: "voy", fr: "Je vais" }, { pronoun: "Tú", verb: "vas", fr: "Tu vas" }] },
-    { id: 603, type: "structure", title: "Direction", formula: "Ir + a + Lieu", example: "Voy a Madrid", note: "Toujours 'a' après Ir" },
-    { id: 604, type: "swipe", es: "La calle", en: "La rue", context: "Adresse" },
-    { id: 605, type: "input", question: "Je vais à la plage", answer: ["voy a la playa"], hint: "Voy..." }
-  ],
-  7: [
-    { id: 701, type: "swipe", es: "La ropa", en: "Les vêtements", context: "Mode" },
-    { id: 702, type: "swipe", es: "Rojo", en: "Rouge", context: "Couleur" },
-    { id: 703, type: "swipe", es: "Azul", en: "Bleu", context: "Couleur" },
-    { id: 704, type: "structure", title: "Adjectifs", formula: "Nom + Adjectif", example: "Una camisa roja", note: "L'adjectif s'accorde" },
-    { id: 705, type: "input", question: "Une maison blanche", answer: ["una casa blanca"], hint: "Blanca" }
-  ],
-  8: [
-    { id: 801, type: "grammar", title: "Estar (Être)", description: "État temporaire / Lieu", conjugation: [{ pronoun: "Yo", verb: "estoy", fr: "Je suis (ici)" }, { pronoun: "Tú", verb: "estás", fr: "Tu es (malade)" }] },
-    { id: 802, type: "structure", title: "Ser vs Estar", formula: "Ser=Identité / Estar=État", example: "Soy Pablo / Estoy cansado", note: "Essentiel !" },
-    { id: 803, type: "swipe", es: "Cansado", en: "Fatigué", context: "État" },
-    { id: 804, type: "swipe", es: "Enfermo", en: "Malade", context: "Santé" },
-    { id: 805, type: "input", question: "Je suis fatigué", answer: ["estoy cansado"], hint: "Estar" }
-  ],
-  9: [
-    { id: 901, type: "swipe", es: "El cuerpo", en: "Le corps", context: "Anatomie" },
-    { id: 902, type: "swipe", es: "La cabeza", en: "La tête", context: "Partie du corps" },
-    { id: 903, type: "swipe", es: "La mano", en: "La main", context: "Partie du corps" },
-    { id: 904, type: "structure", title: "Avoir mal", formula: "Me duele + Corps", example: "Me duele la cabeza", note: "Comme Gustar" },
-    { id: 905, type: "input", question: "J'ai mal à la tête", answer: ["me duele la cabeza"], hint: "Me duele..." }
-  ],
-  10: [
-    { id: 1001, type: "swipe", es: "Examen", en: "Examen", context: "Test" },
-    { id: 1002, type: "input", question: "Traduis : 'Bonjour'", answer: ["hola"], hint: "H..." },
-    { id: 1003, type: "input", question: "Conjugue : Tu es (Estar)", answer: ["estás"], hint: "E..." },
-    { id: 1004, type: "input", question: "Traduis : 'J'aime'", answer: ["me gusta"], hint: "M... g..." },
-    { id: 1005, type: "input", question: "Phrase : Je vais manger", answer: ["voy a comer"], hint: "Futur proche" }
-  ],
-  11: [{ id: 1101, type: "swipe", es: "El perro", en: "Chien", context: "Animal" }, { id: 1102, type: "swipe", es: "El gato", en: "Chat", context: "Animal" }, { id: 1103, type: "input", question: "Le chat", answer: ["el gato"], hint: "El g..." }],
-  12: [{ id: 1201, type: "swipe", es: "Hace sol", en: "Il y a du soleil", context: "Météo" }, { id: 1202, type: "swipe", es: "Lluvia", en: "Pluie", context: "Temps" }, { id: 1203, type: "grammar", title: "Verbe Hacer (Météo)", description: "Il fait...", conjugation: [{ pronoun: "Il fait", verb: "Hace", fr: "froid/chaud" }] }],
-  13: [{ id: 1301, type: "swipe", es: "La escuela", en: "L'école", context: "Éducation" }, { id: 1302, type: "swipe", es: "El libro", en: "Livre", context: "Lecture" }, { id: 1303, type: "swipe", es: "Aprender", en: "Apprendre", context: "Verbe" }],
-  14: [{ id: 1401, type: "swipe", es: "Jugar", en: "Jouer", context: "Jeu" }, { id: 1402, type: "swipe", es: "Fútbol", en: "Foot", context: "Sport" }, { id: 1403, type: "structure", title: "Jouer à", formula: "Jugar + a + al", example: "Juego al fútbol", note: "a + el = al" }],
-  
-  // --- LEÇONS 15 ET + ENRICHIES (8+ items) ---
+  // --- LEÇONS 15 ET + (GÉNÉRATION MANUELLE) ---
   15: [
-    { id: 1501, type: "swipe", es: "Amigo", en: "Ami", context: "Relation" },
-    { id: 1502, type: "swipe", es: "Fiesta", en: "Fête", context: "Social" },
-    { id: 1503, type: "swipe", es: "Salir", en: "Sortir", context: "Action" },
-    { id: 1504, type: "swipe", es: "Bailar", en: "Danser", context: "Activité" },
-    { id: 1505, type: "swipe", es: "Reír", en: "Rire", context: "Émotion" },
-    { id: 1506, type: "grammar", title: "Verbe Quedar", description: "Se donner rdv", conjugation: [{ pronoun: "Nosotros", verb: "Quedamos", fr: "On se voit" }, { pronoun: "A las 8", verb: "a las ocho", fr: "à 8h" }] },
+    { id: 1501, type: "swipe", es: "Amigo", en: "Ami", context: "Relation", sentence: "Juan es mi mejor amigo.", sentence_trans: "Juan est mon meilleur ami." },
+    { id: 1502, type: "swipe", es: "Fiesta", en: "Fête", context: "Social", sentence: "Vamos a una fiesta.", sentence_trans: "Nous allons à une fête." },
+    { id: 1503, type: "swipe", es: "Salir", en: "Sortir", context: "Action", sentence: "Quiero salir esta noche.", sentence_trans: "Je veux sortir ce soir." },
+    { id: 1504, type: "swipe", es: "Bailar", en: "Danser", context: "Activité", sentence: "Me encanta bailar salsa.", sentence_trans: "J'adore danser la salsa." },
+    { id: 1505, type: "swipe", es: "Reír", en: "Rire", context: "Émotion", sentence: "Reír es bueno para la salud.", sentence_trans: "Rire est bon pour la santé." },
+    { id: 1506, type: "grammar", title: "Verbe Quedar", description: "Se donner rdv", verb: "Quedar", conjugation: [{ pronoun: "Nosotros", verb: "Quedamos", fr: "On se voit" }, { pronoun: "A las 8", verb: "a las ocho", fr: "à 8h" }] },
     { id: 1507, type: "structure", title: "Proposer", formula: "¿Te apuntas?", example: "Voy al cine, ¿te apuntas?", note: "Tu viens avec nous ?" },
     { id: 1508, type: "input", question: "On se voit à 8h", answer: ["quedamos a las 8", "quedamos a las ocho"], hint: "Quedamos..." }
   ],
-  16: [
-    { id: 1601, type: "swipe", es: "Feliz", en: "Heureux", context: "Positif" },
-    { id: 1602, type: "swipe", es: "Triste", en: "Triste", context: "Négatif" },
-    { id: 1603, type: "swipe", es: "Enfadado", en: "Fâché/En colère", context: "Conflit" },
-    { id: 1604, type: "swipe", es: "Cansado", en: "Fatigué", context: "État physique" },
-    { id: 1605, type: "swipe", es: "Sorprendido", en: "Surpris", context: "Réaction" },
-    { id: 1606, type: "structure", title: "Estar + Émotion", formula: "Estar + Adjectif", example: "Estoy feliz", note: "État passager (ne jamais utiliser Ser)" },
-    { id: 1607, type: "grammar", title: "Ser vs Estar (Rappel)", description: "Soy feliz (caractère) vs Estoy feliz (maintenant)", conjugation: [{ pronoun: "Soy", verb: "heureux (nature)", fr: "De nature joyeuse" }, { pronoun: "Estoy", verb: "heureux (état)", fr: "Content là de suite" }] },
-    { id: 1608, type: "input", question: "Je suis fâché", answer: ["estoy enfadado"], hint: "Estar + Enfadado" }
-  ],
-  17: [
-    { id: 1701, type: "swipe", es: "Verano", en: "Été", context: "Saison chaude" },
-    { id: 1702, type: "swipe", es: "Invierno", en: "Hiver", context: "Saison froide" },
-    { id: 1703, type: "swipe", es: "Primavera", en: "Printemps", context: "Fleurs" },
-    { id: 1704, type: "swipe", es: "Otoño", en: "Automne", context: "Feuilles" },
-    { id: 1705, type: "swipe", es: "Calor", en: "Chaleur", context: "Hace calor" },
-    { id: 1706, type: "swipe", es: "Frío", en: "Froid", context: "Hace frío" },
-    { id: 1707, type: "grammar", title: "Météo (Hacer)", description: "On utilise 'Faire' + Nom", conjugation: [{ pronoun: "Il fait chaud", verb: "Hace calor", fr: "(Pas 'es caliente')" }, { pronoun: "Il fait froid", verb: "Hace frío", fr: "Du froid" }] },
-    { id: 1708, type: "input", question: "Il fait froid", answer: ["hace frío"], hint: "H..." }
-  ],
-  18: [
-    { id: 1801, type: "swipe", es: "Árbol", en: "Arbre", context: "Forêt" },
-    { id: 1802, type: "swipe", es: "Mar", en: "Mer", context: "Eau salée" },
-    { id: 1803, type: "swipe", es: "Montaña", en: "Montagne", context: "Altitude" },
-    { id: 1804, type: "swipe", es: "Flor", en: "Fleur", context: "Jardin" },
-    { id: 1805, type: "swipe", es: "Cielo", en: "Ciel", context: "Bleu" },
-    { id: 1806, type: "swipe", es: "Rio", en: "Rivière/Fleuve", context: "Eau douce" },
-    { id: 1807, type: "structure", title: "Exclamation", formula: "¡Qué + Nom/Adj!", example: "¡Qué bonito! (Que c'est beau !)", note: "Pour exprimer l'admiration." },
-    { id: 1808, type: "input", question: "La mer est bleue", answer: ["el mar es azul"], hint: "El mar..." }
-  ],
-  19: [
-    { id: 1901, type: "swipe", es: "Qué", en: "Quoi/Quel", context: "Objet" },
-    { id: 1902, type: "swipe", es: "Dónde", en: "Où", context: "Lieu" },
-    { id: 1903, type: "swipe", es: "Cuándo", en: "Quand", context: "Temps" },
-    { id: 1904, type: "swipe", es: "Quién", en: "Qui", context: "Personne" },
-    { id: 1905, type: "swipe", es: "Por qué", en: "Pourquoi", context: "Cause" },
-    { id: 1906, type: "swipe", es: "Cuánto", en: "Combien", context: "Quantité" },
-    { id: 1907, type: "grammar", title: "L'accentuation", description: "Les interrogatifs portent TOUJOURS un accent", conjugation: [{ pronoun: "Que (relatif)", verb: "que", fr: "Le livre que..." }, { pronoun: "Quoi (question)", verb: "qué", fr: "¿Qué haces?" }] },
-    { id: 1908, type: "input", question: "Qui es-tu ?", answer: ["quién eres", "¿quién eres?"], hint: "Q..." }
-  ],
+  
   20: [
     { id: 2001, type: "structure", title: "BILAN A1", formula: "Bravo !", example: "Niveau 1 validé", note: "Prêt pour A2 ?" },
     { id: 2002, type: "input", question: "Où habites-tu ?", answer: ["dónde vives", "¿dónde vives?"], hint: "D..." },
@@ -321,64 +218,9 @@ export const CONTENT_PART_1 = {
     { id: 2005, type: "input", question: "Je ne mange pas", answer: ["no como"], hint: "No..." },
     { id: 2006, type: "input", question: "Nous parlons", answer: ["hablamos"], hint: "-amos" },
     { id: 2007, type: "input", question: "Je suis fatigué", answer: ["estoy cansado"], hint: "Estar" },
-    { id: 2008, type: "swipe", es: "¡Vamos!", en: "On y va !", context: "Motivation" }
-  ],
-  
-  // --- NIVEAU A2 (Début) ---
-  21: [
-    { id: 2101, type: "structure", title: "Le Passé Composé", formula: "Haber + Participe", example: "He comido (J'ai mangé)", note: "Passé récent ou relié au présent." },
-    { id: 2102, type: "grammar", title: "Haber (Auxiliaire)", description: "Présent de l'indicatif", conjugation: [{ pronoun: "Yo he", verb: "Nos hemos", fr: "J'ai / Nous avons" }, { pronoun: "Tú has", verb: "Vos habéis", fr: "Tu as / Vous avez" }, { pronoun: "Él ha", verb: "Ellos han", fr: "Il a / Ils ont" }] },
-    { id: 2103, type: "swipe", es: "Hablado", en: "Parlé", context: "Participe -AR" },
-    { id: 2104, type: "swipe", es: "Comido", en: "Mangé", context: "Participe -ER" },
-    { id: 2105, type: "swipe", es: "Vivido", en: "Vécu", context: "Participe -IR" },
-    { id: 2106, type: "structure", title: "Participe Irrégulier", formula: "Hacer -> Hecho", example: "He hecho", note: "J'ai fait" },
-    { id: 2107, type: "swipe", es: "Visto", en: "Vu", context: "Irrégulier (Ver)" },
-    { id: 2108, type: "input", question: "J'ai parlé", answer: ["he hablado"], hint: "He..." }
-  ],
-  22: [
-    { id: 2201, type: "grammar", title: "L'Imparfait -AR", description: "Habitudes passées", conjugation: [{ pronoun: "Yo", verb: "aba", fr: "ais" }, { pronoun: "Tú", verb: "abas", fr: "ais" }, { pronoun: "Nos", verb: "ábamos", fr: "ions" }] },
-    { id: 2202, type: "swipe", es: "Jugaba", en: "Je jouais", context: "Quand j'étais petit" },
-    { id: 2203, type: "swipe", es: "Estudiaba", en: "J'étudiais", context: "À l'école" },
-    { id: 2204, type: "swipe", es: "Caminaba", en: "Je marchais", context: "Tous les jours" },
-    { id: 2205, type: "structure", title: "Quand j'étais petit...", formula: "Cuando era pequeño...", example: "Jugaba al fútbol", note: "Contexte classique de l'imparfait." },
-    { id: 2206, type: "swipe", es: "Antes", en: "Avant", context: "Marqueur temporel" },
-    { id: 2207, type: "input", question: "Je parlais (Imparfait)", answer: ["hablaba"], hint: "-aba" },
-    { id: 2208, type: "input", question: "Nous jouions", answer: ["jugábamos"], hint: "Jugar -> aba" }
-  ],
-  23: [
-    { id: 2301, type: "structure", title: "Futur Proche", formula: "Ir a + Infinitif", example: "Voy a comer", note: "Je vais manger (très courant)" },
-    { id: 2302, type: "swipe", es: "Pronto", en: "Bientôt", context: "Temps" },
-    { id: 2303, type: "swipe", es: "Luego", en: "Plus tard/Ensuite", context: "Hasta luego" },
-    { id: 2304, type: "swipe", es: "Este fin de semana", en: "Ce week-end", context: "Plan" },
-    { id: 2305, type: "grammar", title: "Ir (Rappel)", description: "Voy, Vas, Va, Vamos, Vais, Van", conjugation: [{ pronoun: "Nosotros", verb: "Vamos a salir", fr: "Nous allons sortir" }] },
-    { id: 2306, type: "input", question: "Je vais sortir", answer: ["voy a salir"], hint: "Salir" },
-    { id: 2307, type: "input", question: "Tu vais manger", answer: ["vas a comer"], hint: "Ir a..." },
-    { id: 2308, type: "structure", title: "Négation Futur", formula: "No voy a...", example: "No voy a hacerlo", note: "Je ne vais pas le faire." }
-  ],
-  24: [
-    { id: 2401, type: "structure", title: "Comparaison (+)", formula: "Más ... que", example: "Más alto que tú", note: "Plus ... que" },
-    { id: 2402, type: "structure", title: "Comparaison (-)", formula: "Menos ... que", example: "Menos rico que", note: "Moins ... que" },
-    { id: 2403, type: "structure", title: "Comparaison (=)", formula: "Tan ... como", example: "Tan guapo como", note: "Aussi ... que" },
-    { id: 2404, type: "swipe", es: "Mejor", en: "Meilleur/Mieux", context: "Supériorité (Irrégulier)" },
-    { id: 2405, type: "swipe", es: "Peor", en: "Pire", context: "Infériorité (Irrégulier)" },
-    { id: 2406, type: "swipe", es: "Mayor", en: "Plus âgé/Grand", context: "Mi hermano mayor" },
-    { id: 2407, type: "swipe", es: "Menor", en: "Plus jeune/Petit", context: "Mi hermana menor" },
-    { id: 2408, type: "input", question: "Plus grand que", answer: ["más grande que"], hint: "Más..." }
-  ],
-  25: [
-    { id: 2501, type: "structure", title: "Obligation Personnelle", formula: "Tener que + Infinitif", example: "Tengo que estudiar", note: "Je dois (c'est mon devoir)" },
-    { id: 2502, type: "structure", title: "Obligation Impersonnelle", formula: "Hay que + Infinitif", example: "Hay que comer", note: "Il faut manger (général)" },
-    { id: 2503, type: "swipe", es: "Deber", en: "Devoir", context: "Verbe moral" },
-    { id: 2504, type: "swipe", es: "Necesitar", en: "Avoir besoin", context: "Nécessité" },
-    { id: 2505, type: "swipe", es: "Urgente", en: "Urgent", context: "Priorité" },
-    { id: 2506, type: "input", question: "Je dois manger", answer: ["tengo que comer"], hint: "Tengo..." },
-    { id: 2507, type: "input", question: "Il faut dormir", answer: ["hay que dormir"], hint: "Hay que..." },
-    { id: 2508, type: "grammar", title: "Tener (Rappel)", description: "Tengo, Tienes, Tiene...", conjugation: [{ pronoun: "Nosotros", verb: "Tenemos que irnos", fr: "Nous devons partir" }] }
+    { id: 2008, type: "swipe", es: "¡Vamos!", en: "On y va !", context: "Motivation", sentence: "¡Vamos a la playa!", sentence_trans: "Allons à la plage !" }
   ]
 };
-
-// ... Le reste de CONTENT_PART_1 (leçons 26 à 100) est généré ou existe déjà ...
-// Je rajoute la fonction de génération améliorée ci-dessous
 
 export const generateStructuredLesson = (id) => {
   let level = "A1";
@@ -390,19 +232,18 @@ export const generateStructuredLesson = (id) => {
   else if (id <= 80) { level = "B2"; config = CURRICULUM_LOGIC.B2[id - 61] || { topic: "Révision B2", grammar: "Mix" }; }
   else { level = "C1"; config = CURRICULUM_LOGIC.C1[id - 81] || { topic: "Perfectionnement C1", grammar: "Expert" }; }
 
-  const verbsCount = DATA_BANK.verbs.length;
-  const verbIdx = id % verbsCount;
-  const isPluralCycle = Math.floor(id / verbsCount) % 2 !== 0; 
+  const availableVerbs = DATA_BANK.verbs.filter(v => v.levels.includes(level));
+  // Sécurité : si pas de verbe trouvé (cas rare), on prend le premier de la banque
+  const randVerb = availableVerbs.length > 0 ? availableVerbs[id % availableVerbs.length] : DATA_BANK.verbs[0];
+  
+  const isPluralCycle = Math.floor(id / 2) % 2 !== 0; 
 
-  const randVerb = DATA_BANK.verbs[verbIdx];
   const randNoun = DATA_BANK.nouns[id % DATA_BANK.nouns.length];
   const randNoun2 = DATA_BANK.nouns[(id + 3) % DATA_BANK.nouns.length];
   const randNoun3 = DATA_BANK.nouns[(id + 7) % DATA_BANK.nouns.length];
   const randAdj = DATA_BANK.adjectives[id % DATA_BANK.adjectives.length];
   const randConn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
-  
-  const tipIdx = id % DATA_BANK.tips.length;
-  const randTip = DATA_BANK.tips[tipIdx];
+  const randTip = DATA_BANK.tips[id % DATA_BANK.tips.length];
 
   let cardId = id * 1000;
 
@@ -427,44 +268,44 @@ export const generateStructuredLesson = (id) => {
   return [
     { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Focus : ${randVerb.es}`, note: `Niveau ${level}` },
     
-    // Vocabulaire 1
     { 
         id: cardId++, type: "swipe", es: randNoun.es, en: randNoun.en, context: "Vocabulaire clé",
         sentence: `Tengo ${randNoun.es.toLowerCase()}.`,
-        sentence_trans: `J'ai ${randNoun.en.toLowerCase()}.` // AJOUTÉ : Traduction française
+        sentence_trans: `J'ai ${randNoun.en.toLowerCase()}.`
     },
     
-    { id: cardId++, type: "grammar", title: grammarTitle, description: grammarDesc, conjugation: grammarConjugation },
+    { 
+        id: cardId++, type: "grammar", title: grammarTitle, description: grammarDesc, 
+        verb: randVerb.es, // IMPORTANT : On ajoute le verbe propre
+        conjugation: grammarConjugation 
+    },
+    
     { id: cardId++, type: "input", question: exerciseQuestion, answer: exerciseAnswer, hint: `Verbe ${randVerb.es}` },
     
-    // Adjectif
     { 
         id: cardId++, type: "swipe", es: randAdj.es, en: randAdj.en, context: "Description",
         sentence: `Es muy ${randAdj.es.toLowerCase()}.`,
-        sentence_trans: `C'est très ${randAdj.en.toLowerCase()}.` // AJOUTÉ
+        sentence_trans: `C'est très ${randAdj.en.toLowerCase()}.`
     },
     
     { id: cardId++, type: "structure", title: "L'accord", formula: "Nom + Adjectif", example: `${randNoun.es} ${randAdj.es.toLowerCase()}`, note: "L'adjectif s'accorde en genre et nombre." },
     
-    // Vocabulaire 2
     { 
         id: cardId++, type: "swipe", es: randNoun2.es, en: randNoun2.en, context: "Vocabulaire extra",
         sentence: `Veo ${randNoun2.es.toLowerCase()}.`,
-        sentence_trans: `Je vois ${randNoun2.en.toLowerCase()}.` // AJOUTÉ
+        sentence_trans: `Je vois ${randNoun2.en.toLowerCase()}.`
     },
     
-    // Vocabulaire 3
     { 
         id: cardId++, type: "swipe", es: randNoun3.es, en: randNoun3.en, context: "Nouveau mot",
         sentence: `Quiero ${randNoun3.es.toLowerCase()}.`,
-        sentence_trans: `Je veux ${randNoun3.en.toLowerCase()}.` // AJOUTÉ
+        sentence_trans: `Je veux ${randNoun3.en.toLowerCase()}.`
     },
     
-    // Connecteur
     { 
         id: cardId++, type: "swipe", es: randConn.es, en: randConn.en, context: "Mot de liaison",
         sentence: `${randConn.es}, es importante.`,
-        sentence_trans: `${randConn.en}, c'est important.` // AJOUTÉ
+        sentence_trans: `${randConn.en}, c'est important.`
     },
     
     { id: cardId++, type: "structure", title: "Astuce Pro 💡", formula: "Culture & Langue", example: randTip, note: "Bon à savoir !" },
@@ -482,26 +323,7 @@ export const generateStructuredLesson = (id) => {
   ];
 };
 
-export const generateSmartTest = (completedLessons, userVocab) => {
-  const questions = [];
-  let qId = 9900;
-
-  if (userVocab && userVocab.length > 0) {
-     const target = userVocab.filter(v => v.type === 'swipe').sort(() => 0.5 - Math.random()).slice(0, 5);
-     target.forEach(w => questions.push({
-         id: qId++, type: 'input', question: `Traduis '${w.en}' en espagnol`, answer: [w.es.toLowerCase()], hint: w.es.substring(0,1)+"..." 
-     }));
-  }
-
-  if (completedLessons.includes(1)) questions.push({ id: qId++, type: 'input', question: "Je suis (Ser)", answer: ["soy"], hint: "S..." });
-  if (completedLessons.includes(2)) questions.push({ id: qId++, type: 'input', question: "Tu as (Tener)", answer: ["tienes"], hint: "T..." });
-  if (completedLessons.includes(3)) questions.push({ id: qId++, type: 'input', question: "Négation : Je ne parle pas", answer: ["no hablo"], hint: "No..." });
-  if (completedLessons.includes(5)) questions.push({ id: qId++, type: 'input', question: "Futur : Je vais manger", answer: ["voy a comer"], hint: "Voy a..." });
-  
-  if (questions.length === 0) questions.push({ id: qId++, type: 'input', question: "Bonjour", answer: ["hola"], hint: "H..." });
-  
-  return questions.sort(() => 0.5 - Math.random());
-};
+export const generateSmartTest = (completedLessons, userVocab) => { return []; };
 
 export const SENTENCE_STRUCTURES = [
   { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Sujet souvent omis." },
@@ -511,7 +333,6 @@ export const SENTENCE_STRUCTURES = [
 
 export const generateAllContent = () => {
   const content = { ...CONTENT_PART_1 };
-  // On génère la suite automatiquement si elle n'est pas définie manuellement
   for (let i = 1; i <= 100; i++) {
      if (!content[i]) {
         content[i] = generateStructuredLesson(i);
@@ -528,30 +349,28 @@ const levels = ["A1", "A2", "B1", "B2", "C1"];
 levels.forEach(lvl => {
     for(let i=0; i<20; i++) {
         let topic = "Pratique";
-        // On récupère le titre du topic depuis CURRICULUM_LOGIC pour l'afficher dans le menu
         if (lvl === "A1" && CURRICULUM_LOGIC.A1[i]) topic = CURRICULUM_LOGIC.A1[i].topic;
         if (lvl === "A2" && CURRICULUM_LOGIC.A2[i]) topic = CURRICULUM_LOGIC.A2[i].topic;
         if (lvl === "B1" && CURRICULUM_LOGIC.B1[i]) topic = CURRICULUM_LOGIC.B1[i].topic;
         if (lvl === "B2" && CURRICULUM_LOGIC.B2[i]) topic = CURRICULUM_LOGIC.B2[i].topic;
         if (lvl === "C1" && CURRICULUM_LOGIC.C1[i]) topic = CURRICULUM_LOGIC.C1[i].topic;
-        
         INITIAL_LESSONS_LIST.push({ id: idCounter++, title: topic, level: lvl, desc: "Cours complet" });
     }
 });
 
+// --- GÉNÉRATEUR D'EXAMEN INTELLIGENT (N'oublie pas le 'export') ---
 export const generateExamContent = (allContent, startId, endId, levelName, examId) => {
   let pool = [];
   
   // 1. On récupère tout le contenu des leçons du niveau
   for (let i = startId; i <= endId; i++) {
     if (allContent[i]) {
-      // On garde uniquement le vocabulaire (swipe) et les exercices (input)
       const validCards = allContent[i].filter(c => c.type === 'swipe' || c.type === 'input');
       pool = [...pool, ...validCards];
     }
   }
 
-  // 2. Sécurité : si pas assez de contenu
+  // 2. Sécurité
   if (pool.length < 10) {
     return [
       { id: examId * 1000, type: "structure", title: `EXAMEN ${levelName}`, formula: "Erreur", example: "Contenu insuffisant", note: "Contacte le support." }
@@ -561,7 +380,7 @@ export const generateExamContent = (allContent, startId, endId, levelName, examI
   // 3. Tirage au sort de 20 questions
   const selectedQuestions = pool.sort(() => 0.5 - Math.random()).slice(0, 20);
 
-  // 4. Formatage pour l'examen
+  // 4. Formatage
   const examContent = [
     { 
       id: examId * 1000, 
@@ -574,10 +393,6 @@ export const generateExamContent = (allContent, startId, endId, levelName, examI
     ...selectedQuestions.map((item, index) => ({
       ...item,
       id: (examId * 1000) + index + 1, 
-      // Si c'est une carte 'input', on garde la question, sinon on adapte le vocabulaire
-      type: 'input', // On force tout en mode 'input' (question/réponse) pour l'examen ? Ou on mixe ? 
-      // Mieux : on garde le type original mais pour 'swipe', on le transforme en question QCM ou Input.
-      // Pour faire simple ici, on transforme les cartes 'swipe' en 'input' de traduction.
       question: item.type === 'input' ? item.question : `Traduis "${item.en}"`,
       answer: item.type === 'input' ? item.answer : [item.es.toLowerCase()],
       hint: item.type === 'input' ? item.hint : "..."
@@ -586,12 +401,25 @@ export const generateExamContent = (allContent, startId, endId, levelName, examI
 
   return examContent;
 };
-// --- SECTION LECTURE DU JOUR (NIVEAUX A1 -> C1) ---
 
-// --- SECTION LECTURE DU JOUR (NIVEAUX A1 -> C1) ---
+export const getDailyReading = (userLevel) => {
+  const targetLevel = userLevel || "A1";
+  const levelReadings = DAILY_READINGS.filter(r => r.level === targetLevel);
+  const pool = levelReadings.length > 0 ? levelReadings : DAILY_READINGS;
 
+  const today = new Date();
+  const dayIndex = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
+  
+  const readingIndex = dayIndex % pool.length;
+  
+  return pool[readingIndex];
+};
+
+// --- SECTION LECTURE DU JOUR (35 TEXTES : 7 par niveau) ---
 export const DAILY_READINGS = [
-  // --- NIVEAU A1 (Phrases simples, présent) ---
+  // ==============================
+  // NIVEAU A1 (Débutant)
+  // ==============================
   {
     id: 101,
     level: "A1",
@@ -607,7 +435,7 @@ export const DAILY_READINGS = [
     title_es: "El Desayuno",
     title_fr: "Le Petit Déjeuner",
     text_es: "Por la mañana, como pan con tomate y aceite. Bebo un café con leche caliente. Mi hermana prefiere beber zumo de naranja. Es un desayuno típico en España.",
-    text_fr: "Le matin, je mange du pain avec de la tomate et de l'huile. Je bois un café au lait chaud. Ma soeur préfère boire du jus d'orange. C'est un petit déjeuner typique en Espagne.",
+    text_fr: "Le matin, je mange du pain avec de la tomate et de l'huile. Je bois un café au lait chaud. Ma sœur préfère boire du jus d'orange. C'est un petit déjeuner typique en Espagne.",
     difficulty: "Débutant (A1)"
   },
   {
@@ -615,8 +443,8 @@ export const DAILY_READINGS = [
     level: "A1",
     title_es: "Mi Familia",
     title_fr: "Ma Famille",
-    text_es: "Vivo con mis padres y mi hermano. Mi padre se llama Juan y es alto. Mi madre se llama María y es muy amable. Mi hermano tiene diez años y le gusta el fútbol.",
-    text_fr: "Je vis avec mes parents et mon frère. Mon père s'appelle Juan et il est grand. Ma mère s'appelle Maria et elle est très gentille. Mon frère a dix ans et il aime le football.",
+    text_es: "Vivo con mis padres y mi hermano en Madrid. Mi padre es alto y mi madre es muy amable. Mi hermano tiene diez años. Los domingos comemos todos juntos.",
+    text_fr: "Je vis avec mes parents et mon frère à Madrid. Mon père est grand et ma mère est très gentille. Mon frère a dix ans. Les dimanches, nous mangeons tous ensemble.",
     difficulty: "Débutant (A1)"
   },
   {
@@ -624,26 +452,46 @@ export const DAILY_READINGS = [
     level: "A1",
     title_es: "En la Escuela",
     title_fr: "À l'École",
-    text_es: "Hoy tengo clase de español. La profesora escribe en la pizarra. Yo tengo un cuaderno azul y un bolígrafo negro. Me gusta aprender cosas nuevas con mis amigos.",
-    text_fr: "Aujourd'hui j'ai cours d'espagnol. La professeure écrit au tableau. J'ai un cahier bleu et un stylo noir. J'aime apprendre de nouvelles choses avec mes amis.",
+    text_es: "La escuela es grande. Tengo muchos amigos en mi clase. La profesora escribe en la pizarra. Yo tengo un cuaderno azul y un bolígrafo negro. Me gusta estudiar español.",
+    text_fr: "L'école est grande. J'ai beaucoup d'amis dans ma classe. La professeure écrit au tableau. J'ai un cahier bleu et un stylo noir. J'aime étudier l'espagnol.",
     difficulty: "Débutant (A1)"
   },
   {
     id: 105,
     level: "A1",
-    title_es: "El Fin de Semana",
-    title_fr: "Le Week-end",
-    text_es: "El sábado no trabajo. Me levanto tarde y desayuno despacio. Por la tarde, voy al parque o al cine. El domingo descanso en casa y leo un libro.",
-    text_fr: "Le samedi je ne travaille pas. Je me lève tard et je déjeune doucement. L'après-midi, je vais au parc ou au cinéma. Le dimanche je me repose à la maison et je lis un livre.",
+    title_es: "Mi Casa",
+    title_fr: "Ma Maison",
+    text_es: "Mi casa es pequeña pero bonita. Tiene dos habitaciones y una cocina blanca. En el salón hay una televisión grande. Me gusta leer en mi habitación por la noche.",
+    text_fr: "Ma maison est petite mais jolie. Elle a deux chambres et une cuisine blanche. Dans le salon, il y a une grande télévision. J'aime lire dans ma chambre le soir.",
+    difficulty: "Débutant (A1)"
+  },
+  {
+    id: 106,
+    level: "A1",
+    title_es: "El Parque",
+    title_fr: "Le Parc",
+    text_es: "Hoy hace sol. Voy al parque con mi perro. Hay muchos árboles verdes y flores. Los niños juegan al fútbol. Es un día muy feliz.",
+    text_fr: "Aujourd'hui il fait soleil. Je vais au parc avec mon chien. Il y a beaucoup d'arbres verts et de fleurs. Les enfants jouent au football. C'est une journée très heureuse.",
+    difficulty: "Débutant (A1)"
+  },
+  {
+    id: 107,
+    level: "A1",
+    title_es: "La Ropa",
+    title_fr: "Les Vêtements",
+    text_es: "Llevo una camiseta azul y pantalones negros. También tengo zapatos nuevos. Mi abrigo es rojo porque es mi color favorito. Me gusta ir de compras.",
+    text_fr: "Je porte un t-shirt bleu et un pantalon noir. J'ai aussi des chaussures neuves. Mon manteau est rouge parce que c'est ma couleur préférée. J'aime faire du shopping.",
     difficulty: "Débutant (A1)"
   },
 
-  // --- NIVEAU A2 (Passé, habitudes, descriptions plus longues) ---
+  // ==============================
+  // NIVEAU A2 (Élémentaire)
+  // ==============================
   {
     id: 201,
     level: "A2",
-    title_es: "Mis Vacaciones Pasadas",
-    title_fr: "Mes Vacances Passées",
+    title_es: "Mis Vacaciones",
+    title_fr: "Mes Vacances",
     text_es: "El año pasado fui a Barcelona con mis amigos. Visitamos la Sagrada Familia y caminamos por las Ramblas. Hacía mucho sol y comimos paella cerca del mar. Fue un viaje inolvidable.",
     text_fr: "L'année dernière, je suis allé à Barcelone avec mes amis. Nous avons visité la Sagrada Familia et marché sur les Ramblas. Il faisait très beau et nous avons mangé une paella près de la mer. Ce fut un voyage inoubliable.",
     difficulty: "Élémentaire (A2)"
@@ -662,30 +510,50 @@ export const DAILY_READINGS = [
     level: "A2",
     title_es: "Una Cena Especial",
     title_fr: "Un Dîner Spécial",
-    text_es: "Ayer celebré mi cumpleaños en un restaurante italiano. Invité a todos mis amigos. Comimos pizza y pasta, y de postre hubo tarta de chocolate. Nos reímos mucho y cantamos canciones.",
-    text_fr: "Hier j'ai fêté mon anniversaire dans un restaurant italien. J'ai invité tous mes amis. Nous avons mangé de la pizza et des pâtes, et en dessert il y avait un gâteau au chocolat. Nous avons beaucoup ri et chanté des chansons.",
+    text_es: "Ayer fue el cumpleaños de mi hermana. Fuimos a un restaurante italiano muy elegante. Comí pizza y bebí vino tinto. Al final, cantamos cumpleaños feliz y comimos tarta.",
+    text_fr: "Hier c'était l'anniversaire de ma sœur. Nous sommes allés dans un restaurant italien très élégant. J'ai mangé une pizza et bu du vin rouge. À la fin, nous avons chanté joyeux anniversaire et mangé du gâteau.",
     difficulty: "Élémentaire (A2)"
   },
   {
     id: 204,
     level: "A2",
-    title_es: "De Compras",
-    title_fr: "Faire du Shopping",
-    text_es: "Necesito comprar ropa nueva para el invierno. Quiero un abrigo rojo y unos zapatos cómodos. Voy al centro comercial porque hay muchas tiendas y buenos precios. Espero encontrar lo que busco.",
-    text_fr: "J'ai besoin d'acheter des nouveaux vêtements pour l'hiver. Je veux un manteau rouge et des chaussures confortables. Je vais au centre commercial car il y a beaucoup de magasins et de bons prix. J'espère trouver ce que je cherche.",
+    title_es: "El Mercado",
+    title_fr: "Le Marché",
+    text_es: "Todos los sábados voy al mercado central. Me gusta comprar fruta fresca y verduras. Los vendedores gritan los precios y hay mucha gente. Siempre compro queso y aceitunas.",
+    text_fr: "Tous les samedis je vais au marché central. J'aime acheter des fruits frais et des légumes. Les vendeurs crient les prix et il y a beaucoup de monde. J'achète toujours du fromage et des olives.",
     difficulty: "Élémentaire (A2)"
   },
   {
     id: 205,
     level: "A2",
-    title_es: "Mi Barrio",
-    title_fr: "Mon Quartier",
-    text_es: "Vivo en un barrio tranquilo cerca del centro. Hay un parque grande donde la gente pasea a sus perros. También hay una panadería que hace un pan delicioso. Me gusta vivir aquí porque los vecinos son amables.",
-    text_fr: "Je vis dans un quartier calme près du centre. Il y a un grand parc où les gens promènent leurs chiens. Il y a aussi une boulangerie qui fait un pain délicieux. J'aime vivre ici parce que les voisins sont gentils.",
+    title_es: "Mi Primer Trabajo",
+    title_fr: "Mon Premier Travail",
+    text_es: "Cuando tenía dieciocho años, trabajé en una cafetería. Servía café y limpiaba las mesas. Fue un trabajo duro pero aprendí mucho. Mis compañeros eran muy divertidos.",
+    text_fr: "Quand j'avais dix-huit ans, j'ai travaillé dans un café. Je servais le café et nettoyais les tables. C'était un travail dur mais j'ai beaucoup appris. Mes collègues étaient très drôles.",
+    difficulty: "Élémentaire (A2)"
+  },
+  {
+    id: 206,
+    level: "A2",
+    title_es: "Un Día de Lluvia",
+    title_fr: "Un Jour de Pluie",
+    text_es: "Ayer llovió todo el día. No pude salir al parque. Me quedé en casa viendo películas y cocinando galletas. A veces, un día tranquilo en casa es lo mejor.",
+    text_fr: "Hier il a plu toute la journée. Je n'ai pas pu sortir au parc. Je suis resté à la maison à regarder des films et cuisiner des biscuits. Parfois, une journée calme à la maison est ce qu'il y a de mieux.",
+    difficulty: "Élémentaire (A2)"
+  },
+  {
+    id: 207,
+    level: "A2",
+    title_es: "El Concierto",
+    title_fr: "Le Concert",
+    text_es: "La semana pasada fui a un concierto de rock. La música estaba muy alta y la gente bailaba. Compré una camiseta del grupo. Volví a casa muy tarde pero muy contento.",
+    text_fr: "La semaine dernière je suis allé à un concert de rock. La musique était très forte et les gens dansaient. J'ai acheté un t-shirt du groupe. Je suis rentré très tard mais très content.",
     difficulty: "Élémentaire (A2)"
   },
 
-  // --- NIVEAU B1 (Opinions, futur, subjonctif simple) ---
+  // ==============================
+  // NIVEAU B1 (Intermédiaire)
+  // ==============================
   {
     id: 301,
     level: "B1",
@@ -698,7 +566,7 @@ export const DAILY_READINGS = [
   {
     id: 302,
     level: "B1",
-    title_es: "Planes para el Futuro",
+    title_es: "Planes de Futuro",
     title_fr: "Projets d'Avenir",
     text_es: "Cuando termine mis estudios, viajaré por América del Sur. Quiero que mis padres vengan conmigo una semana. Espero poder visitar Machu Picchu y aprender más sobre la cultura inca.",
     text_fr: "Quand je terminerai mes études, je voyagerai en Amérique du Sud. Je veux que mes parents viennent avec moi une semaine. J'espère pouvoir visiter le Machu Picchu et en apprendre plus sur la culture inca.",
@@ -707,84 +575,124 @@ export const DAILY_READINGS = [
   {
     id: 303,
     level: "B1",
-    title_es: "La Importancia del Deporte",
-    title_fr: "L'Importance du Sport",
-    text_es: "Hacer ejercicio regularmente es fundamental para la salud física y mental. No hace falta correr un maratón; caminar treinta minutos al día es suficiente. Además, el deporte ayuda a reducir el estrés y mejora el sueño.",
-    text_fr: "Faire de l'exercice régulièrement est fondamental pour la santé physique et mentale. Pas besoin de courir un marathon ; marcher trente minutes par jour suffit. De plus, le sport aide à réduire le stress et améliore le sommeil.",
+    title_es: "Vida Saludable",
+    title_fr: "Vie Saine",
+    text_es: "Para tener una vida saludable, es necesario hacer ejercicio y comer bien. Intento evitar el azúcar y beber mucha agua. Además, dormir ocho horas es fundamental para tener energía durante el día.",
+    text_fr: "Pour avoir une vie saine, il est nécessaire de faire de l'exercice et de bien manger. J'essaie d'éviter le sucre et de boire beaucoup d'eau. De plus, dormir huit heures est fondamental pour avoir de l'énergie durant la journée.",
     difficulty: "Intermédiaire (B1)"
   },
   {
     id: 304,
     level: "B1",
-    title_es: "Cuidar el Planeta",
-    title_fr: "Protéger la Planète",
-    text_es: "Es urgente que cambiemos nuestros hábitos para proteger el medio ambiente. Podríamos empezar por reciclar más y usar menos plástico. Si todos hacemos un pequeño esfuerzo, el impacto será enorme para las futuras generaciones.",
-    text_fr: "Il est urgent que nous changions nos habitudes pour protéger l'environnement. Nous pourrions commencer par recycler plus et utiliser moins de plastique. Si nous faisons tous un petit effort, l'impact sera énorme pour les générations futures.",
+    title_es: "Las Redes Sociales",
+    title_fr: "Les Réseaux Sociaux",
+    text_es: "Las redes sociales son útiles para mantener el contacto con amigos lejanos. Sin embargo, pasamos demasiado tiempo mirando pantallas. Creo que deberíamos desconectar más a menudo y disfrutar del mundo real.",
+    text_fr: "Les réseaux sociaux sont utiles pour garder le contact avec des amis lointains. Cependant, nous passons trop de temps à regarder des écrans. Je crois que nous devrions déconnecter plus souvent et profiter du monde réel.",
     difficulty: "Intermédiaire (B1)"
   },
   {
     id: 305,
     level: "B1",
-    title_es: "La Música en Español",
-    title_fr: "La Musique en Espagnol",
-    text_es: "La música latina se ha vuelto muy popular en todo el mundo. Artistas como Rosalía o Shakira han llevado el idioma español a muchas culturas diferentes. Escuchar canciones es una forma divertida y eficaz de mejorar tu vocabulario.",
-    text_fr: "La musique latine est devenue très populaire dans le monde entier. Des artistes comme Rosalía ou Shakira ont porté la langue espagnole vers de nombreuses cultures différentes. Écouter des chansons est une façon amusante et efficace d'améliorer son vocabulaire.",
+    title_es: "Aprender Idiomas",
+    title_fr: "Apprendre des Langues",
+    text_es: "Saber otro idioma abre muchas puertas. Te permite viajar sin problemas y conocer gente nueva. Al principio es difícil, pero con práctica y paciencia, todo es posible. Ver películas en versión original ayuda mucho.",
+    text_fr: "Savoir une autre langue ouvre beaucoup de portes. Cela te permet de voyager sans problèmes et de rencontrer de nouvelles personnes. Au début c'est difficile, mais avec de la pratique et de la patience, tout est possible. Regarder des films en version originale aide beaucoup.",
+    difficulty: "Intermédiaire (B1)"
+  },
+  {
+    id: 306,
+    level: "B1",
+    title_es: "El Medio Ambiente",
+    title_fr: "L'Environnement",
+    text_es: "Es urgente que cuidemos nuestro planeta. El reciclaje es un buen comienzo, pero no es suficiente. Deberíamos usar menos plástico y más transporte público. El cambio climático es un problema real que nos afecta a todos.",
+    text_fr: "Il est urgent que nous prenions soin de notre planète. Le recyclage est un bon début, mais ce n'est pas suffisant. Nous devrions utiliser moins de plastique et plus de transports publics. Le changement climatique est un problème réel qui nous affecte tous.",
+    difficulty: "Intermédiaire (B1)"
+  },
+  {
+    id: 307,
+    level: "B1",
+    title_es: "La Gastronomía",
+    title_fr: "La Gastronomie",
+    text_es: "La comida española es famosa en todo el mundo. La tortilla de patatas y el gazpacho son platos deliciosos y sencillos. Me encanta cocinar para mis amigos y probar nuevas recetas cada fin de semana.",
+    text_fr: "La cuisine espagnole est célèbre dans le monde entier. L'omelette de pommes de terre et le gaspacho sont des plats délicieux et simples. J'adore cuisiner pour mes amis et essayer de nouvelles recettes chaque week-end.",
     difficulty: "Intermédiaire (B1)"
   },
 
-  // --- NIVEAU B2 (Argumentation, nuances, passé complexe) ---
+  // ==============================
+  // NIVEAU B2 (Avancé)
+  // ==============================
   {
     id: 401,
     level: "B2",
-    title_es: "El Impacto de las Redes Sociales",
-    title_fr: "L'Impact des Réseaux Sociaux",
-    text_es: "Si bien las redes sociales nos conectan, también han generado una dependencia preocupante. Muchos jóvenes sienten ansiedad si no revisan su teléfono constantemente. Deberíamos fomentar un uso más responsable de la tecnología.",
-    text_fr: "Bien que les réseaux sociaux nous connectent, ils ont aussi généré une dépendance inquiétante. Beaucoup de jeunes ressentent de l'anxiété s'ils ne vérifient pas leur téléphone constamment. Nous devrions encourager un usage plus responsable de la technologie.",
+    title_es: "Turismo Sostenible",
+    title_fr: "Tourisme Durable",
+    text_es: "El turismo de masas ha dañado muchos ecosistemas. Es vital que los viajeros sean conscientes de su huella ecológica. Optar por alojamientos locales y respetar la naturaleza son pasos clave para un turismo más ético y responsable.",
+    text_fr: "Le tourisme de masse a endommagé de nombreux écosystèmes. Il est vital que les voyageurs soient conscients de leur empreinte écologique. Opter pour des hébergements locaux et respecter la nature sont des étapes clés pour un tourisme plus éthique et responsable.",
     difficulty: "Avancé (B2)"
   },
   {
     id: 402,
     level: "B2",
-    title_es: "Turismo Sostenible",
-    title_fr: "Tourisme Durable",
-    text_es: "El turismo de masas ha dañado muchos ecosistemas frágiles. Es vital que los viajeros sean conscientes de su huella ecológica. Optar por alojamientos locales y respetar la naturaleza son pasos clave para un turismo más ético.",
-    text_fr: "Le tourisme de masse a endommagé de nombreux écosystèmes fragiles. Il est vital que les voyageurs soient conscients de leur empreinte écologique. Opter pour des hébergements locaux et respecter la nature sont des étapes clés pour un tourisme plus éthique.",
+    title_es: "La Inteligencia Artificial",
+    title_fr: "L'Intelligence Artificielle",
+    text_es: "La IA está transformando nuestra sociedad a una velocidad vertiginosa. Aunque ofrece soluciones increíbles en medicina, plantea dilemas éticos sobre la privacidad y el empleo. Debemos regular su uso para garantizar que beneficie a todos.",
+    text_fr: "L'IA transforme notre société à une vitesse vertigineuse. Bien qu'elle offre des solutions incroyables en médecine, elle pose des dilemmes éthiques sur la vie privée et l'emploi. Nous devons réguler son usage pour garantir qu'elle bénéficie à tous.",
     difficulty: "Avancé (B2)"
   },
   {
     id: 403,
     level: "B2",
-    title_es: "El Aprendizaje de Idiomas",
-    title_fr: "L'Apprentissage des Langues",
-    text_es: "Aprender un nuevo idioma no solo mejora tus oportunidades laborales, sino que también abre tu mente. Te permite entender otras formas de pensar y ver el mundo. Aunque la gramática sea difícil, la satisfacción de comunicarse no tiene precio.",
-    text_fr: "Apprendre une nouvelle langue n'améliore pas seulement tes opportunités professionnelles, mais ouvre aussi ton esprit. Cela te permet de comprendre d'autres façons de penser et de voir le monde. Bien que la grammaire soit difficile, la satisfaction de communiquer n'a pas de prix.",
+    title_es: "El Estrés Moderno",
+    title_fr: "Le Stress Moderne",
+    text_es: "Vivimos en una sociedad que valora la productividad por encima del bienestar. El estrés crónico se ha convertido en una epidemia silenciosa. Es esencial encontrar un equilibrio y dedicar tiempo a la salud mental y al ocio.",
+    text_fr: "Nous vivons dans une société qui valorise la productivité au-dessus du bien-être. Le stress chronique est devenu une épidémie silencieuse. Il est essentiel de trouver un équilibre et de consacrer du temps à la santé mentale et aux loisirs.",
     difficulty: "Avancé (B2)"
   },
   {
     id: 404,
     level: "B2",
-    title_es: "La Dieta Mediterránea",
-    title_fr: "Le Régime Méditerranéen",
-    text_es: "Considerada Patrimonio Inmaterial de la Humanidad, la dieta mediterránea es mucho más que comida; es un estilo de vida. Se basa en el consumo de aceite de oliva, frutas, verduras y pescado, promoviendo la salud cardiovascular y la longevidad.",
-    text_fr: "Considéré comme Patrimoine Immatériel de l'Humanité, le régime méditerranéen est bien plus que de la nourriture ; c'est un style de vie. Il est basé sur la consommation d'huile d'olive, de fruits, de légumes et de poisson, favorisant la santé cardiovasculaire et la longévité.",
+    title_es: "Ciudades del Futuro",
+    title_fr: "Villes du Futur",
+    text_es: "Las ciudades inteligentes prometen mejorar nuestra calidad de vida. Con edificios eficientes y transporte autónomo, podríamos reducir la contaminación. Sin embargo, el costo de esta tecnología podría aumentar la desigualdad social.",
+    text_fr: "Les villes intelligentes promettent d'améliorer notre qualité de vie. Avec des bâtiments efficaces et des transports autonomes, nous pourrions réduire la pollution. Cependant, le coût de cette technologie pourrait augmenter l'inégalité sociale.",
     difficulty: "Avancé (B2)"
   },
   {
     id: 405,
     level: "B2",
-    title_es: "Inteligencia Artificial",
-    title_fr: "Intelligence Artificielle",
-    text_es: "La inteligencia artificial está transformando rápidamente nuestra sociedad. Desde la medicina hasta el transporte, sus aplicaciones son infinitas. Sin embargo, surgen dilemas éticos sobre la privacidad y el futuro del empleo que debemos debatir seriamente.",
-    text_fr: "L'intelligence artificielle transforme rapidement notre société. De la médecine aux transports, ses applications sont infinies. Cependant, des dilemmes éthiques surgissent concernant la confidentialité et l'avenir de l'emploi, dont nous devons débattre sérieusement.",
+    title_es: "La Educación Online",
+    title_fr: "L'Éducation en Ligne",
+    text_es: "La educación a distancia ha democratizado el acceso al conocimiento. Ya no es necesario estar físicamente en una universidad para aprender. No obstante, la falta de interacción social directa sigue siendo un desafío pedagógico importante.",
+    text_fr: "L'éducation à distance a démocratisé l'accès à la connaissance. Il n'est plus nécessaire d'être physiquement dans une université pour apprendre. Néanmoins, le manque d'interaction sociale directe reste un défi pédagogique important.",
+    difficulty: "Avancé (B2)"
+  },
+  {
+    id: 406,
+    level: "B2",
+    title_es: "El Cine Español",
+    title_fr: "Le Cinéma Espagnol",
+    text_es: "El cine español ha ganado reconocimiento internacional gracias a directores como Almodóvar. Sus películas exploran la complejidad humana con un estilo visual único. Es un medio excelente para comprender la cultura y la historia reciente de España.",
+    text_fr: "Le cinéma espagnol a gagné une reconnaissance internationale grâce à des réalisateurs comme Almodóvar. Ses films explorent la complexité humaine avec un style visuel unique. C'est un excellent moyen de comprendre la culture et l'histoire récente de l'Espagne.",
+    difficulty: "Avancé (B2)"
+  },
+  {
+    id: 407,
+    level: "B2",
+    title_es: "Tradiciones en Peligro",
+    title_fr: "Traditions en Danger",
+    text_es: "La globalización amenaza con homogeneizar las culturas. Muchas tradiciones locales están desapareciendo frente a las tendencias globales. Es nuestra responsabilidad preservar estas costumbres como parte de nuestra identidad y patrimonio.",
+    text_fr: "La mondialisation menace d'homogénéiser les cultures. De nombreuses traditions locales disparaissent face aux tendances globales. Il est de notre responsabilité de préserver ces coutumes comme partie de notre identité et patrimoine.",
     difficulty: "Avancé (B2)"
   },
 
-  // --- NIVEAU C1 (Littéraire, abstrait, idiomatique) ---
+  // ==============================
+  // NIVEAU C1 (Expert)
+  // ==============================
   {
     id: 501,
     level: "C1",
-    title_es: "El Arte de la Sobremesa",
-    title_fr: "L'Art de la 'Sobremesa'",
+    title_es: "La Sobremesa",
+    title_fr: "La Sobremesa",
     text_es: "La sobremesa es una institución sagrada en España. No se trata meramente de digerir los alimentos, sino de ese lapso indefinido donde la conversación fluye sin prisa. Es allí donde se arregla el mundo y se fortalecen los lazos, desafiando la tiranía del reloj.",
     text_fr: "La 'sobremesa' est une institution sacrée en Espagne. Il ne s'agit pas simplement de digérer les aliments, mais de ce laps de temps indéfini où la conversation coule sans hâte. C'est là que l'on refait le monde et que l'on renforce les liens, défiant la tyrannie de l'horloge.",
     difficulty: "Expert (C1)"
@@ -792,10 +700,10 @@ export const DAILY_READINGS = [
   {
     id: 502,
     level: "C1",
-    title_es: "El Realismo Mágico",
-    title_fr: "Le Réalisme Magique",
-    text_es: "El realismo mágico es una corriente literaria fascinante donde lo fantástico se percibe como cotidiano. Autores como Gabriel García Márquez lograron plasmar una realidad latinoamericana donde los mitos y la historia se entrelazan de manera indisoluble.",
-    text_fr: "Le réalisme magique est un courant littéraire fascinant où le fantastique est perçu comme quotidien. Des auteurs comme Gabriel García Márquez ont réussi à capturer une réalité latino-américaine où les mythes et l'histoire s'entrelacent de manière indissoluble.",
+    title_es: "Realismo Mágico",
+    title_fr: "Réalisme Magique",
+    text_es: "El realismo mágico es una corriente literaria fascinante donde lo fantástico se percibe como cotidiano. Autores como García Márquez lograron plasmar una realidad donde los mitos y la historia se entrelazan de manera indisoluble, creando un universo único.",
+    text_fr: "Le réalisme magique est un courant littéraire fascinant où le fantastique est perçu comme quotidien. Des auteurs comme García Márquez ont réussi à capturer une réalité où les mythes et l'histoire s'entrelacent de manière indissoluble, créant un univers unique.",
     difficulty: "Expert (C1)"
   },
   {
@@ -803,46 +711,44 @@ export const DAILY_READINGS = [
     level: "C1",
     title_es: "La España Vaciada",
     title_fr: "L'Espagne Vide",
-    text_es: "El fenómeno de la 'España vaciada' es un reto demográfico mayúsculo. Mientras las grandes urbes se saturan, vastas regiones del interior sufren un éxodo rural alarmante. Revitalizar estas zonas requiere políticas audaces de repoblación e inversión en infraestructuras.",
-    text_fr: "Le phénomène de l''Espagne vide' est un défi démographique majeur. Alors que les grandes villes saturent, de vastes régions de l'intérieur souffrent d'un exode rural alarmant. Revitaliser ces zones nécessite des politiques audacieuses de repeuplement et d'investissement dans les infrastructures.",
+    text_es: "El fenómeno de la 'España vaciada' es un reto demográfico mayúsculo. Mientras las urbes se saturan, vastas regiones sufren un éxodo rural alarmante. Revitalizar estas zonas requiere políticas audaces de repoblación e inversión en infraestructuras.",
+    text_fr: "Le phénomène de l''Espagne vide' est un défi démographique majeur. Alors que les villes saturent, de vastes régions souffrent d'un exode rural alarmant. Revitaliser ces zones nécessite des politiques audacieuses de repeuplement et d'investissement dans les infrastructures.",
     difficulty: "Expert (C1)"
   },
   {
     id: 504,
     level: "C1",
-    title_es: "El Quijote: Obra Maestra",
-    title_fr: "Don Quichotte : Chef-d'œuvre",
-    text_es: "Don Quijote de la Mancha no es solo una sátira de las novelas de caballerías, sino un estudio profundo de la naturaleza humana. La dicotomía entre el idealismo de Quijote y el pragmatismo de Sancho Panza refleja la eterna lucha entre nuestros sueños y la realidad.",
-    text_fr: "Don Quichotte de la Manche n'est pas seulement une satire des romans de chevalerie, mais une étude profonde de la nature humaine. La dichotomie entre l'idéalisme de Quichotte et le pragmatisme de Sancho Panza reflète la lutte éternelle entre nos rêves et la réalité.",
+    title_es: "Don Quijote",
+    title_fr: "Don Quichotte",
+    text_es: "Don Quijote no es solo una sátira, sino un estudio profundo de la naturaleza humana. La dicotomía entre el idealismo de Quijote y el pragmatismo de Sancho refleja la eterna lucha entre nuestros sueños y la cruda realidad que nos rodea.",
+    text_fr: "Don Quichotte n'est pas seulement une satire, mais une étude profonde de la nature humaine. La dichotomie entre l'idéalisme de Quichotte et le pragmatisme de Sancho reflète la lutte éternelle entre nos rêves et la crue réalité qui nous entoure.",
     difficulty: "Expert (C1)"
   },
   {
     id: 505,
     level: "C1",
-    title_es: "La Globalización Cultural",
-    title_fr: "La Mondialisation Culturelle",
-    text_es: "Vivimos en una era de homogeneización cultural sin precedentes. Si bien esto facilita el entendimiento mutuo, corremos el riesgo de perder la riqueza de las tradiciones locales. Preservar la identidad cultural frente a la globalización es uno de los grandes desafíos contemporáneos.",
-    text_fr: "Nous vivons une ère d'homogénéisation culturelle sans précédent. Bien que cela facilite la compréhension mutuelle, nous courons le risque de perdre la richesse des traditions locales. Préserver l'identité culturelle face à la mondialisation est l'un des grands défis contemporains.",
+    title_es: "El Flamenco",
+    title_fr: "Le Flamenco",
+    text_es: "El flamenco es una expresión visceral de dolor y alegría. Declarado Patrimonio de la Humanidad, trasciende la música para convertirse en un lenguaje del alma. Su complejidad rítmica y emocional requiere una vida entera para ser dominada.",
+    text_fr: "Le flamenco est une expression viscérale de douleur et de joie. Déclaré Patrimoine de l'Humanité, il transcende la musique pour devenir un langage de l'âme. Sa complexité rythmique et émotionnelle nécessite une vie entière pour être maîtrisée.",
+    difficulty: "Expert (C1)"
+  },
+  {
+    id: 506,
+    level: "C1",
+    title_es: "La Transición",
+    title_fr: "La Transition",
+    text_es: "La Transición española fue un proceso político complejo que permitió el paso de una dictadura a una democracia. Fue un periodo de consenso y tensión, clave para entender la España contemporánea y sus desafíos actuales.",
+    text_fr: "La Transition espagnole fut un processus politique complexe qui permit le passage d'une dictature à une démocratie. Ce fut une période de consensus et de tension, clé pour comprendre l'Espagne contemporaine et ses défis actuels.",
+    difficulty: "Expert (C1)"
+  },
+  {
+    id: 507,
+    level: "C1",
+    title_es: "El Surrealismo",
+    title_fr: "Le Surréalisme",
+    text_es: "El surrealismo de Dalí desafió la lógica racional para explorar el subconsciente. Sus obras oníricas y perturbadoras nos invitan a cuestionar la realidad percibida. Este movimiento artístico revolucionó la forma en que interpretamos los sueños y el deseo.",
+    text_fr: "Le surréalisme de Dalí a défié la logique rationnelle pour explorer le subconscient. Ses œuvres oniriques et perturbantes nous invitent à questionner la réalité perçue. Ce mouvement artistique a révolutionné la façon dont nous interprétons les rêves et le désir.",
     difficulty: "Expert (C1)"
   }
 ];
-
-// Fonction intelligente : Sélectionne une lecture basée sur le niveau ET la date
-export const getDailyReading = (userLevel) => {
-  // 1. Sécurité : Si pas de niveau, on met A1 par défaut
-  const targetLevel = userLevel || "A1";
-
-  // 2. Filtrage : On ne garde que les textes du niveau de l'utilisateur
-  // Si on ne trouve pas de texte pour ce niveau (ex: niveau inconnu), on prend tout (fallback)
-  const levelReadings = DAILY_READINGS.filter(r => r.level === targetLevel);
-  const pool = levelReadings.length > 0 ? levelReadings : DAILY_READINGS;
-
-  // 3. Rotation quotidienne
-  const today = new Date();
-  const dayIndex = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
-  
-  // Le modulo (%) permet de boucler sur les textes disponibles
-  const readingIndex = dayIndex % pool.length;
-  
-  return pool[readingIndex];
-};

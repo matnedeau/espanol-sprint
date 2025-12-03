@@ -704,45 +704,46 @@ const StructuresContent = ({ structures, userVocab }) => {
   );
 };
 const NotebookContent = ({ userVocab, userData}) => {
-  // 1. On sécurise la source
+  // 1. Sécurisation de la source
   const sourceList = Array.isArray(userVocab) ? userVocab : [];
- // 2. LISTE NOIRE COMPLÈTE & DÉFINITIVE
+
+  // 2. LISTE DES VERBES (Filtre)
   const verbBlocklist = new Set([
-    // Import automatique depuis la banque de données
     ...(DATA_BANK.verbs ? DATA_BANK.verbs.map(v => v.es) : []), 
-    
-    // --- Irréguliers & Classiques ---
     "Ir", "Ser", "Estar", "Tener", "Haber", "Hacer", "Poder", "Querer", 
     "Decir", "Ver", "Dar", "Saber", "Salir", "Poner", "Venir", "Llegar",
-    
-    // --- Verbes fréquents ---
     "Hablar", "Comer", "Vivir", "Beber", "Bailar", "Escuchar", 
     "Estudiar", "Trabajar", "Jugar", "Dormir", "Caminar", "Correr",
     "Leer", "Escribir", "Mirar", "Amar", "Viajar", "Comprar", "Reír",
-    "Aprender", "Abrir", "Cerrar",
-
-    // --- Verbes trouvés dans les leçons manuelles (anciens + nouveaux) ---
-    "Pagar", "Enviar", "Celebrar", "Dudar", "Reciclar", "Descargar", 
-    "Votar", "Pintar", "Rezar", "Contratar", "Despedir", "Persuadir","Quedar", "Deber", "Necesitar" 
+    "Aprender", "Abrir", "Cerrar", "Pagar", "Enviar", "Celebrar", 
+    "Dudar", "Reciclar", "Descargar", "Votar", "Pintar", "Rezar", 
+    "Contratar", "Despedir", "Persuadir", "Quedar", "Deber", "Necesitar" 
   ]);
 
-  const vocabItems = sourceList.filter(item => {
-      if (!item || !item.es) return false;
+  // --- TRI DU CONTENU ---
 
-      // FILTRE 1 : Si le contexte contient "verbe" (ex: "Verbe régulier")
+  // A. VOCABULAIRE (Tout sauf les verbes)
+  const vocabItems = sourceList.filter(item => {
+      if (!item || !item.es || item.type !== 'swipe') return false;
       const contextSafe = item.context ? item.context.toLowerCase() : "";
       if (contextSafe.includes('verbe')) return false;
-
-      // FILTRE 2 : Si le mot espagnol est dans notre liste noire
       if (verbBlocklist.has(item.es)) return false;
-
       return true;
-    })
-    .filter((item, index, self) => 
+    }).filter((item, index, self) => 
       index === self.findIndex((t) => t.es === item.es)
     );
 
-  // Pour la grammaire, on garde tout ce qui est étiqueté "grammar"
+  // B. VERBES (Ceux qu'on a filtrés plus haut)
+  const verbItems = sourceList.filter(item => {
+      if (!item || !item.es || item.type !== 'swipe') return false;
+      // On garde ici ceux qui SONT dans la liste noire ou ont le contexte verbe
+      const contextSafe = item.context ? item.context.toLowerCase() : "";
+      return verbBlocklist.has(item.es) || contextSafe.includes('verbe');
+  }).filter((item, index, self) => 
+      index === self.findIndex((t) => t.es === item.es)
+  );
+
+  // C. GRAMMAIRE (Règles)
   const grammarItems = sourceList
     .filter(c => c && c.type === 'grammar')
     .filter((item, index, self) => 
@@ -757,7 +758,7 @@ const NotebookContent = ({ userVocab, userData}) => {
     { title: "Verbes en -IR", endings: ["-o", "-es", "-e", "-imos", "-en"], ex: "Vivir" }
   ];
 
-  const count = vocabItems.length + grammarItems.length;
+  const count = vocabItems.length + verbItems.length + grammarItems.length;
 
   return (
     <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24">
@@ -786,12 +787,13 @@ const NotebookContent = ({ userVocab, userData}) => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
+        {/* SECTION 1 : VOCABULAIRE */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
-            <Edit3 size={18} /> Vocabulaire Acquis
+            <Edit3 size={18} /> Vocabulaire
           </h3>
           {vocabItems.length > 0 ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[500px] overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[400px] overflow-y-auto">
               {vocabItems.map((item, idx) => (
                 <div key={`vocab-${idx}`} className="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 hover:bg-slate-50">
                   <div>
@@ -802,28 +804,50 @@ const NotebookContent = ({ userVocab, userData}) => {
                 </div>
               ))}
             </div>
-          ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
+          ) : <div className="p-6 text-center text-slate-300 border-2 border-dashed rounded-xl text-sm">Aucun mot</div>}
         </div>
 
-        <div className="space-y-4">
-          <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
-            <BookOpen size={18} /> Grammaire Apprise
-          </h3>
-          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
-            {grammarItems.map((item, index) => (
-              <div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4>
-                <div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">
-                  {item.conjugation && item.conjugation.map((row, idx) => (
-                    <div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
-                      <span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span>
-                      <span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span>
-                      <span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span>
+        <div className="space-y-8">
+           {/* SECTION 2 : VERBES (NOUVEAU) */}
+           <div className="space-y-4">
+            <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
+                <Zap size={18} /> Verbes d'action
+            </h3>
+            {verbItems.length > 0 ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[300px] overflow-y-auto">
+                {verbItems.map((item, idx) => (
+                    <div key={`verb-${idx}`} className="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                    <div>
+                        <p className="font-bold text-slate-800">{item.es}</p>
                     </div>
-                  ))}
+                    <span className="text-orange-600 font-medium bg-orange-50 px-3 py-1 rounded-full text-sm">{item.en}</span>
+                    </div>
+                ))}
                 </div>
-              </div>
-            ))}
+            ) : <div className="p-6 text-center text-slate-300 border-2 border-dashed rounded-xl text-sm">Aucun verbe</div>}
+           </div>
+
+           {/* SECTION 3 : GRAMMAIRE */}
+           <div className="space-y-4">
+            <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
+                <BookOpen size={18} /> Grammaire & Conjugaison
+            </h3>
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
+                {grammarItems.map((item, index) => (
+                <div key={`gram-${index}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <h4 className="font-bold text-indigo-600 mb-2">{item.title}</h4>
+                    <div className="bg-slate-50 rounded-xl overflow-hidden text-sm border border-slate-100">
+                    {item.conjugation && item.conjugation.map((row, idx) => (
+                        <div key={idx} className={`flex justify-between items-center p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                        <span className="text-slate-400 w-16 sm:w-20 shrink-0">{row.pronoun}</span>
+                        <span className="font-bold text-slate-800 flex-1 text-center">{row.verb}</span>
+                        <span className="text-slate-400 text-xs w-20 sm:w-auto text-right italic shrink-0">{row.fr}</span>
+                        </div>
+                    ))}
+                    </div>
+                </div>
+                ))}
+            </div>
           </div>
         </div>
       </div>
