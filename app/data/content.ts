@@ -606,6 +606,8 @@ export const generateExamContent = (allContent, startId, endId, levelName, examI
 };
 // --- SECTION LECTURE DU JOUR (NIVEAUX A1 -> C1) ---
 
+// --- SECTION LECTURE DU JOUR (NIVEAUX A1 -> C1) ---
+
 export const DAILY_READINGS = [
   // --- NIVEAU A1 (Phrases simples, présent) ---
   {
@@ -624,6 +626,33 @@ export const DAILY_READINGS = [
     title_fr: "Le Petit Déjeuner",
     text_es: "Por la mañana, como pan con tomate y aceite. Bebo un café con leche caliente. Mi hermana prefiere beber zumo de naranja. Es un desayuno típico en España.",
     text_fr: "Le matin, je mange du pain avec de la tomate et de l'huile. Je bois un café au lait chaud. Ma soeur préfère boire du jus d'orange. C'est un petit déjeuner typique en Espagne.",
+    difficulty: "Débutant (A1)"
+  },
+  {
+    id: 103,
+    level: "A1",
+    title_es: "Mi Familia",
+    title_fr: "Ma Famille",
+    text_es: "Vivo con mis padres y mi hermano. Mi padre se llama Juan y es alto. Mi madre se llama María y es muy amable. Mi hermano tiene diez años y le gusta el fútbol.",
+    text_fr: "Je vis avec mes parents et mon frère. Mon père s'appelle Juan et il est grand. Ma mère s'appelle Maria et elle est très gentille. Mon frère a dix ans et il aime le football.",
+    difficulty: "Débutant (A1)"
+  },
+  {
+    id: 104,
+    level: "A1",
+    title_es: "En la Escuela",
+    title_fr: "À l'École",
+    text_es: "Hoy tengo clase de español. La profesora escribe en la pizarra. Yo tengo un cuaderno azul y un bolígrafo negro. Me gusta aprender cosas nuevas con mis amigos.",
+    text_fr: "Aujourd'hui j'ai cours d'espagnol. La professeure écrit au tableau. J'ai un cahier bleu et un stylo noir. J'aime apprendre de nouvelles choses avec mes amis.",
+    difficulty: "Débutant (A1)"
+  },
+  {
+    id: 105,
+    level: "A1",
+    title_es: "El Fin de Semana",
+    title_fr: "Le Week-end",
+    text_es: "El sábado no trabajo. Me levanto tarde y desayuno despacio. Por la tarde, voy al parque o al cine. El domingo descanso en casa y leo un libro.",
+    text_fr: "Le samedi je ne travaille pas. Je me lève tard et je déjeune doucement. L'après-midi, je vais au parc ou au cinéma. Le dimanche je me repose à la maison et je lis un livre.",
     difficulty: "Débutant (A1)"
   },
 
@@ -646,6 +675,33 @@ export const DAILY_READINGS = [
     text_fr: "Sofia se lève tôt, à sept heures. Elle se douche, s'habille et va travailler en bus. Normalement elle déjeune à 14h. Le soir, elle aime lire un livre avant de dormir.",
     difficulty: "Élémentaire (A2)"
   },
+  {
+    id: 203,
+    level: "A2",
+    title_es: "Una Cena Especial",
+    title_fr: "Un Dîner Spécial",
+    text_es: "Ayer celebré mi cumpleaños en un restaurante italiano. Invité a todos mis amigos. Comimos pizza y pasta, y de postre hubo tarta de chocolate. Nos reímos mucho y cantamos canciones.",
+    text_fr: "Hier j'ai fêté mon anniversaire dans un restaurant italien. J'ai invité tous mes amis. Nous avons mangé de la pizza et des pâtes, et en dessert il y avait un gâteau au chocolat. Nous avons beaucoup ri et chanté des chansons.",
+    difficulty: "Élémentaire (A2)"
+  },
+  {
+    id: 204,
+    level: "A2",
+    title_es: "De Compras",
+    title_fr: "Faire du Shopping",
+    text_es: "Necesito comprar ropa nueva para el invierno. Quiero un abrigo rojo y unos zapatos cómodos. Voy al centro comercial porque hay muchas tiendas y buenos precios. Espero encontrar lo que busco.",
+    text_fr: "J'ai besoin d'acheter des nouveaux vêtements pour l'hiver. Je veux un manteau rouge et des chaussures confortables. Je vais au centre commercial car il y a beaucoup de magasins et de bons prix. J'espère trouver ce que je cherche.",
+    difficulty: "Élémentaire (A2)"
+  },
+  {
+    id: 205,
+    level: "A2",
+    title_es: "Mi Barrio",
+    title_fr: "Mon Quartier",
+    text_es: "Vivo en un barrio tranquilo cerca del centro. Hay un parque grande donde la gente pasea a sus perros. También hay una panadería que hace un pan delicioso. Me gusta vivir aquí porque los vecinos son amables.",
+    text_fr: "Je vis dans un quartier calme près du centre. Il y a un grand parc où les gens promènent leurs chiens. Il y a aussi une boulangerie qui fait un pain délicieux. J'aime vivre ici parce que les voisins sont gentils.",
+    difficulty: "Élémentaire (A2)"
+  },
 
   // --- NIVEAU B1 (Opinions, futur, subjonctif simple) ---
   {
@@ -666,6 +722,33 @@ export const DAILY_READINGS = [
     text_fr: "Quand je terminerai mes études, je voyagerai en Amérique du Sud. Je veux que mes parents viennent avec moi une semaine. J'espère pouvoir visiter le Machu Picchu et en apprendre plus sur la culture inca.",
     difficulty: "Intermédiaire (B1)"
   },
+  {
+    id: 303,
+    level: "B1",
+    title_es: "La Importancia del Deporte",
+    title_fr: "L'Importance du Sport",
+    text_es: "Hacer ejercicio regularmente es fundamental para la salud física y mental. No hace falta correr un maratón; caminar treinta minutos al día es suficiente. Además, el deporte ayuda a reducir el estrés y mejora el sueño.",
+    text_fr: "Faire de l'exercice régulièrement est fondamental pour la santé physique et mentale. Pas besoin de courir un marathon ; marcher trente minutes par jour suffit. De plus, le sport aide à réduire le stress et améliore le sommeil.",
+    difficulty: "Intermédiaire (B1)"
+  },
+  {
+    id: 304,
+    level: "B1",
+    title_es: "Cuidar el Planeta",
+    title_fr: "Protéger la Planète",
+    text_es: "Es urgente que cambiemos nuestros hábitos para proteger el medio ambiente. Podríamos empezar por reciclar más y usar menos plástico. Si todos hacemos un pequeño esfuerzo, el impacto será enorme para las futuras generaciones.",
+    text_fr: "Il est urgent que nous changions nos habitudes pour protéger l'environnement. Nous pourrions commencer par recycler plus et utiliser moins de plastique. Si nous faisons tous un petit effort, l'impact sera énorme pour les générations futures.",
+    difficulty: "Intermédiaire (B1)"
+  },
+  {
+    id: 305,
+    level: "B1",
+    title_es: "La Música en Español",
+    title_fr: "La Musique en Espagnol",
+    text_es: "La música latina se ha vuelto muy popular en todo el mundo. Artistas como Rosalía o Shakira han llevado el idioma español a muchas culturas diferentes. Escuchar canciones es una forma divertida y eficaz de mejorar tu vocabulario.",
+    text_fr: "La musique latine est devenue très populaire dans le monde entier. Des artistes comme Rosalía ou Shakira ont porté la langue espagnole vers de nombreuses cultures différentes. Écouter des chansons est une façon amusante et efficace d'améliorer son vocabulaire.",
+    difficulty: "Intermédiaire (B1)"
+  },
 
   // --- NIVEAU B2 (Argumentation, nuances, passé complexe) ---
   {
@@ -677,6 +760,42 @@ export const DAILY_READINGS = [
     text_fr: "Bien que les réseaux sociaux nous connectent, ils ont aussi généré une dépendance inquiétante. Beaucoup de jeunes ressentent de l'anxiété s'ils ne vérifient pas leur téléphone constamment. Nous devrions encourager un usage plus responsable de la technologie.",
     difficulty: "Avancé (B2)"
   },
+  {
+    id: 402,
+    level: "B2",
+    title_es: "Turismo Sostenible",
+    title_fr: "Tourisme Durable",
+    text_es: "El turismo de masas ha dañado muchos ecosistemas frágiles. Es vital que los viajeros sean conscientes de su huella ecológica. Optar por alojamientos locales y respetar la naturaleza son pasos clave para un turismo más ético.",
+    text_fr: "Le tourisme de masse a endommagé de nombreux écosystèmes fragiles. Il est vital que les voyageurs soient conscients de leur empreinte écologique. Opter pour des hébergements locaux et respecter la nature sont des étapes clés pour un tourisme plus éthique.",
+    difficulty: "Avancé (B2)"
+  },
+  {
+    id: 403,
+    level: "B2",
+    title_es: "El Aprendizaje de Idiomas",
+    title_fr: "L'Apprentissage des Langues",
+    text_es: "Aprender un nuevo idioma no solo mejora tus oportunidades laborales, sino que también abre tu mente. Te permite entender otras formas de pensar y ver el mundo. Aunque la gramática sea difícil, la satisfacción de comunicarse no tiene precio.",
+    text_fr: "Apprendre une nouvelle langue n'améliore pas seulement tes opportunités professionnelles, mais ouvre aussi ton esprit. Cela te permet de comprendre d'autres façons de penser et de voir le monde. Bien que la grammaire soit difficile, la satisfaction de communiquer n'a pas de prix.",
+    difficulty: "Avancé (B2)"
+  },
+  {
+    id: 404,
+    level: "B2",
+    title_es: "La Dieta Mediterránea",
+    title_fr: "Le Régime Méditerranéen",
+    text_es: "Considerada Patrimonio Inmaterial de la Humanidad, la dieta mediterránea es mucho más que comida; es un estilo de vida. Se basa en el consumo de aceite de oliva, frutas, verduras y pescado, promoviendo la salud cardiovascular y la longevidad.",
+    text_fr: "Considéré comme Patrimoine Immatériel de l'Humanité, le régime méditerranéen est bien plus que de la nourriture ; c'est un style de vie. Il est basé sur la consommation d'huile d'olive, de fruits, de légumes et de poisson, favorisant la santé cardiovasculaire et la longévité.",
+    difficulty: "Avancé (B2)"
+  },
+  {
+    id: 405,
+    level: "B2",
+    title_es: "Inteligencia Artificial",
+    title_fr: "Intelligence Artificielle",
+    text_es: "La inteligencia artificial está transformando rápidamente nuestra sociedad. Desde la medicina hasta el transporte, sus aplicaciones son infinitas. Sin embargo, surgen dilemas éticos sobre la privacidad y el futuro del empleo que debemos debatir seriamente.",
+    text_fr: "L'intelligence artificielle transforme rapidement notre société. De la médecine aux transports, ses applications sont infinies. Cependant, des dilemmes éthiques surgissent concernant la confidentialité et l'avenir de l'emploi, dont nous devons débattre sérieusement.",
+    difficulty: "Avancé (B2)"
+  },
 
   // --- NIVEAU C1 (Littéraire, abstrait, idiomatique) ---
   {
@@ -686,6 +805,42 @@ export const DAILY_READINGS = [
     title_fr: "L'Art de la 'Sobremesa'",
     text_es: "La sobremesa es una institución sagrada en España. No se trata meramente de digerir los alimentos, sino de ese lapso indefinido donde la conversación fluye sin prisa. Es allí donde se arregla el mundo y se fortalecen los lazos, desafiando la tiranía del reloj.",
     text_fr: "La 'sobremesa' est une institution sacrée en Espagne. Il ne s'agit pas simplement de digérer les aliments, mais de ce laps de temps indéfini où la conversation coule sans hâte. C'est là que l'on refait le monde et que l'on renforce les liens, défiant la tyrannie de l'horloge.",
+    difficulty: "Expert (C1)"
+  },
+  {
+    id: 502,
+    level: "C1",
+    title_es: "El Realismo Mágico",
+    title_fr: "Le Réalisme Magique",
+    text_es: "El realismo mágico es una corriente literaria fascinante donde lo fantástico se percibe como cotidiano. Autores como Gabriel García Márquez lograron plasmar una realidad latinoamericana donde los mitos y la historia se entrelazan de manera indisoluble.",
+    text_fr: "Le réalisme magique est un courant littéraire fascinant où le fantastique est perçu comme quotidien. Des auteurs comme Gabriel García Márquez ont réussi à capturer une réalité latino-américaine où les mythes et l'histoire s'entrelacent de manière indissoluble.",
+    difficulty: "Expert (C1)"
+  },
+  {
+    id: 503,
+    level: "C1",
+    title_es: "La España Vaciada",
+    title_fr: "L'Espagne Vide",
+    text_es: "El fenómeno de la 'España vaciada' es un reto demográfico mayúsculo. Mientras las grandes urbes se saturan, vastas regiones del interior sufren un éxodo rural alarmante. Revitalizar estas zonas requiere políticas audaces de repoblación e inversión en infraestructuras.",
+    text_fr: "Le phénomène de l''Espagne vide' est un défi démographique majeur. Alors que les grandes villes saturent, de vastes régions de l'intérieur souffrent d'un exode rural alarmant. Revitaliser ces zones nécessite des politiques audacieuses de repeuplement et d'investissement dans les infrastructures.",
+    difficulty: "Expert (C1)"
+  },
+  {
+    id: 504,
+    level: "C1",
+    title_es: "El Quijote: Obra Maestra",
+    title_fr: "Don Quichotte : Chef-d'œuvre",
+    text_es: "Don Quijote de la Mancha no es solo una sátira de las novelas de caballerías, sino un estudio profundo de la naturaleza humana. La dicotomía entre el idealismo de Quijote y el pragmatismo de Sancho Panza refleja la eterna lucha entre nuestros sueños y la realidad.",
+    text_fr: "Don Quichotte de la Manche n'est pas seulement une satire des romans de chevalerie, mais une étude profonde de la nature humaine. La dichotomie entre l'idéalisme de Quichotte et le pragmatisme de Sancho Panza reflète la lutte éternelle entre nos rêves et la réalité.",
+    difficulty: "Expert (C1)"
+  },
+  {
+    id: 505,
+    level: "C1",
+    title_es: "La Globalización Cultural",
+    title_fr: "La Mondialisation Culturelle",
+    text_es: "Vivimos en una era de homogeneización cultural sin precedentes. Si bien esto facilita el entendimiento mutuo, corremos el riesgo de perder la riqueza de las tradiciones locales. Preservar la identidad cultural frente a la globalización es uno de los grandes desafíos contemporáneos.",
+    text_fr: "Nous vivons une ère d'homogénéisation culturelle sans précédent. Bien que cela facilite la compréhension mutuelle, nous courons le risque de perdre la richesse des traditions locales. Préserver l'identité culturelle face à la mondialisation est l'un des grands défis contemporains.",
     difficulty: "Expert (C1)"
   }
 ];
