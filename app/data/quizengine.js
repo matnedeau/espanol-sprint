@@ -19,8 +19,7 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
   
   if (vocabCards.length === 0 && grammarCards.length === 0) return [];
 
-  // --- PARTIE 1 : VOCABULAIRE EN CONTEXTE (8 Questions) ---
-  // Objectif : Trouver le mot manquant dans la phrase espagnole
+  // --- PARTIE 1 : TEXTE À TROUS (8 Questions) ---
   const selectedVocab = shuffleArray(vocabCards).slice(0, 8);
 
   selectedVocab.forEach(item => {
@@ -29,21 +28,20 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
     let hintText = "";
 
     if (hasSentence) {
-        // Phrase à trous (Le cerveau doit deviner le mot grâce au contexte espagnol)
+        // On remplace le mot cible par _______
         try {
             const escapedWord = item.es.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(escapedWord, 'gi');
             const maskedSentence = item.sentence.replace(regex, '_______');
             
-            questionText = `Complète la phrase :\n"${maskedSentence}"`;
-            // Indice : la traduction du mot seul, pour guider sans donner la réponse
-            hintText = `Mot recherché : ${item.en}`;
+            questionText = `Complète la phrase en espagnol :\n"${maskedSentence}"`;
+            hintText = `Le mot manquant est la traduction de : "${item.en}"`;
         } catch (e) {
-            questionText = `Comment dit-on "${item.en}" ?`;
+            questionText = `Comment écrit-on "${item.en}" en espagnol ?`;
             hintText = item.context;
         }
     } else {
-        questionText = `Comment dit-on "${item.en}" ?`;
+        questionText = `Comment écrit-on "${item.en}" en espagnol ?`;
         hintText = item.context;
     }
 
@@ -56,8 +54,7 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
     });
   });
 
-  // --- PARTIE 2 : GRAMMAIRE PURE (6 Questions) ---
-  // Objectif : Conjuguer correctement
+  // --- PARTIE 2 : CONJUGAISON (6 Questions) ---
   const selectedGrammar = shuffleArray(grammarCards).slice(0, 6);
 
   selectedGrammar.forEach(item => {
@@ -68,28 +65,44 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
           quizQuestions.push({
               id: `gram-${item.id}-${line.pronoun}`,
               type: 'input',
-              question: `Conjugue "${verbName}" au présent :\n${line.pronoun} ...`,
+              question: `Conjugue le verbe "${verbName}" :\n${line.pronoun} ...`,
               correctAnswer: line.verb,
-              hint: `Sens : ${line.fr}`
+              hint: `Cela signifie : ${line.fr}`
           });
       }
   });
 
   // --- PARTIE 3 : TRADUCTION DE PHRASE (6 Questions) ---
-  // Objectif : Construire une phrase complète en espagnol
-  // On ne demande plus de traduire vers le français, mais vers l'espagnol !
+  // SÉCURITÉ : On ne garde que les cartes qui ont VRAIMENT une traduction (sentence_trans)
+  // Cela évite les questions "undefined"
   const sentenceCards = vocabCards.filter(item => item.sentence && item.sentence_trans);
-  const selectedSentences = shuffleArray(sentenceCards).slice(0, 6);
+  
+  if (sentenceCards.length > 0) {
+      const selectedSentences = shuffleArray(sentenceCards).slice(0, 6);
 
-  selectedSentences.forEach(item => {
-      quizQuestions.push({
-          id: `sentence-${item.id}`,
-          type: 'input',
-          question: `Traduis cette phrase en espagnol :\n"${item.sentence_trans}"`,
-          correctAnswer: item.sentence, // La réponse attendue est maintenant en ESPAGNOL
-          hint: `Indice : ${item.es}...` // On donne le mot clé comme indice
+      selectedSentences.forEach(item => {
+          quizQuestions.push({
+              id: `sentence-${item.id}`,
+              type: 'input',
+              question: `Écris cette phrase en espagnol :\n"${item.sentence_trans}"`,
+              correctAnswer: item.sentence,
+              hint: `Commence par : ${item.es.substring(0, 1)}...`
+          });
       });
-  });
+  }
 
-  return shuffleArray(quizQuestions);
+  // Si on n'a pas assez de phrases traduites (anciennes leçons), on complète avec du vocabulaire standard
+  while (quizQuestions.length < 20 && vocabCards.length > 8) {
+      const extraItem = vocabCards[Math.floor(Math.random() * vocabCards.length)];
+      // On évite les doublons d'ID si possible, mais pour le MVP on ajoute
+      quizQuestions.push({
+          id: `extra-${extraItem.id}-${Math.random()}`,
+          type: 'input',
+          question: `Rappel : Comment dit-on "${extraItem.en}" ?`,
+          correctAnswer: extraItem.es,
+          hint: extraItem.context
+      });
+  }
+
+  return shuffleArray(quizQuestions).slice(0, 20); // On s'assure d'avoir max 20 questions
 };
