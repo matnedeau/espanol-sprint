@@ -1,105 +1,96 @@
 /* eslint-disable */
 // @ts-nocheck
 
-/* =======================================================================================
-   🧠 CONTENT FACTORY : DONNÉES STRUCTURÉES PAR NIVEAU
-   ======================================================================================= */
-
 export const DATA_BANK = {
   verbs: [
-    // --- GROUPE 1 : FONDAMENTAUX (A1 / A2) ---
+    // --- GROUPE 1 : LES INDISPENSABLES (A1 - A2) ---
+    { levels: ["A1", "A2"], es: "Ser", en: "Être (Identité)", yo: "Soy", tu: "Eres", el: "Es", nos: "Somos", vos: "Sois", ellos: "Son" },
+    { levels: ["A1", "A2"], es: "Estar", en: "Être (État)", yo: "Estoy", tu: "Estás", el: "Está", nos: "Estamos", vos: "Estáis", ellos: "Están" },
+    { levels: ["A1", "A2"], es: "Tener", en: "Avoir", yo: "Tengo", tu: "Tienes", el: "Tiene", nos: "Tenemos", vos: "Tenéis", ellos: "Tienen" },
+    { levels: ["A1", "A2"], es: "Hacer", en: "Faire", yo: "Hago", tu: "Haces", el: "Hace", nos: "Hacemos", vos: "Hacéis", ellos: "Hacen" },
+    { levels: ["A1", "A2"], es: "Ir", en: "Aller", yo: "Voy", tu: "Vas", el: "Va", nos: "Vamos", vos: "Vais", ellos: "Van" },
+    { levels: ["A1", "A2"], es: "Poder", en: "Pouvoir", yo: "Puedo", tu: "Puedes", el: "Puede", nos: "Podemos", vos: "Podéis", ellos: "Pueden" },
+    { levels: ["A1", "A2"], es: "Saber", en: "Savoir", yo: "Sé", tu: "Sabes", el: "Sabe", nos: "Sabemos", vos: "Sabéis", ellos: "Saben" },
+    { levels: ["A1", "A2"], es: "Querer", en: "Vouloir", yo: "Quiero", tu: "Quieres", el: "Quiere", nos: "Queremos", vos: "Queréis", ellos: "Quieren" },
+    { levels: ["A1", "A2"], es: "Hablar", en: "Parler", yo: "Hablo", tu: "Hablas", el: "Habla", nos: "Hablamos", vos: "Habláis", ellos: "Hablan" },
     { levels: ["A1", "A2"], es: "Comer", en: "Manger", yo: "Como", tu: "Comes", el: "Come", nos: "Comemos", vos: "Coméis", ellos: "Comen" },
     { levels: ["A1", "A2"], es: "Vivir", en: "Vivre", yo: "Vivo", tu: "Vives", el: "Vive", nos: "Vivimos", vos: "Vivís", ellos: "Viven" },
-    { levels: ["A1", "A2"], es: "Beber", en: "Boire", yo: "Bebo", tu: "Bebes", el: "Bebe", nos: "Bebemos", vos: "Bebéis", ellos: "Beben" },
-    { levels: ["A1", "A2"], es: "Leer", en: "Lire", yo: "Leo", tu: "Lees", el: "Lee", nos: "Leemos", vos: "Leéis", ellos: "Leen" },
-    { levels: ["A1", "A2"], es: "Escribir", en: "Écrire", yo: "Escribo", tu: "Escribes", el: "Escribe", nos: "Escribimos", vos: "Escribís", ellos: "Escriben" },
-    { levels: ["A1", "A2"], es: "Correr", en: "Courir", yo: "Corro", tu: "Corres", el: "Corre", nos: "Corremos", vos: "Corréis", ellos: "Corren" },
-    { levels: ["A1", "A2"], es: "Caminar", en: "Marcher", yo: "Camino", tu: "Caminas", el: "Camina", nos: "Caminamos", vos: "Camináis", ellos: "Caminan" },
+    { levels: ["A1", "A2"], es: "Ver", en: "Voir", yo: "Veo", tu: "Ves", el: "Ve", nos: "Vemos", vos: "Veis", ellos: "Ven" },
+    { levels: ["A1", "A2"], es: "Dar", en: "Donner", yo: "Doy", tu: "Das", el: "Da", nos: "Damos", vos: "Dais", ellos: "Dan" },
+    { levels: ["A1", "A2"], es: "Decir", en: "Dire", yo: "Digo", tu: "Dices", el: "Dice", nos: "Decimos", vos: "Decís", ellos: "Dicen" },
     { levels: ["A1", "A2"], es: "Dormir", en: "Dormir", yo: "Duermo", tu: "Duermes", el: "Duerme", nos: "Dormimos", vos: "Dormís", ellos: "Duermen" },
-    { levels: ["A1", "A2"], es: "Jugar", en: "Jouer", yo: "Juego", tu: "Juegas", el: "Juega", nos: "Jugamos", vos: "Jugáis", ellos: "Juegan" },
-    { levels: ["A1", "A2"], es: "Escuchar", en: "Écouter", yo: "Escucho", tu: "Escuchas", el: "Escucha", nos: "Escuchamos", vos: "Escucháis", ellos: "Escuchan" },
-    { levels: ["A1", "A2"], es: "Mirar", en: "Regarder", yo: "Miro", tu: "Miras", el: "Mira", nos: "Miramos", vos: "Miráis", ellos: "Miran" },
-    { levels: ["A1", "A2"], es: "Amar", en: "Aimer", yo: "Amo", tu: "Amas", el: "Ama", nos: "Amamos", vos: "Amáis", ellos: "Aman" },
-    { levels: ["A1", "A2"], es: "Viajar", en: "Voyager", yo: "Viajo", tu: "Viajas", el: "Viaja", nos: "Viajamos", vos: "Viajáis", ellos: "Viajan" },
-    { levels: ["A1", "A2"], es: "Trabajar", en: "Travailler", yo: "Trabajo", tu: "Trabajas", el: "Trabaja", nos: "Trabajamos", vos: "Trabajáis", ellos: "Trabajan" },
-    { levels: ["A1", "A2"], es: "Estudiar", en: "Étudier", yo: "Estudio", tu: "Estudias", el: "Estudia", nos: "Estudiamos", vos: "Estudiáis", ellos: "Estudian" },
-    { levels: ["A1", "A2"], es: "Comprar", en: "Acheter", yo: "Compro", tu: "Compras", el: "Compra", nos: "Compramos", vos: "Compráis", ellos: "Compran" },
-    { levels: ["A1", "A2"], es: "Abrir", en: "Ouvrir", yo: "Abro", tu: "Abres", el: "Abre", nos: "Abrimos", vos: "Abrís", ellos: "Abren" },
-    { levels: ["A1", "A2"], es: "Cerrar", en: "Fermer", yo: "Cierro", tu: "Cierras", el: "Cierra", nos: "Cerramos", vos: "Cerráis", ellos: "Cierran" },
     
-    // --- GROUPE 2 : INTERMÉDIAIRE (B1 / B2) ---
-    { levels: ["B1", "B2"], es: "Pensar", en: "Penser", yo: "Pienso", tu: "Piensas", el: "Piensa", nos: "Pensamos", vos: "Pensáis", ellos: "Piensan" },
-    { levels: ["B1", "B2"], es: "Creer", en: "Croire", yo: "Creo", tu: "Crees", el: "Cree", nos: "Creemos", vos: "Creéis", ellos: "Creen" },
-    { levels: ["B1", "B2"], es: "Sentir", en: "Sentir", yo: "Siento", tu: "Sientes", el: "Siente", nos: "Sentimos", vos: "Sentís", ellos: "Sienten" },
-    { levels: ["B1", "B2"], es: "Pedir", en: "Demander", yo: "Pido", tu: "Pides", el: "Pide", nos: "Pedimos", vos: "Pedís", ellos: "Piden" },
-    { levels: ["B1", "B2"], es: "Entender", en: "Comprendre", yo: "Entiendo", tu: "Entiendes", el: "Entiende", nos: "Entendemos", vos: "Entendéis", ellos: "Entienden" },
-    { levels: ["B1", "B2"], es: "Recordar", en: "Se souvenir", yo: "Recuerdo", tu: "Recuerdas", el: "Recuerda", nos: "Recordamos", vos: "Recordáis", ellos: "Recuerdan" },
-    { levels: ["B1", "B2"], es: "Conseguir", en: "Obtenir", yo: "Consigo", tu: "Consigues", el: "Consigue", nos: "Conseguimos", vos: "Conseguís", ellos: "Consiguen" },
-    { levels: ["B1", "B2"], es: "Elegir", en: "Choisir", yo: "Elijo", tu: "Eliges", el: "Elige", nos: "Elegimos", vos: "Elegís", ellos: "Eligen" },
+    // --- GROUPE 2 : ACTIONS DU QUOTIDIEN (A2 - B1) ---
+    { levels: ["A2", "B1"], es: "Llegar", en: "Arriver", yo: "Llego", tu: "Llegas", el: "Llega", nos: "Llegamos", vos: "Llegáis", ellos: "Llegan" },
+    { levels: ["A2", "B1"], es: "Pasar", en: "Passer", yo: "Paso", tu: "Pasas", el: "Pasa", nos: "Pasamos", vos: "Pasáis", ellos: "Pasan" },
+    { levels: ["A2", "B1"], es: "Deber", en: "Devoir", yo: "Debo", tu: "Debes", el: "Debe", nos: "Debemos", vos: "Debéis", ellos: "Deben" },
+    { levels: ["A2", "B1"], es: "Poner", en: "Mettre", yo: "Pongo", tu: "Pones", el: "Pone", nos: "Ponemos", vos: "Ponéis", ellos: "Ponen" },
+    { levels: ["A2", "B1"], es: "Parecer", en: "Sembler", yo: "Parezco", tu: "Pareces", el: "Parece", nos: "Parecemos", vos: "Parecéis", ellos: "Parecen" },
+    { levels: ["A2", "B1"], es: "Quedar", en: "Rester/RDV", yo: "Quedo", tu: "Quedas", el: "Queda", nos: "Quedamos", vos: "Quedáis", ellos: "Quedan" },
+    { levels: ["A2", "B1"], es: "Creer", en: "Croire", yo: "Creo", tu: "Crees", el: "Cree", nos: "Creemos", vos: "Creéis", ellos: "Creen" },
+    { levels: ["A2", "B1"], es: "Llevar", en: "Porter/Emmener", yo: "Llevo", tu: "Llevas", el: "Lleva", nos: "Llevamos", vos: "Lleváis", ellos: "Llevan" },
+    { levels: ["A2", "B1"], es: "Dejar", en: "Laisser", yo: "Dejo", tu: "Dejas", el: "Deja", nos: "Dejamos", vos: "Dejáis", ellos: "Dejan" },
+    { levels: ["A2", "B1"], es: "Seguir", en: "Suivre", yo: "Sigo", tu: "Sigues", el: "Sigue", nos: "Seguimos", vos: "Seguís", ellos: "Siguen" },
+    { levels: ["A2", "B1"], es: "Encontrar", en: "Trouver", yo: "Encuentro", tu: "Encuentras", el: "Encuentra", nos: "Encontramos", vos: "Encontráis", ellos: "Encuentran" },
     
-    // --- GROUPE 3 : AVANCÉ (C1) ---
-    { levels: ["C1"], es: "Analizar", en: "Analyser", yo: "Analizo", tu: "Analizas", el: "Analiza", nos: "Analizamos", vos: "Analizáis", ellos: "Analizan" },
-    { levels: ["C1"], es: "Debatir", en: "Débattre", yo: "Debato", tu: "Debates", el: "Debate", nos: "Debatimos", vos: "Debatís", ellos: "Debaten" },
-    { levels: ["C1"], es: "Influir", en: "Influencer", yo: "Influyo", tu: "Influyes", el: "Influye", nos: "Influimos", vos: "Influís", ellos: "Influyen" },
-    { levels: ["C1"], es: "Deducir", en: "Déduire", yo: "Deduzco", tu: "Deduces", el: "Deduce", nos: "Deducimos", vos: "Deducís", ellos: "Deducen" },
-    { levels: ["C1"], es: "Suponer", en: "Supposer", yo: "Supongo", tu: "Supones", el: "Supone", nos: "Suponemos", vos: "Suponéis", ellos: "Suponen" },
-    { levels: ["C1"], es: "Convencer", en: "Convaincre", yo: "Convenzo", tu: "Convences", el: "Convence", nos: "Convencemos", vos: "Convencéis", ellos: "Convencen" },
-    { levels: ["C1"], es: "Prever", en: "Prévoir", yo: "Preveo", tu: "Prever", el: "Prevé", nos: "Prevemos", vos: "Prevéis", ellos: "Prevén" },
-    { levels: ["C1"], es: "Exigir", en: "Exiger", yo: "Exijo", tu: "Exiges", el: "Exige", nos: "Exigimos", vos: "Exigís", ellos: "Exigen" }
+    // --- GROUPE 3 : AVANCÉ & ABSTRAIT (B2 - C1) ---
+    { levels: ["B2", "C1"], es: "Desarrollar", en: "Développer", yo: "Desarrollo", tu: "Desarrollas", el: "Desarrolla", nos: "Desarrollamos", vos: "Desarrolláis", ellos: "Desarrollan" },
+    { levels: ["B2", "C1"], es: "Establecer", en: "Établir", yo: "Establezco", tu: "Estableces", el: "Establece", nos: "Establecemos", vos: "Establecéis", ellos: "Establecen" },
+    { levels: ["B2", "C1"], es: "Exigir", en: "Exiger", yo: "Exijo", tu: "Exiges", el: "Exige", nos: "Exigimos", vos: "Exigís", ellos: "Exigen" },
+    { levels: ["B2", "C1"], es: "Suponer", en: "Supposer", yo: "Supongo", tu: "Supones", el: "Supone", nos: "Suponemos", vos: "Suponéis", ellos: "Suponen" },
+    { levels: ["B2", "C1"], es: "Reconocer", en: "Reconnaître", yo: "Reconozco", tu: "Reconoces", el: "Reconoce", nos: "Reconocemos", vos: "Reconocéis", ellos: "Reconocen" },
+    { levels: ["B2", "C1"], es: "Alcanzar", en: "Atteindre", yo: "Alcanzo", tu: "Alcanzas", el: "Alcanza", nos: "Alcanzamos", vos: "Alcanzáis", ellos: "Alcanzan" }
   ],
 
   nouns: [
-    { es: "El libro", en: "Le livre" }, { es: "La casa", en: "La maison" },
-    { es: "El coche", en: "La voiture" }, { es: "La ciudad", en: "La ville" },
-    { es: "El amigo", en: "L'ami" }, { es: "La playa", en: "La plage" },
-    { es: "El tiempo", en: "Le temps" }, { es: "El trabajo", en: "Le travail" },
-    { es: "La comida", en: "La nourriture" }, { es: "El dinero", en: "L'argent" },
-    { es: "El mundo", en: "Le monde" }, { es: "La música", en: "La musique" },
-    { es: "La familia", en: "La famille" }, { es: "El agua", en: "L'eau" },
-    { es: "La escuela", en: "L'école" }, { es: "El sol", en: "Le soleil" },
-    { es: "La noche", en: "La nuit" }, { es: "El problema", en: "Le problème" },
-    { es: "El gobierno", en: "Le gouvernement" }, { es: "La salud", en: "La santé" },
-    { es: "La empresa", en: "L'entreprise" }, { es: "El éxito", en: "Le succès" },
-    { es: "La guerra", en: "La guerre" }, { es: "La paz", en: "La paix" },
-    { es: "El medio ambiente", en: "L'environnement" }, { es: "La tecnología", en: "La technologie" },
-    { es: "La libertad", en: "La liberté" }, { es: "El derecho", en: "Le droit" },
-    { es: "La cultura", en: "La culture" }, { es: "El futuro", en: "L'avenir" },
-    { es: "La duda", en: "Le doute" }, { es: "La razón", en: "La raison" },
-    { es: "La paradoja", en: "Le paradoxe" }, { es: "El matiz", en: "La nuance" },
-    { es: "La hipótesis", en: "L'hypothèse" }, { es: "La ironía", en: "L'ironie" },
-    { es: "El fenómeno", en: "Le phénomène" }, { es: "La tendencia", en: "La tendance" },
-    { es: "La controversia", en: "La controverse" }, { es: "La perspectiva", en: "La perspective" },
-    { es: "El contexto", en: "Le contexte" }, { es: "La infraestructura", en: "L'infrastructure" },
-    { es: "La diversidad", en: "La diversité" }, { es: "El paradigma", en: "Le paradigme" }
+    // --- TEMPS & LIEUX ---
+    { es: "El tiempo", en: "Le temps" }, { es: "El año", en: "L'année" },
+    { es: "El día", en: "Le jour" }, { es: "La noche", en: "La nuit" },
+    { es: "La semana", en: "La semaine" }, { es: "El lugar", en: "L'endroit" },
+    { es: "El mundo", en: "Le monde" }, { es: "El país", en: "Le pays" },
+    { es: "La ciudad", en: "La ville" }, { es: "La calle", en: "La rue" },
+    { es: "La casa", en: "La maison" }, { es: "La escuela", en: "L'école" },
+    
+    // --- PERSONNES ---
+    { es: "La gente", en: "Les gens" }, { es: "El hombre", en: "L'homme" },
+    { es: "La mujer", en: "La femme" }, { es: "El niño", en: "L'enfant" },
+    { es: "El amigo", en: "L'ami" }, { es: "La familia", en: "La famille" },
+    { es: "El gobierno", en: "Le gouvernement" }, { es: "El equipo", en: "L'équipe" },
+    
+    // --- ABSTRAIT & CHOSES ---
+    { es: "La vida", en: "La vie" }, { es: "La cosa", en: "La chose" },
+    { es: "El momento", en: "Le moment" }, { es: "El problema", en: "Le problème" },
+    { es: "La parte", en: "La partie" }, { es: "El caso", en: "Le cas" },
+    { es: "El trabajo", en: "Le travail" }, { es: "La palabra", en: "Le mot" },
+    { es: "El dinero", en: "L'argent" }, { es: "La historia", en: "L'histoire" },
+    { es: "La idea", en: "L'idée" }, { es: "El agua", en: "L'eau" }
   ],
 
   adjectives: [
-    { es: "Grande", en: "Grand" }, { es: "Pequeño", en: "Petit" },
     { es: "Bueno", en: "Bon" }, { es: "Malo", en: "Mauvais" },
+    { es: "Grande", en: "Grand" }, { es: "Pequeño", en: "Petit" },
     { es: "Nuevo", en: "Nouveau" }, { es: "Viejo", en: "Vieux" },
-    { es: "Rápido", en: "Rapide" }, { es: "Lento", en: "Lent" },
-    { es: "Feliz", en: "Heureux" }, { es: "Triste", en: "Triste" },
+    { es: "Primero", en: "Premier" }, { es: "Último", en: "Dernier" },
+    { es: "Largo", en: "Long" }, { es: "Corto", en: "Court" },
+    { es: "Alto", en: "Haut" }, { es: "Bajo", en: "Bas" },
+    { es: "Importante", en: "Important" }, { es: "Posible", en: "Possible" },
+    { es: "Mejor", en: "Meilleur" }, { es: "Peor", en: "Pire" },
     { es: "Fácil", en: "Facile" }, { es: "Difícil", en: "Difficile" },
-    { es: "Interesante", en: "Intéressant" }, { es: "Importante", en: "Important" },
-    { es: "Peligroso", en: "Dangereux" }, { es: "Seguro", en: "Sûr" },
-    { es: "Sostenible", en: "Durable" }, { es: "Justo", en: "Juste" },
-    { es: "Necesario", en: "Nécessaire" }, { es: "Posible", en: "Possible" },
-    { es: "Inevitable", en: "Inévitable" }, { es: "Eficaz", en: "Efficace" },
-    { es: "Subjetivo", en: "Subjectif" }, { es: "Ambiguo", en: "Ambigu" },
-    { es: "Sutil", en: "Subtil" }, { es: "Efímero", en: "Éphémère" },
-    { es: "Trascendental", en: "Transcendantal" }, { es: "Polémico", en: "Polémique" }
+    { es: "Rojo", en: "Rouge" }, { es: "Verde", en: "Vert" },
+    { es: "Azul", en: "Bleu" }, { es: "Blanco", en: "Blanc" },
+    { es: "Negro", en: "Noir" }, { es: "Fuerte", en: "Fort" }
   ],
 
   connectors: [
-    { es: "Pero", en: "Mais" }, { es: "Y", en: "Et" }, { es: "O", en: "Ou" },
-    { es: "Porque", en: "Parce que" }, { es: "Cuando", en: "Quand" },
-    { es: "Si", en: "Si" }, { es: "También", en: "Aussi" },
-    { es: "Aunque", en: "Bien que" }, { es: "Sin embargo", en: "Cependant" },
-    { es: "Por lo tanto", en: "Par conséquent" }, { es: "Además", en: "De plus" },
-    { es: "En cambio", en: "En revanche" }, { es: "Por eso", en: "C'est pour ça que" },
-    { es: "No obstante", en: "Néanmoins" }, { es: "Por el contrario", en: "Au contraire" },
-    { es: "En consecuencia", en: "En conséquence" }, { es: "A pesar de", en: "Malgré" },
-    { es: "Dado que", en: "Étant donné que" }, { es: "A fin de que", en: "Afin que" }
+    { es: "Y", en: "Et" }, { es: "O", en: "Ou" },
+    { es: "Pero", en: "Mais" }, { es: "Porque", en: "Parce que" },
+    { es: "Si", en: "Si" }, { es: "Cuando", en: "Quand" },
+    { es: "También", en: "Aussi" }, { es: "Todo", en: "Tout" },
+    { es: "Como", en: "Comme" }, { es: "Para", en: "Pour" },
+    { es: "Por", en: "Par/Pour" }, { es: "Sin", en: "Sans" },
+    { es: "Sobre", en: "Sur" }, { es: "Entre", en: "Entre" },
+    { es: "Hasta", en: "Jusqu'à" }, { es: "Desde", en: "Depuis" },
+    { es: "Durante", en: "Pendant" }, { es: "Aunque", en: "Bien que" }
   ],
 
   tips: [
@@ -107,7 +98,9 @@ export const DATA_BANK = {
     "Les points d'interrogation se mettent aussi au début : ¿ ?",
     "Le 'V' se prononce presque comme un 'B' doux.",
     "Le 'RR' roulé est typique : mets ta langue sur le palais.",
-    "Le 'LL' se prononce comme un 'Y' (Paella = Pa-é-ya)."
+    "Le 'LL' se prononce comme un 'Y' (Paella = Pa-é-ya).",
+    "Les adjectifs s'accordent en genre et en nombre avec le nom.",
+    "Le sujet (Je, Tu) est souvent omis car la terminaison du verbe suffit."
   ]
 };
 
@@ -232,18 +225,21 @@ export const generateStructuredLesson = (id) => {
   else if (id <= 80) { level = "B2"; config = CURRICULUM_LOGIC.B2[id - 61] || { topic: "Révision B2", grammar: "Mix" }; }
   else { level = "C1"; config = CURRICULUM_LOGIC.C1[id - 81] || { topic: "Perfectionnement C1", grammar: "Expert" }; }
 
+  // SÉLECTION DES DONNÉES
   const availableVerbs = DATA_BANK.verbs.filter(v => v.levels.includes(level));
-  // Sécurité : si pas de verbe trouvé (cas rare), on prend le premier de la banque
   const randVerb = availableVerbs.length > 0 ? availableVerbs[id % availableVerbs.length] : DATA_BANK.verbs[0];
   
   const isPluralCycle = Math.floor(id / 2) % 2 !== 0; 
 
-  const randNoun = DATA_BANK.nouns[id % DATA_BANK.nouns.length];
-  const randNoun2 = DATA_BANK.nouns[(id + 3) % DATA_BANK.nouns.length];
-  const randNoun3 = DATA_BANK.nouns[(id + 7) % DATA_BANK.nouns.length];
-  const randAdj = DATA_BANK.adjectives[id % DATA_BANK.adjectives.length];
-  const randConn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
-  const randTip = DATA_BANK.tips[id % DATA_BANK.tips.length];
+  // Fonction utilitaire pour varier les choix
+  const getRand = (arr, offset) => arr[(id + offset) % arr.length];
+
+  const randNoun = getRand(DATA_BANK.nouns, 0);
+  const randNoun2 = getRand(DATA_BANK.nouns, 5);
+  const randNoun3 = getRand(DATA_BANK.nouns, 10);
+  const randAdj = getRand(DATA_BANK.adjectives, 0);
+  const randConn = getRand(DATA_BANK.connectors, 0);
+  const randTip = getRand(DATA_BANK.tips, 0);
 
   let cardId = id * 1000;
 
@@ -268,15 +264,20 @@ export const generateStructuredLesson = (id) => {
   return [
     { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Focus : ${randVerb.es}`, note: `Niveau ${level}` },
     
+
     { 
-        id: cardId++, type: "swipe", es: randNoun.es, en: randNoun.en, context: "Vocabulaire clé",
-        sentence: `Tengo ${randNoun.es.toLowerCase()}.`,
-        sentence_trans: `J'ai ${randNoun.en.toLowerCase()}.`
+        id: cardId++, 
+        type: "swipe", 
+        es: randNoun.es, 
+        en: randNoun.en, 
+        context: "Vocabulaire clé",
+        sentence: `Me gusta ${randNoun.es.toLowerCase()}.`,
+        sentence_trans: `J'aime ${randNoun.en.toLowerCase()}.`
     },
     
     { 
         id: cardId++, type: "grammar", title: grammarTitle, description: grammarDesc, 
-        verb: randVerb.es, // IMPORTANT : On ajoute le verbe propre
+        verb: randVerb.es, 
         conjugation: grammarConjugation 
     },
     
@@ -290,16 +291,28 @@ export const generateStructuredLesson = (id) => {
     
     { id: cardId++, type: "structure", title: "L'accord", formula: "Nom + Adjectif", example: `${randNoun.es} ${randAdj.es.toLowerCase()}`, note: "L'adjectif s'accorde en genre et nombre." },
     
+    // CORRECTION 2 : On utilise "Busco" (Je cherche) au lieu de "Veo" (Je vois)
+    // C'est plus actif et naturel pour un apprenant
     { 
-        id: cardId++, type: "swipe", es: randNoun2.es, en: randNoun2.en, context: "Vocabulaire extra",
-        sentence: `Veo ${randNoun2.es.toLowerCase()}.`,
-        sentence_trans: `Je vois ${randNoun2.en.toLowerCase()}.`
+        id: cardId++, 
+        type: "swipe", 
+        es: randNoun2.es, 
+        en: randNoun2.en, 
+        context: "Vocabulaire extra",
+        sentence: `Busco ${randNoun2.es.toLowerCase()}.`,
+        sentence_trans: `Je cherche ${randNoun2.en.toLowerCase()}.`
     },
     
+    // CORRECTION 3 : On utilise "Necesito" (J'ai besoin de) au lieu de "Quiero" (Je veux)
+    // Plus poli et utile
     { 
-        id: cardId++, type: "swipe", es: randNoun3.es, en: randNoun3.en, context: "Nouveau mot",
-        sentence: `Quiero ${randNoun3.es.toLowerCase()}.`,
-        sentence_trans: `Je veux ${randNoun3.en.toLowerCase()}.`
+        id: cardId++, 
+        type: "swipe", 
+        es: randNoun3.es, 
+        en: randNoun3.en, 
+        context: "Nouveau mot",
+        sentence: `Necesito ${randNoun3.es.toLowerCase()}.`,
+        sentence_trans: `J'ai besoin de ${randNoun3.en.toLowerCase()}.`
     },
     
     { 
@@ -311,7 +324,9 @@ export const generateStructuredLesson = (id) => {
     { id: cardId++, type: "structure", title: "Astuce Pro 💡", formula: "Culture & Langue", example: randTip, note: "Bon à savoir !" },
     
     { 
-      id: cardId++, type: "structure", title: "Phrase Complète", 
+      id: cardId++, 
+      type: "structure", 
+      title: "Phrase Complète", 
       formula: "Sujet + Verbe + Complément", 
       example: isPluralCycle 
         ? `Vosotros ${randVerb.vos.toLowerCase()} ${randNoun.es.toLowerCase()}`
@@ -354,15 +369,14 @@ levels.forEach(lvl => {
         if (lvl === "B1" && CURRICULUM_LOGIC.B1[i]) topic = CURRICULUM_LOGIC.B1[i].topic;
         if (lvl === "B2" && CURRICULUM_LOGIC.B2[i]) topic = CURRICULUM_LOGIC.B2[i].topic;
         if (lvl === "C1" && CURRICULUM_LOGIC.C1[i]) topic = CURRICULUM_LOGIC.C1[i].topic;
+        
         INITIAL_LESSONS_LIST.push({ id: idCounter++, title: topic, level: lvl, desc: "Cours complet" });
     }
 });
 
-// --- GÉNÉRATEUR D'EXAMEN INTELLIGENT (N'oublie pas le 'export') ---
 export const generateExamContent = (allContent, startId, endId, levelName, examId) => {
   let pool = [];
   
-  // 1. On récupère tout le contenu des leçons du niveau
   for (let i = startId; i <= endId; i++) {
     if (allContent[i]) {
       const validCards = allContent[i].filter(c => c.type === 'swipe' || c.type === 'input');
@@ -370,17 +384,14 @@ export const generateExamContent = (allContent, startId, endId, levelName, examI
     }
   }
 
-  // 2. Sécurité
   if (pool.length < 10) {
     return [
       { id: examId * 1000, type: "structure", title: `EXAMEN ${levelName}`, formula: "Erreur", example: "Contenu insuffisant", note: "Contacte le support." }
     ];
   }
 
-  // 3. Tirage au sort de 20 questions
   const selectedQuestions = pool.sort(() => 0.5 - Math.random()).slice(0, 20);
 
-  // 4. Formatage
   const examContent = [
     { 
       id: examId * 1000, 
@@ -415,7 +426,6 @@ export const getDailyReading = (userLevel) => {
   return pool[readingIndex];
 };
 
-// --- SECTION LECTURE DU JOUR (35 TEXTES : 7 par niveau) ---
 export const DAILY_READINGS = [
   // ==============================
   // NIVEAU A1 (Débutant)
