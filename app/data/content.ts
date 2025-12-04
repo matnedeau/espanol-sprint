@@ -2,29 +2,38 @@
 // @ts-nocheck
 
 /* =======================================================================================
-   🧠 CONTENT FACTORY : BASE DE DONNÉES ET LOGIQUE PÉDAGOGIQUE
+   🧠 CONTENT FACTORY : DONNÉES XXL ET PROGRAMME COMPLET
    ======================================================================================= */
 
-// --- 1. LECTURES QUOTIDIENNES (Définies une seule fois ici) ---
+// --- 1. LECTURES QUOTIDIENNES ---
 export const DAILY_READINGS = [
   // A1
   { id: 101, level: "A1", title_es: "Mi Gato Félix", title_fr: "Mon Chat Félix", text_es: "Tengo un gato. Se llama Félix. Es negro y blanco. A Félix le gusta dormir en el sofá.", text_fr: "J'ai un chat. Il s'appelle Félix. Il est noir et blanc. Félix aime dormir sur le canapé.", difficulty: "Débutant (A1)" },
   { id: 102, level: "A1", title_es: "El Desayuno", title_fr: "Le Petit Déjeuner", text_es: "Por la mañana, como pan con tomate y aceite. Bebo un café con leche caliente.", text_fr: "Le matin, je mange du pain avec de la tomate et de l'huile. Je bois un café au lait chaud.", difficulty: "Débutant (A1)" },
+  { id: 103, level: "A1", title_es: "Mi Familia", title_fr: "Ma Famille", text_es: "Vivo con mis padres y mi hermano en Madrid. Mi padre es alto y mi madre es muy amable.", text_fr: "Je vis avec mes parents et mon frère à Madrid. Mon père est grand et ma mère est très gentille.", difficulty: "Débutant (A1)" },
+  { id: 104, level: "A1", title_es: "En la Escuela", title_fr: "À l'École", text_es: "La escuela es grande. Tengo muchos amigos en mi clase. La profesora escribe en la pizarra.", text_fr: "L'école est grande. J'ai beaucoup d'amis dans ma classe. La professeure écrit au tableau.", difficulty: "Débutant (A1)" },
+  { id: 105, level: "A1", title_es: "Mi Casa", title_fr: "Ma Maison", text_es: "Mi casa es pequeña pero bonita. Tiene dos habitaciones y una cocina blanca.", text_fr: "Ma maison est petite mais jolie. Elle a deux chambres et une cuisine blanche.", difficulty: "Débutant (A1)" },
+  
   // A2
   { id: 201, level: "A2", title_es: "Mis Vacaciones", title_fr: "Mes Vacances", text_es: "El año pasado fui a Barcelona con mis amigos. Visitamos la Sagrada Familia y caminamos por las Ramblas.", text_fr: "L'année dernière, je suis allé à Barcelone avec mes amis. Nous avons visité la Sagrada Familia et marché sur les Ramblas.", difficulty: "Élémentaire (A2)" },
+  { id: 202, level: "A2", title_es: "La Rutina de Sofía", title_fr: "La Routine de Sofia", text_es: "Sofía se levanta temprano, a las siete. Se ducha, se viste y va a trabajar en autobús.", text_fr: "Sofia se lève tôt, à sept heures. Elle se douche, s'habille et va travailler en bus.", difficulty: "Élémentaire (A2)" },
+  
   // B1
   { id: 301, level: "B1", title_es: "El Teletrabajo", title_fr: "Le Télétravail", text_es: "Creo que el teletrabajo tiene muchas ventajas. No tienes que viajar cada día y puedes organizar tu tiempo mejor.", text_fr: "Je crois que le télétravail a beaucoup d'avantages. Tu n'as pas à voyager chaque jour et tu peux mieux organiser ton temps.", difficulty: "Intermédiaire (B1)" },
+  { id: 302, level: "B1", title_es: "Planes de Futuro", title_fr: "Projets d'Avenir", text_es: "Cuando termine mis estudios, viajaré por América del Sur. Quiero que mis padres vengan conmigo una semana.", text_fr: "Quand je terminerai mes études, je voyagerai en Amérique du Sud. Je veux que mes parents viennent avec moi une semaine.", difficulty: "Intermédiaire (B1)" },
+  
   // B2
   { id: 401, level: "B2", title_es: "Turismo Sostenible", title_fr: "Tourisme Durable", text_es: "El turismo de masas ha dañado muchos ecosistemas. Es vital que los viajeros sean conscientes de su huella ecológica.", text_fr: "Le tourisme de masse a endommagé de nombreux écosystèmes. Il est vital que les voyageurs soient conscients de leur empreinte écologique.", difficulty: "Avancé (B2)" },
+  
   // C1
   { id: 501, level: "C1", title_es: "La Sobremesa", title_fr: "La Sobremesa", text_es: "La sobremesa es una institución sagrada en España; ese lapso indefinido donde la conversación fluye sin prisa tras la comida.", text_fr: "La 'sobremesa' est une institution sacrée en Espagne ; ce laps de temps indéfini où la conversation coule sans hâte après le repas.", difficulty: "Expert (C1)" }
 ];
 
-// --- 2. BANQUE DE DONNÉES XXL (VERBES & NOMS PAR NIVEAU) ---
+// --- 2. BANQUE DE DONNÉES XXL ---
 export const DATA_BANK = {
   verbs: [
     // A1
-    { levels: ["A1"], es: "Ser", en: "Être (Essence)", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él", verb: "es", fr: "Il est" }, { pronoun: "Nos", verb: "somos", fr: "Nous sommes" }, { pronoun: "Vos", verb: "sois", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "son", fr: "Ils sont" }] },
+    { levels: ["A1"], es: "Ser", en: "Être (Identité)", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él", verb: "es", fr: "Il est" }, { pronoun: "Nos", verb: "somos", fr: "Nous sommes" }, { pronoun: "Vos", verb: "sois", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "son", fr: "Ils sont" }] },
     { levels: ["A1"], es: "Estar", en: "Être (État)", conjugation: [{ pronoun: "Yo", verb: "estoy", fr: "Je suis" }, { pronoun: "Tú", verb: "estás", fr: "Tu es" }, { pronoun: "Él", verb: "está", fr: "Il est" }, { pronoun: "Nos", verb: "estamos", fr: "Nous sommes" }, { pronoun: "Vos", verb: "estáis", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "están", fr: "Ils sont" }] },
     { levels: ["A1"], es: "Tener", en: "Avoir", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él", verb: "tiene", fr: "Il a" }, { pronoun: "Nos", verb: "tenemos", fr: "Nous avons" }] },
     { levels: ["A1"], es: "Hacer", en: "Faire", conjugation: [{ pronoun: "Yo", verb: "hago", fr: "Je fais" }, { pronoun: "Tú", verb: "haces", fr: "Tu fais" }, { pronoun: "Él", verb: "hace", fr: "Il fait" }] },
@@ -104,7 +113,7 @@ export const DATA_BANK = {
   ]
 };
 
-// --- 3. CONFIGURATION DU PROGRAMME ---
+// --- 3. CONFIGURATION DU PROGRAMME (COMPLET ET DÉTAILLÉ) ---
 export const CURRICULUM_LOGIC = {
   A1: [
     { topic: "Bases & Salutations", grammar: "Présent (Ser)" }, { topic: "La Famille", grammar: "Possession" },
@@ -118,10 +127,54 @@ export const CURRICULUM_LOGIC = {
     { topic: "Les Saisons", grammar: "Comparatifs" }, { topic: "La Nature", grammar: "Démonstratifs" },
     { topic: "Poser des Questions", grammar: "Interrogatifs" }, { topic: "Bilan A1", grammar: "Révision Globale" }
   ],
-  A2: Array(20).fill({ topic: "Pratique A2", grammar: "Avancé" }),
-  B1: Array(20).fill({ topic: "Pratique B1", grammar: "Intermédiaire" }),
-  B2: Array(20).fill({ topic: "Pratique B2", grammar: "Confirmé" }),
-  C1: Array(20).fill({ topic: "Pratique C1", grammar: "Expert" })
+  A2: [
+    { topic: "Raconter le Passé", grammar: "Passé Composé" }, { topic: "Souvenirs d'Enfance", grammar: "Imparfait" },
+    { topic: "Futur & Avenir", grammar: "Futur Simple" }, { topic: "Comparaisons", grammar: "Superlatifs" },
+    { topic: "Obligations", grammar: "Tener que / Deber" }, { topic: "Santé & Médecin", grammar: "Impératif (Vous)" },
+    { topic: "Au Restaurant", grammar: "Politesse" }, { topic: "Réservation Hôtel", grammar: "Conditionnel (Je)" },
+    { topic: "La Banque", grammar: "Chiffres élevés" }, { topic: "La Poste", grammar: "COD (Lo/La)" },
+    { topic: "Urgences", grammar: "Impératif Négatif" }, { topic: "Fêtes & Traditions", grammar: "Passé Simple" },
+    { topic: "La Sieste", grammar: "Habitudes" }, { topic: "Orientation", grammar: "Prépositions" },
+    { topic: "Action en cours", grammar: "Gérondif" }, { topic: "Sentiments", grammar: "Subjonctif (Intro)" },
+    { topic: "Musique & Cinéma", grammar: "Opinion" }, { topic: "Internet", grammar: "Verbes Techno" },
+    { topic: "Voyage (Avion)", grammar: "Vocabulaire" }, { topic: "Bilan A2", grammar: "Validation" }
+  ],
+  B1: [
+    { topic: "Exprimer l'Opinion", grammar: "Subjonctif Présent" }, { topic: "Hypothèses", grammar: "Conditionnel" },
+    { topic: "Rapporter un Discours", grammar: "Style Indirect" }, { topic: "Relations Sociales", grammar: "Por vs Para" },
+    { topic: "L'Environnement", grammar: "Futur Antérieur" }, { topic: "La Technologie", grammar: "Avantages/Inconvénients" },
+    { topic: "Le Monde du Travail", grammar: "CV & Lettre" }, { topic: "La Politique", grammar: "Débat" },
+    { topic: "La Justice", grammar: "Vocabulaire Juridique" }, { topic: "L'Économie", grammar: "Chiffres & Trends" },
+    { topic: "L'Art & Culture", grammar: "Description" }, { topic: "La Littérature", grammar: "Passé Simple (Avancé)" },
+    { topic: "L'Histoire", grammar: "Concordance temps" }, { topic: "La Géographie", grammar: "Régions" },
+    { topic: "La Société", grammar: "Égalité/Droits" }, { topic: "La Science", grammar: "Futur Proche" },
+    { topic: "Les Médias", grammar: "Connecteurs Logiques" }, { topic: "Psychologie", grammar: "Verbes de changement" },
+    { topic: "Philosophie", grammar: "Abstrait" }, { topic: "Bilan B1", grammar: "Maîtrise" }
+  ],
+  B2: [
+    { topic: "Si j'étais...", grammar: "Subjonctif Imparfait" }, { topic: "Regrets", grammar: "Conditionnel Passé" },
+    { topic: "Faits Divers", grammar: "Voix Passive" }, { topic: "Rumeurs", grammar: "Discours Rapporté (Passé)" },
+    { topic: "Santé Avancée", grammar: "Expressions Corps" }, { topic: "Changements d'État", grammar: "Ponerse / Quedarse" },
+    { topic: "Nuances", grammar: "Por vs Para (Subtil)" }, { topic: "Précision", grammar: "Pronoms Relatifs (Cuyo)" },
+    { topic: "Projets Futurs", grammar: "Futur Antérieur" }, { topic: "Récit Complexe", grammar: "Plus-que-parfait" },
+    { topic: "Sentiments", grammar: "Verbes Prépositionnels" }, { topic: "Argumentation", grammar: "Concession (Bien que)" },
+    { topic: "Doute & Probabilité", grammar: "Deber de / Quizás" }, { topic: "Habitudes Passées", grammar: "Soler + Infinitif" },
+    { topic: "Généralités", grammar: "Le Neutre (Lo)" }, { topic: "Nuances de Taille", grammar: "Diminutifs (-ito)" },
+    { topic: "Business", grammar: "Négociation" }, { topic: "Écologie", grammar: "Débat & Solutions" },
+    { topic: "Humour & Ironie", grammar: "Double Sens" }, { topic: "Bilan B2", grammar: "Fluidité Totale" }
+  ],
+  C1: [
+    { topic: "Subtilités", grammar: "Subjonctif (Nuances)" }, { topic: "Langage Soutenu", grammar: "Registres de langue" },
+    { topic: "Expressions Idiomatiques", grammar: "Sens Figuré" }, { topic: "Argot & Rue", grammar: "Langage Familier" },
+    { topic: "Accents & Régions", grammar: "Esp vs Latam" }, { topic: "Littérature", grammar: "Style Romanesque" },
+    { topic: "Philosophie", grammar: "Concepts Abstraits" }, { topic: "Médecine", grammar: "Termes Techniques" },
+    { topic: "Juridique", grammar: "Langage de Loi" }, { topic: "Histoire d'Espagne", grammar: "Civilisation" },
+    { topic: "Amérique Latine", grammar: "Culture Spécifique" }, { topic: "Rhétorique", grammar: "Connecteurs Complexes" },
+    { topic: "Emphase", grammar: "Double Négation" }, { topic: "Transformation", grammar: "Verbes Complexes" },
+    { topic: "Faux Amis", grammar: "Pièges Courants" }, { topic: "Sagesse Populaire", grammar: "Proverbes" },
+    { topic: "Presse & Média", grammar: "Analyse" }, { topic: "Rédaction", grammar: "Style Académique" },
+    { topic: "Bilinguisme", grammar: "Perfectionnement" }, { topic: "BILAN FINAL C1", grammar: "Expertise" }
+  ]
 };
 
 // --- 4. LEÇONS MANUELLES (1-20) ---
@@ -169,9 +222,11 @@ export const generateStructuredLesson = (id) => {
   if (id > 60) level = "B2";
   if (id > 80) level = "C1";
 
-  const config = CURRICULUM_LOGIC[level][(id - 1) % 20] || { topic: `Pratique ${level}`, grammar: "Révision" };
+  // Utilisation sécurisée du programme
+  const levelConfig = CURRICULUM_LOGIC[level] || [];
+  const config = levelConfig[(id - 1) % levelConfig.length] || { topic: `Pratique ${level}`, grammar: "Général" };
 
-  // 1. CHOIX DU VERBE (FILTRE PAR NIVEAU)
+  // 1. CHOIX DU VERBE
   const availableVerbs = DATA_BANK.verbs.filter(v => v.levels.includes(level));
   const randVerb = availableVerbs.length > 0 ? availableVerbs[id % availableVerbs.length] : DATA_BANK.verbs[0];
 
@@ -202,39 +257,28 @@ export const generateStructuredLesson = (id) => {
 
   let cardId = id * 1000;
   const isPlural = id % 2 === 0;
+  
+  // Question de grammaire claire
   const grammarQuestionText = isPlural 
     ? `Conjugue : Vosotros (${randVerb.es})` 
-    : `Conjugue : Él/Ella (${randVerb.es})`;
-  const grammarAnswer = isPlural 
-    ? [randVerb.conjugation.find(c => c.pronoun.includes("Vos"))?.verb || randVerb.conjugation[0].verb]
-    : [randVerb.conjugation.find(c => c.pronoun.includes("Él"))?.verb || randVerb.conjugation[0].verb];
+    : `Conjugue : Tú (${randVerb.es})`;
+    
+  // Réponse de grammaire sécurisée
+  const targetPronoun = isPlural ? "Nos" : "Tú";
+  const conjFn = randVerb.conjugation.find(c => c.pronoun.includes(targetPronoun));
+  const grammarAnswer = conjFn ? [conjFn.verb] : [randVerb.conjugation[0].verb];
 
   return [
-    { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Verbe : ${randVerb.es}`, note: `Niveau ${level}` },
-    
-    // Carte 1 (Objet)
+    { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Verbe focus : ${randVerb.es}`, note: `Niveau ${level}` },
     { id: cardId++, type: "swipe", es: card1.es, en: card1.en, context: card1.context, sentence: card1.sentence, sentence_trans: card1.sentence_trans },
-    
-    // Grammaire
     { id: cardId++, type: "grammar", title: `Verbe : ${randVerb.es}`, description: randVerb.en, verb: randVerb.es, conjugation: randVerb.conjugation },
     { id: cardId++, type: "input", question: grammarQuestionText, answer: grammarAnswer, hint: `Verbe ${randVerb.es}` },
-
-    // Carte 2 (Lieu)
     { id: cardId++, type: "swipe", es: card2.es, en: card2.en, context: card2.context, sentence: card2.sentence, sentence_trans: card2.sentence_trans },
-    
-    // Structure
     { id: cardId++, type: "structure", title: "L'Accord", formula: "Nom + Adjectif", example: `${object.es} ${adj.es.toLowerCase()}`, note: "L'adjectif s'accorde." },
-
-    // Carte 3 (Nourriture)
     { id: cardId++, type: "swipe", es: card3.es, en: card3.en, context: card3.context, sentence: card3.sentence, sentence_trans: card3.sentence_trans },
-    
-    // Connecteur
-    { id: cardId++, type: "swipe", es: conn.es, en: conn.en, context: "Liaison", sentence: `${conn.es}, es importante.`, sentence_trans: `${conn.en}, c'est important.` },
-
-    { id: cardId++, type: "structure", title: "Astuce", formula: "Bon à savoir", example: tip, note: "Culture" },
-    
-    // Exercice final
-    { id: cardId++, type: "input", question: `Traduis '${card1.en}'`, answer: [card1.es.toLowerCase()], hint: `${card1.es.substring(0,3)}...` }
+    { id: cardId++, type: "swipe", es: conn.es, en: conn.en, context: "Liaison", sentence: `${conn.es}, es interesante.`, sentence_trans: `${conn.en}, c'est intéressant.` },
+    // Question de traduction sur une phrase complète
+    { id: cardId++, type: "input", question: `Traduis : "${card1.sentence_trans}"`, answer: [card1.sentence.toLowerCase().replace(/[¿¡!.,]/g, '')], hint: "Utilise le vocabulaire vu." }
   ];
 };
 
@@ -256,42 +300,60 @@ export const generateAllContent = () => {
 };
 
 export const INITIAL_LESSONS_CONTENT = generateAllContent();
+
+// --- GÉNÉRATION DE LA LISTE DES LEÇONS (CORRIGÉE AVEC LES TITRES) ---
 export const INITIAL_LESSONS_LIST = [];
 let idCnt = 1;
 ["A1", "A2", "B1", "B2", "C1"].forEach(lvl => {
     const curriculum = CURRICULUM_LOGIC[lvl] || [];
     for(let i=0; i<20; i++) {
+        // ON RÉCUPÈRE LE VRAI TITRE DU PROGRAMME
         const topicTitle = (curriculum[i] && curriculum[i].topic) ? curriculum[i].topic : `Pratique ${lvl} - ${i+1}`;
-        INITIAL_LESSONS_LIST.push({ id: idCnt++, title: topicTitle, level: lvl, desc: "Cours structuré" });
+        
+        INITIAL_LESSONS_LIST.push({ 
+            id: idCnt++, 
+            title: topicTitle, // <-- C'EST ICI QUE LE NOM EST CORRIGÉ
+            level: lvl, 
+            desc: `Niveau ${lvl}` 
+        });
     }
 });
 
-// --- GÉNÉRATEUR D'EXAMEN ---
+// --- GÉNÉRATEUR D'EXAMEN (CORRIGÉ POUR DES QUESTIONS LOGIQUES) ---
 export const generateExamContent = (allContent, startId, endId, levelName, examId) => {
   let pool = [];
   for (let i = startId; i <= endId; i++) {
     if (allContent[i]) {
-      const validCards = allContent[i].filter(c => c.type === 'swipe' || c.type === 'input');
-      pool = [...pool, ...validCards];
+      // On prend toutes les cartes utiles
+      pool = [...pool, ...allContent[i].filter(c => c.type === 'swipe' || c.type === 'input')];
     }
   }
+
   if (pool.length < 10) return [{ id: examId, type: "structure", title: "Erreur", formula: "...", example: "...", note: "Contacte le support." }];
   
+  // Mélange et sélection
   const selected = pool.sort(() => 0.5 - Math.random()).slice(0, 20);
   
+  // TRANSFORMATION EN QUESTIONS LOGIQUES
   return [
     { id: examId, type: "structure", title: `EXAMEN ${levelName}`, formula: "Test Final", example: "20 Questions", note: "Objectif 16/20" },
     ...selected.map((item, idx) => {
-        if (item.type === 'input') return { ...item, id: examId + idx + 1 };
+        // Si c'est déjà une question de grammaire (input), on la garde telle quelle
+        if (item.type === 'input') {
+             return { ...item, id: examId + idx + 1 };
+        }
         
+        // Si c'est une carte de vocabulaire (swipe), on crée une question de traduction sur la PHRASE COMPLÈTE
+        // pour donner du contexte.
         const questionText = item.sentence_trans ? `Traduis : "${item.sentence_trans}"` : `Traduis : "${item.en}"`;
         const answerText = item.sentence ? item.sentence : item.es;
 
         return {
             ...item,
             id: examId + idx + 1,
-            type: 'input',
+            type: 'input', // Force le type 'question'
             question: questionText,
+            // Nettoyage de la réponse attendue (minuscules, sans ponctuation)
             answer: [answerText.toLowerCase().replace(/[¿¡!.,]/g, '').trim()],
             hint: item.context || "..."
         };
