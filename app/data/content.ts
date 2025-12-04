@@ -195,6 +195,7 @@ export const CONTENT_PART_1 = {
 
 // --- 5. GÉNÉRATEUR INTELLIGENT (21-100) ---
 // --- GÉNÉRATEUR INTELLIGENT DE LEÇONS (THÉMATIQUE) ---
+// --- GÉNÉRATEUR INTELLIGENT DE LEÇONS (VRAIMENT THÉMATIQUE) ---
 export const generateStructuredLesson = (id) => {
   let level = "A1";
   if (id > 20) level = "A2";
@@ -202,41 +203,52 @@ export const generateStructuredLesson = (id) => {
   if (id > 60) level = "B2";
   if (id > 80) level = "C1";
 
-  // On récupère le programme (Titre + Grammaire)
+  // On récupère le programme officiel pour ce niveau
   const levelConfig = CURRICULUM_LOGIC[level] || [];
+  // On trouve le sujet de la leçon (ex: "La Cuisine", "Voyage")
   const config = levelConfig[(id - 1) % levelConfig.length] || { topic: `Pratique ${level}`, grammar: "Général" };
   
   const topicLower = config.topic.toLowerCase();
 
-  // 1. DÉTECTION DU THÈME POUR LE VOCABULAIRE
-  // On essaie de deviner la catégorie de mots selon le titre de la leçon
-  let targetCategory = 'random'; // Par défaut
+  // 1. DÉTECTION INTELLIGENTE DU THÈME
+  // On analyse le titre pour savoir quelle liste de vocabulaire utiliser
+  let targetCategory = 'random';
 
-  if (topicLower.includes('cuisine') || topicLower.includes('nourriture') || topicLower.includes('restaurant') || topicLower.includes('gastronomie')) targetCategory = 'food';
-  else if (topicLower.includes('voyage') || topicLower.includes('ville') || topicLower.includes('maison') || topicLower.includes('lieu')) targetCategory = 'places';
-  else if (topicLower.includes('objet') || topicLower.includes('technologie') || topicLower.includes('maison')) targetCategory = 'objects';
-  else if (topicLower.includes('famille') || topicLower.includes('ami') || topicLower.includes('gens') || topicLower.includes('société')) targetCategory = 'people';
-  else if (topicLower.includes('abstrait') || topicLower.includes('sentiment') || topicLower.includes('idée')) targetCategory = 'abstract';
+  // Mots-clés pour la Nourriture
+  if (topicLower.includes('cuisine') || topicLower.includes('nourriture') || topicLower.includes('restaurant') || topicLower.includes('gastronomie') || topicLower.includes('dieta')) targetCategory = 'food';
+  
+  // Mots-clés pour les Lieux / Voyage
+  else if (topicLower.includes('voyage') || topicLower.includes('ville') || topicLower.includes('maison') || topicLower.includes('lieu') || topicLower.includes('tourisme') || topicLower.includes('monde')) targetCategory = 'places';
+  
+  // Mots-clés pour les Objets / Tech
+  else if (topicLower.includes('objet') || topicLower.includes('technologie') || topicLower.includes('internet') || topicLower.includes('maison') || topicLower.includes('école')) targetCategory = 'objects';
+  
+  // Mots-clés pour les Gens / Société
+  else if (topicLower.includes('famille') || topicLower.includes('ami') || topicLower.includes('gens') || topicLower.includes('société') || topicLower.includes('politique')) targetCategory = 'people';
+  
+  // Mots-clés pour l'Abstrait
+  else if (topicLower.includes('abstrait') || topicLower.includes('sentiment') || topicLower.includes('idée') || topicLower.includes('temps') || topicLower.includes('histoire')) targetCategory = 'abstract';
 
-  // Fonction pour piocher un mot (avec priorité au thème)
-  const getSmartNoun = (categoryFallback) => {
-      // Si on a détecté un thème précis (ex: food), on force cette catégorie
-      // Sinon, on utilise la catégorie par défaut demandée par la structure de la carte (ex: place, object...)
-      const cat = targetCategory !== 'random' ? targetCategory : categoryFallback;
+  // 2. FONCTION DE SÉLECTION CIBLÉE
+  const getSmartNoun = (fallbackCategory) => {
+      // Si on a trouvé un thème précis, on l'utilise. Sinon, on prend la catégorie par défaut de la carte.
+      const cat = targetCategory !== 'random' ? targetCategory : fallbackCategory;
       
-      const pool = DATA_BANK.nouns[cat] ? DATA_BANK.nouns[cat] : DATA_BANK.nouns['objects']; // Sécurité
-      // Filtre par niveau si possible, sinon prend tout
+      const pool = DATA_BANK.nouns[cat] ? DATA_BANK.nouns[cat] : DATA_BANK.nouns['objects'];
+      
+      // On essaie de prendre un mot du bon niveau, sinon n'importe lequel
       const levelPool = pool.filter(n => n.levels.includes(level));
       const finalPool = levelPool.length > 0 ? levelPool : pool;
 
+      // Hachage simple pour que la leçon soit toujours la même pour un ID donné
       return finalPool[(id + Math.floor(Math.random() * 10)) % finalPool.length];
   };
 
-  // 2. CHOIX DU VERBE (Selon niveau)
+  // 3. CHOIX DU VERBE (Toujours adapté au niveau)
   const availableVerbs = DATA_BANK.verbs.filter(v => v.levels.includes(level));
   const randVerb = availableVerbs.length > 0 ? availableVerbs[id % availableVerbs.length] : DATA_BANK.verbs[0];
 
-  // 3. SELECTION DES MOTS (Intelligente)
+  // 4. SÉLECTION DES MOTS (Maintenant cohérente avec le titre !)
   const place = getSmartNoun('places');   // Si le thème est "Cuisine", ça deviendra de la nourriture !
   const object = getSmartNoun('objects');
   const food = getSmartNoun('food');
@@ -245,40 +257,45 @@ export const generateStructuredLesson = (id) => {
   const conn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
   const tip = DATA_BANK.tips[id % DATA_BANK.tips.length];
 
-  // 4. CONSTRUCTION
-  const card1 = { ...object, context: "Mot clé", sentence: `Tengo ${object.es.toLowerCase()}.`, sentence_trans: `J'ai ${object.en.toLowerCase()}.` };
-  const card2 = { ...place, context: "Contexte", sentence: `Voy a ${place.es.toLowerCase()}.`, sentence_trans: `Je vais à ${place.en.toLowerCase()}.` };
-  const card3 = { ...food, context: "Exemple", sentence: `Me gusta ${food.es.toLowerCase()}.`, sentence_trans: `J'aime ${food.en.toLowerCase()}.` };
-
+  // 5. CONSTRUCTION DES CARTES
   let cardId = id * 1000;
   const isPlural = id % 2 === 0;
   
-  const grammarQuestionText = isPlural 
-    ? `Conjugue : Nosotros (${randVerb.es})` 
-    : `Conjugue : Tú (${randVerb.es})`;
-    
+  const grammarQuestionText = isPlural ? `Conjugue : Nosotros (${randVerb.es})` : `Conjugue : Tú (${randVerb.es})`;
   const targetPronoun = isPlural ? "Nos" : "Tú";
   const conjFn = randVerb.conjugation.find(c => c.pronoun.includes(targetPronoun));
   const grammarAnswer = conjFn ? [conjFn.verb] : [randVerb.conjugation[0].verb];
 
+  // Construction des phrases logiques
+  const card1 = { ...object, context: "Mot clé", sentence: `Necesito ${object.es.toLowerCase()}.`, sentence_trans: `J'ai besoin de ${object.en.toLowerCase()}.` };
+  const card2 = { ...place, context: "Contexte", sentence: `Voy a ${place.es.toLowerCase()}.`, sentence_trans: `Je vais à ${place.en.toLowerCase()}.` };
+  const card3 = { ...food, context: "Exemple", sentence: `Me gusta ${food.es.toLowerCase()}.`, sentence_trans: `J'aime ${food.en.toLowerCase()}.` };
+
   return [
     { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Verbe focus : ${randVerb.es}`, note: `Niveau ${level}` },
     
+    // Carte 1
     { id: cardId++, type: "swipe", es: card1.es, en: card1.en, context: card1.context, sentence: card1.sentence, sentence_trans: card1.sentence_trans },
     
+    // Grammaire
     { id: cardId++, type: "grammar", title: `Verbe : ${randVerb.es}`, description: randVerb.en, verb: randVerb.es, conjugation: randVerb.conjugation },
     { id: cardId++, type: "input", question: grammarQuestionText, answer: grammarAnswer, hint: `Verbe ${randVerb.es}` },
 
+    // Carte 2
     { id: cardId++, type: "swipe", es: card2.es, en: card2.en, context: card2.context, sentence: card2.sentence, sentence_trans: card2.sentence_trans },
     
+    // Structure
     { id: cardId++, type: "structure", title: "L'Accord", formula: "Nom + Adjectif", example: `${object.es} ${adj.es.toLowerCase()}`, note: "L'adjectif s'accorde." },
 
+    // Carte 3
     { id: cardId++, type: "swipe", es: card3.es, en: card3.en, context: card3.context, sentence: card3.sentence, sentence_trans: card3.sentence_trans },
     
+    // Connecteur
     { id: cardId++, type: "swipe", es: conn.es, en: conn.en, context: "Liaison", sentence: `${conn.es}, es importante.`, sentence_trans: `${conn.en}, c'est important.` },
 
     { id: cardId++, type: "structure", title: "Astuce", formula: "Bon à savoir", example: tip, note: "Culture" },
     
+    // Exercice final
     { id: cardId++, type: "input", question: `Traduis : "${card1.sentence_trans}"`, answer: [card1.sentence.toLowerCase().replace(/[¿¡!.,]/g, '')], hint: "Utilise le vocabulaire vu." }
   ];
 };
