@@ -2,7 +2,7 @@
 // @ts-nocheck
 
 /* =======================================================================================
-   🧠 CONTENT FACTORY : DONNÉES XXL ET PROGRAMME COMPLET
+   🧠 CONTENT FACTORY : DONNÉES XXL ET PROGRAMME DÉTAILLÉ (TITRES CORRIGÉS)
    ======================================================================================= */
 
 // --- 1. LECTURES QUOTIDIENNES ---
@@ -10,21 +10,12 @@ export const DAILY_READINGS = [
   // A1
   { id: 101, level: "A1", title_es: "Mi Gato Félix", title_fr: "Mon Chat Félix", text_es: "Tengo un gato. Se llama Félix. Es negro y blanco. A Félix le gusta dormir en el sofá.", text_fr: "J'ai un chat. Il s'appelle Félix. Il est noir et blanc. Félix aime dormir sur le canapé.", difficulty: "Débutant (A1)" },
   { id: 102, level: "A1", title_es: "El Desayuno", title_fr: "Le Petit Déjeuner", text_es: "Por la mañana, como pan con tomate y aceite. Bebo un café con leche caliente.", text_fr: "Le matin, je mange du pain avec de la tomate et de l'huile. Je bois un café au lait chaud.", difficulty: "Débutant (A1)" },
-  { id: 103, level: "A1", title_es: "Mi Familia", title_fr: "Ma Famille", text_es: "Vivo con mis padres y mi hermano en Madrid. Mi padre es alto y mi madre es muy amable.", text_fr: "Je vis avec mes parents et mon frère à Madrid. Mon père est grand et ma mère est très gentille.", difficulty: "Débutant (A1)" },
-  { id: 104, level: "A1", title_es: "En la Escuela", title_fr: "À l'École", text_es: "La escuela es grande. Tengo muchos amigos en mi clase. La profesora escribe en la pizarra.", text_fr: "L'école est grande. J'ai beaucoup d'amis dans ma classe. La professeure écrit au tableau.", difficulty: "Débutant (A1)" },
-  { id: 105, level: "A1", title_es: "Mi Casa", title_fr: "Ma Maison", text_es: "Mi casa es pequeña pero bonita. Tiene dos habitaciones y una cocina blanca.", text_fr: "Ma maison est petite mais jolie. Elle a deux chambres et une cuisine blanche.", difficulty: "Débutant (A1)" },
-  
   // A2
   { id: 201, level: "A2", title_es: "Mis Vacaciones", title_fr: "Mes Vacances", text_es: "El año pasado fui a Barcelona con mis amigos. Visitamos la Sagrada Familia y caminamos por las Ramblas.", text_fr: "L'année dernière, je suis allé à Barcelone avec mes amis. Nous avons visité la Sagrada Familia et marché sur les Ramblas.", difficulty: "Élémentaire (A2)" },
-  { id: 202, level: "A2", title_es: "La Rutina de Sofía", title_fr: "La Routine de Sofia", text_es: "Sofía se levanta temprano, a las siete. Se ducha, se viste y va a trabajar en autobús.", text_fr: "Sofia se lève tôt, à sept heures. Elle se douche, s'habille et va travailler en bus.", difficulty: "Élémentaire (A2)" },
-  
   // B1
   { id: 301, level: "B1", title_es: "El Teletrabajo", title_fr: "Le Télétravail", text_es: "Creo que el teletrabajo tiene muchas ventajas. No tienes que viajar cada día y puedes organizar tu tiempo mejor.", text_fr: "Je crois que le télétravail a beaucoup d'avantages. Tu n'as pas à voyager chaque jour et tu peux mieux organiser ton temps.", difficulty: "Intermédiaire (B1)" },
-  { id: 302, level: "B1", title_es: "Planes de Futuro", title_fr: "Projets d'Avenir", text_es: "Cuando termine mis estudios, viajaré por América del Sur. Quiero que mis padres vengan conmigo una semana.", text_fr: "Quand je terminerai mes études, je voyagerai en Amérique du Sud. Je veux que mes parents viennent avec moi une semaine.", difficulty: "Intermédiaire (B1)" },
-  
   // B2
   { id: 401, level: "B2", title_es: "Turismo Sostenible", title_fr: "Tourisme Durable", text_es: "El turismo de masas ha dañado muchos ecosistemas. Es vital que los viajeros sean conscientes de su huella ecológica.", text_fr: "Le tourisme de masse a endommagé de nombreux écosystèmes. Il est vital que les voyageurs soient conscients de leur empreinte écologique.", difficulty: "Avancé (B2)" },
-  
   // C1
   { id: 501, level: "C1", title_es: "La Sobremesa", title_fr: "La Sobremesa", text_es: "La sobremesa es una institución sagrada en España; ese lapso indefinido donde la conversación fluye sin prisa tras la comida.", text_fr: "La 'sobremesa' est une institution sacrée en Espagne ; ce laps de temps indéfini où la conversation coule sans hâte après le repas.", difficulty: "Expert (C1)" }
 ];
@@ -35,31 +26,20 @@ export const DATA_BANK = {
     // A1
     { levels: ["A1"], es: "Ser", en: "Être (Identité)", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él", verb: "es", fr: "Il est" }, { pronoun: "Nos", verb: "somos", fr: "Nous sommes" }, { pronoun: "Vos", verb: "sois", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "son", fr: "Ils sont" }] },
     { levels: ["A1"], es: "Estar", en: "Être (État)", conjugation: [{ pronoun: "Yo", verb: "estoy", fr: "Je suis" }, { pronoun: "Tú", verb: "estás", fr: "Tu es" }, { pronoun: "Él", verb: "está", fr: "Il est" }, { pronoun: "Nos", verb: "estamos", fr: "Nous sommes" }, { pronoun: "Vos", verb: "estáis", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "están", fr: "Ils sont" }] },
-    { levels: ["A1"], es: "Tener", en: "Avoir", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él", verb: "tiene", fr: "Il a" }, { pronoun: "Nos", verb: "tenemos", fr: "Nous avons" }] },
+    { levels: ["A1"], es: "Tener", en: "Avoir", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él", verb: "tiene", fr: "Il a" }, { pronoun: "Nos", verb: "tenemos", fr: "Nous avons" }, { pronoun: "Vos", verb: "tenéis", fr: "Vous avez" }, { pronoun: "Ellos", verb: "tienen", fr: "Ils ont" }] },
+    { levels: ["A1"], es: "Ir", en: "Aller", conjugation: [{ pronoun: "Yo", verb: "voy", fr: "Je vais" }, { pronoun: "Tú", verb: "vas", fr: "Tu vas" }, { pronoun: "Él", verb: "va", fr: "Il va" }, { pronoun: "Nos", verb: "vamos", fr: "Nous allons" }] },
     { levels: ["A1"], es: "Hacer", en: "Faire", conjugation: [{ pronoun: "Yo", verb: "hago", fr: "Je fais" }, { pronoun: "Tú", verb: "haces", fr: "Tu fais" }, { pronoun: "Él", verb: "hace", fr: "Il fait" }] },
-    { levels: ["A1"], es: "Ir", en: "Aller", conjugation: [{ pronoun: "Yo", verb: "voy", fr: "Je vais" }, { pronoun: "Tú", verb: "vas", fr: "Tu vas" }, { pronoun: "Nos", verb: "vamos", fr: "Nous allons" }] },
-    { levels: ["A1"], es: "Comer", en: "Manger", conjugation: [{ pronoun: "Yo", verb: "como", fr: "Je mange" }, { pronoun: "Tú", verb: "comes", fr: "Tu manges" }] },
-    { levels: ["A1"], es: "Hablar", en: "Parler", conjugation: [{ pronoun: "Yo", verb: "hablo", fr: "Je parle" }, { pronoun: "Tú", verb: "hablas", fr: "Tu parles" }] },
-    { levels: ["A1"], es: "Vivir", en: "Vivre", conjugation: [{ pronoun: "Yo", verb: "vivo", fr: "Je vis" }, { pronoun: "Tú", verb: "vives", fr: "Tu vis" }] },
+    { levels: ["A1"], es: "Comer", en: "Manger", conjugation: [{ pronoun: "Yo", verb: "como", fr: "Je mange" }, { pronoun: "Tú", verb: "comes", fr: "Tu manges" }, { pronoun: "Él", verb: "come", fr: "Il mange" }] },
+    { levels: ["A1"], es: "Hablar", en: "Parler", conjugation: [{ pronoun: "Yo", verb: "hablo", fr: "Je parle" }, { pronoun: "Tú", verb: "hablas", fr: "Tu parles" }, { pronoun: "Él", verb: "habla", fr: "Il parle" }] },
     
     // A2
     { levels: ["A2"], es: "Poder", en: "Pouvoir", conjugation: [{ pronoun: "Yo", verb: "puedo", fr: "Je peux" }, { pronoun: "Tú", verb: "puedes", fr: "Tu peux" }] },
     { levels: ["A2"], es: "Querer", en: "Vouloir", conjugation: [{ pronoun: "Yo", verb: "quiero", fr: "Je veux" }, { pronoun: "Tú", verb: "quieres", fr: "Tu veux" }] },
-    { levels: ["A2"], es: "Saber", en: "Savoir", conjugation: [{ pronoun: "Yo", verb: "sé", fr: "Je sais" }, { pronoun: "Tú", verb: "sabes", fr: "Tu sais" }] },
     { levels: ["A2"], es: "Ver", en: "Voir", conjugation: [{ pronoun: "Yo", verb: "veo", fr: "Je vois" }, { pronoun: "Tú", verb: "ves", fr: "Tu vois" }] },
-    { levels: ["A2"], es: "Dar", en: "Donner", conjugation: [{ pronoun: "Yo", verb: "doy", fr: "Je donne" }, { pronoun: "Tú", verb: "das", fr: "Tu donnes" }] },
-    { levels: ["A2"], es: "Decir", en: "Dire", conjugation: [{ pronoun: "Yo", verb: "digo", fr: "Je dis" }, { pronoun: "Tú", verb: "dices", fr: "Tu dis" }] },
-    { levels: ["A2"], es: "Venir", en: "Venir", conjugation: [{ pronoun: "Yo", verb: "vengo", fr: "Je viens" }, { pronoun: "Tú", verb: "vienes", fr: "Tu viens" }] },
-    { levels: ["A2"], es: "Salir", en: "Sortir", conjugation: [{ pronoun: "Yo", verb: "salgo", fr: "Je sors" }, { pronoun: "Tú", verb: "sales", fr: "Tu sors" }] },
-    { levels: ["A2"], es: "Poner", en: "Mettre", conjugation: [{ pronoun: "Yo", verb: "pongo", fr: "Je mets" }] },
-    { levels: ["A2"], es: "Entender", en: "Comprendre", conjugation: [{ pronoun: "Yo", verb: "entiendo", fr: "Je comprends" }] },
-
+    
     // B1-C1
     { levels: ["B1", "B2"], es: "Pensar", en: "Penser", conjugation: [{ pronoun: "Yo", verb: "pienso", fr: "Je pense" }] },
-    { levels: ["B1", "B2"], es: "Creer", en: "Croire", conjugation: [{ pronoun: "Yo", verb: "creo", fr: "Je crois" }] },
-    { levels: ["B1", "B2"], es: "Sentir", en: "Sentir", conjugation: [{ pronoun: "Yo", verb: "siento", fr: "Je sens" }] },
-    { levels: ["B2", "C1"], es: "Exigir", en: "Exiger", conjugation: [{ pronoun: "Yo", verb: "exijo", fr: "J'exige" }] },
-    { levels: ["B2", "C1"], es: "Suponer", en: "Supposer", conjugation: [{ pronoun: "Yo", verb: "supongo", fr: "Je suppose" }] }
+    { levels: ["B1", "B2"], es: "Creer", en: "Croire", conjugation: [{ pronoun: "Yo", verb: "creo", fr: "Je crois" }] }
   ],
 
   // NOMS CATÉGORISÉS AVEC NIVEAUX
@@ -108,12 +88,11 @@ export const DATA_BANK = {
   tips: [
     "En espagnol, le 'H' est siempre muet.",
     "Ser = Identité permanente / Estar = État temporaire.",
-    "Gustar s'accorde avec la chose qu'on aime.",
     "Hay (Il y a) est invariable."
   ]
 };
 
-// --- 3. CONFIGURATION DU PROGRAMME (COMPLET ET DÉTAILLÉ) ---
+// --- 3. PROGRAMME PÉDAGOGIQUE COMPLET (TITRES CORRIGÉS) ---
 export const CURRICULUM_LOGIC = {
   A1: [
     { topic: "Bases & Salutations", grammar: "Présent (Ser)" }, { topic: "La Famille", grammar: "Possession" },
