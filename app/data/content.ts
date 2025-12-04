@@ -311,7 +311,6 @@ export const generateExamContent = (allContent, startId, endId, levelName, examI
     ...selected.map((item, index) => ({ ...item, id: examId + idx + 1, question: item.type === 'input' ? item.question : `Traduis : ${item.en}`, answer: item.type === 'input' ? item.answer : [item.es.toLowerCase()] }))
   ];
 };
-
 export const DAILY_READINGS = [
   // ==============================
   // NIVEAU A1 (Débutant)
