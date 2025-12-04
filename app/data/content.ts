@@ -2,44 +2,72 @@
 // @ts-nocheck
 
 /* =======================================================================================
-   🧠 CONTENT FACTORY : DONNÉES XXL ET GÉNÉRATION INTELLIGENTE
+   🧠 CONTENT FACTORY : DONNÉES XXL ET LECTURES (CORRIGÉ)
    ======================================================================================= */
 
+// --- 1. LECTURES QUOTIDIENNES (Définies en premier pour éviter les erreurs) ---
+export const DAILY_READINGS = [
+  // A1
+  { id: 101, level: "A1", title_es: "Mi Gato Félix", title_fr: "Mon Chat Félix", text_es: "Tengo un gato. Se llama Félix. Es negro y blanco. A Félix le gusta dormir en el sofá.", text_fr: "J'ai un chat. Il s'appelle Félix. Il est noir et blanc. Félix aime dormir sur le canapé.", difficulty: "Débutant (A1)" },
+  { id: 102, level: "A1", title_es: "El Desayuno", title_fr: "Le Petit Déjeuner", text_es: "Por la mañana, como pan con tomate y aceite. Bebo un café con leche caliente.", text_fr: "Le matin, je mange du pain avec de la tomate et de l'huile. Je bois un café au lait chaud.", difficulty: "Débutant (A1)" },
+  { id: 103, level: "A1", title_es: "Mi Familia", title_fr: "Ma Famille", text_es: "Vivo con mis padres y mi hermano en Madrid. Mi padre es alto y mi madre es muy amable.", text_fr: "Je vis avec mes parents et mon frère à Madrid. Mon père est grand et ma mère est très gentille.", difficulty: "Débutant (A1)" },
+  { id: 104, level: "A1", title_es: "En la Escuela", title_fr: "À l'École", text_es: "La escuela es grande. Tengo muchos amigos en mi clase. La profesora escribe en la pizarra.", text_fr: "L'école est grande. J'ai beaucoup d'amis dans ma classe. La professeure écrit au tableau.", difficulty: "Débutant (A1)" },
+  { id: 105, level: "A1", title_es: "Mi Casa", title_fr: "Ma Maison", text_es: "Mi casa es pequeña pero bonita. Tiene dos habitaciones y una cocina blanca.", text_fr: "Ma maison est petite mais jolie. Elle a deux chambres et une cuisine blanche.", difficulty: "Débutant (A1)" },
+  { id: 106, level: "A1", title_es: "El Parque", title_fr: "Le Parc", text_es: "Hoy hace sol. Voy al parque con mi perro. Hay muchos árboles verdes y flores.", text_fr: "Aujourd'hui il fait soleil. Je vais au parc avec mon chien. Il y a beaucoup d'arbres verts et de fleurs.", difficulty: "Débutant (A1)" },
+  { id: 107, level: "A1", title_es: "La Ropa", title_fr: "Les Vêtements", text_es: "Llevo una camiseta azul y pantalones negros. También tengo zapatos nuevos.", text_fr: "Je porte un t-shirt bleu et un pantalon noir. J'ai aussi des chaussures neuves.", difficulty: "Débutant (A1)" },
+  
+  // A2
+  { id: 201, level: "A2", title_es: "Mis Vacaciones", title_fr: "Mes Vacances", text_es: "El año pasado fui a Barcelona con mis amigos. Visitamos la Sagrada Familia y caminamos por las Ramblas.", text_fr: "L'année dernière, je suis allé à Barcelone avec mes amis. Nous avons visité la Sagrada Familia et marché sur les Ramblas.", difficulty: "Élémentaire (A2)" },
+  { id: 202, level: "A2", title_es: "La Rutina de Sofía", title_fr: "La Routine de Sofia", text_es: "Sofía se levanta temprano, a las siete. Se ducha, se viste y va a trabajar en autobús.", text_fr: "Sofia se lève tôt, à sept heures. Elle se douche, s'habille et va travailler en bus.", difficulty: "Élémentaire (A2)" },
+  { id: 203, level: "A2", title_es: "Una Cena Especial", title_fr: "Un Dîner Spécial", text_es: "Ayer fue el cumpleaños de mi hermana. Fuimos a un restaurante italiano muy elegante.", text_fr: "Hier c'était l'anniversaire de ma sœur. Nous sommes allés dans un restaurant italien très élégant.", difficulty: "Élémentaire (A2)" },
+  { id: 204, level: "A2", title_es: "El Mercado", title_fr: "Le Marché", text_es: "Todos los sábados voy al mercado central. Me gusta comprar fruta fresca y verduras.", text_fr: "Tous les samedis je vais au marché central. J'aime acheter des fruits frais et des légumes.", difficulty: "Élémentaire (A2)" },
+  { id: 205, level: "A2", title_es: "Mi Primer Trabajo", title_fr: "Mon Premier Travail", text_es: "Cuando tenía dieciocho años, trabajé en una cafetería. Servía café y limpiaba las mesas.", text_fr: "Quand j'avais dix-huit ans, j'ai travaillé dans un café. Je servais le café et nettoyais les tables.", difficulty: "Élémentaire (A2)" },
+  
+  // B1
+  { id: 301, level: "B1", title_es: "El Teletrabajo", title_fr: "Le Télétravail", text_es: "Creo que el teletrabajo tiene muchas ventajas. No tienes que viajar cada día y puedes organizar tu tiempo mejor.", text_fr: "Je crois que le télétravail a beaucoup d'avantages. Tu n'as pas à voyager chaque jour et tu peux mieux organiser ton temps.", difficulty: "Intermédiaire (B1)" },
+  { id: 302, level: "B1", title_es: "Planes de Futuro", title_fr: "Projets d'Avenir", text_es: "Cuando termine mis estudios, viajaré por América del Sur. Quiero que mis padres vengan conmigo una semana.", text_fr: "Quand je terminerai mes études, je voyagerai en Amérique du Sud. Je veux que mes parents viennent avec moi une semaine.", difficulty: "Intermédiaire (B1)" },
+  { id: 303, level: "B1", title_es: "Vida Saludable", title_fr: "Vie Saine", text_es: "Para tener una vida saludable, es necesario hacer ejercicio y comer bien. Intento evitar el azúcar.", text_fr: "Pour avoir une vie saine, il est nécessaire de faire de l'exercice et de bien manger. J'essaie d'éviter le sucre.", difficulty: "Intermédiaire (B1)" },
+  { id: 304, level: "B1", title_es: "Las Redes Sociales", title_fr: "Les Réseaux Sociaux", text_es: "Las redes sociales son útiles para mantener el contacto, pero pasamos demasiado tiempo mirando pantallas.", text_fr: "Les réseaux sociaux sont utiles pour garder le contact, mais nous passons trop de temps à regarder des écrans.", difficulty: "Intermédiaire (B1)" },
+  
+  // B2
+  { id: 401, level: "B2", title_es: "Turismo Sostenible", title_fr: "Tourisme Durable", text_es: "El turismo de masas ha dañado muchos ecosistemas. Es vital que los viajeros sean conscientes de su huella ecológica.", text_fr: "Le tourisme de masse a endommagé de nombreux écosystèmes. Il est vital que les voyageurs soient conscients de leur empreinte écologique.", difficulty: "Avancé (B2)" },
+  { id: 402, level: "B2", title_es: "Inteligencia Artificial", title_fr: "Intelligence Artificielle", text_es: "La IA está transformando nuestra sociedad a una velocidad vertiginosa, planteando dilemas éticos importantes.", text_fr: "L'IA transforme notre société à une vitesse vertigineuse, posant des dilemmes éthiques importants.", difficulty: "Avancé (B2)" },
+  
+  // C1
+  { id: 501, level: "C1", title_es: "La Sobremesa", title_fr: "La Sobremesa", text_es: "La sobremesa es una institución sagrada en España; ese lapso indefinido donde la conversación fluye sin prisa tras la comida.", text_fr: "La 'sobremesa' est une institution sacrée en Espagne ; ce laps de temps indéfini où la conversation coule sans hâte après le repas.", difficulty: "Expert (C1)" },
+  { id: 502, level: "C1", title_es: "Don Quijote", title_fr: "Don Quichotte", text_es: "Don Quijote no es solo una sátira, sino un estudio profundo de la naturaleza humana y la lucha entre ideales y realidad.", text_fr: "Don Quichotte n'est pas seulement une satire, mais une étude profonde de la nature humaine et de la lutte entre idéaux et réalité.", difficulty: "Expert (C1)" }
+];
+
+// --- 2. BANQUE DE DONNÉES XXL ---
 export const DATA_BANK = {
   verbs: [
-    // --- NIVEAU A1 (Les Bases) ---
-    { levels: ["A1"], es: "Ser", en: "Être (Identité)", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él", verb: "es", fr: "Il est" }, { pronoun: "Nos", verb: "somos", fr: "Nous sommes" }, { pronoun: "Vos", verb: "sois", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "son", fr: "Ils sont" }] },
+    // A1
+    { levels: ["A1"], es: "Ser", en: "Être (Essence)", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él", verb: "es", fr: "Il est" }, { pronoun: "Nos", verb: "somos", fr: "Nous sommes" }, { pronoun: "Vos", verb: "sois", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "son", fr: "Ils sont" }] },
     { levels: ["A1"], es: "Estar", en: "Être (État)", conjugation: [{ pronoun: "Yo", verb: "estoy", fr: "Je suis" }, { pronoun: "Tú", verb: "estás", fr: "Tu es" }, { pronoun: "Él", verb: "está", fr: "Il est" }, { pronoun: "Nos", verb: "estamos", fr: "Nous sommes" }, { pronoun: "Vos", verb: "estáis", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "están", fr: "Ils sont" }] },
-    { levels: ["A1"], es: "Tener", en: "Avoir", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él", verb: "tiene", fr: "Il a" }] },
+    { levels: ["A1"], es: "Tener", en: "Avoir", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él", verb: "tiene", fr: "Il a" }, { pronoun: "Nos", verb: "tenemos", fr: "Nous avons" }] },
     { levels: ["A1"], es: "Hacer", en: "Faire", conjugation: [{ pronoun: "Yo", verb: "hago", fr: "Je fais" }, { pronoun: "Tú", verb: "haces", fr: "Tu fais" }, { pronoun: "Él", verb: "hace", fr: "Il fait" }] },
     { levels: ["A1"], es: "Ir", en: "Aller", conjugation: [{ pronoun: "Yo", verb: "voy", fr: "Je vais" }, { pronoun: "Tú", verb: "vas", fr: "Tu vas" }, { pronoun: "Nos", verb: "vamos", fr: "Nous allons" }] },
-    { levels: ["A1"], es: "Hablar", en: "Parler", conjugation: [{ pronoun: "Yo", verb: "hablo", fr: "Je parle" }, { pronoun: "Tú", verb: "hablas", fr: "Tu parles" }] },
     { levels: ["A1"], es: "Comer", en: "Manger", conjugation: [{ pronoun: "Yo", verb: "como", fr: "Je mange" }, { pronoun: "Tú", verb: "comes", fr: "Tu manges" }] },
+    { levels: ["A1"], es: "Hablar", en: "Parler", conjugation: [{ pronoun: "Yo", verb: "hablo", fr: "Je parle" }, { pronoun: "Tú", verb: "hablas", fr: "Tu parles" }] },
     { levels: ["A1"], es: "Vivir", en: "Vivre", conjugation: [{ pronoun: "Yo", verb: "vivo", fr: "Je vis" }, { pronoun: "Tú", verb: "vives", fr: "Tu vis" }] },
     { levels: ["A1"], es: "Trabajar", en: "Travailler", conjugation: [{ pronoun: "Yo", verb: "trabajo", fr: "Je travaille" }, { pronoun: "Tú", verb: "trabajas", fr: "Tu travailles" }] },
-    { levels: ["A1"], es: "Estudiar", en: "Étudier", conjugation: [{ pronoun: "Yo", verb: "estudio", fr: "J'étudie" }] },
-    { levels: ["A1"], es: "Leer", en: "Lire", conjugation: [{ pronoun: "Yo", verb: "leo", fr: "Je lis" }] },
-    { levels: ["A1"], es: "Escribir", en: "Écrire", conjugation: [{ pronoun: "Yo", verb: "escribo", fr: "J'écris" }] },
-
-    // --- NIVEAU A2 (Quotidien) ---
+    
+    // A2
     { levels: ["A2"], es: "Poder", en: "Pouvoir", conjugation: [{ pronoun: "Yo", verb: "puedo", fr: "Je peux" }, { pronoun: "Tú", verb: "puedes", fr: "Tu peux" }] },
     { levels: ["A2"], es: "Querer", en: "Vouloir", conjugation: [{ pronoun: "Yo", verb: "quiero", fr: "Je veux" }, { pronoun: "Tú", verb: "quieres", fr: "Tu veux" }] },
     { levels: ["A2"], es: "Saber", en: "Savoir", conjugation: [{ pronoun: "Yo", verb: "sé", fr: "Je sais" }, { pronoun: "Tú", verb: "sabes", fr: "Tu sais" }] },
     { levels: ["A2"], es: "Ver", en: "Voir", conjugation: [{ pronoun: "Yo", verb: "veo", fr: "Je vois" }, { pronoun: "Tú", verb: "ves", fr: "Tu vois" }] },
-    { levels: ["A2"], es: "Dar", en: "Donner", conjugation: [{ pronoun: "Yo", verb: "doy", fr: "Je donne" }] },
+    { levels: ["A2"], es: "Dar", en: "Donner", conjugation: [{ pronoun: "Yo", verb: "doy", fr: "Je donne" }, { pronoun: "Tú", verb: "das", fr: "Tu donnes" }] },
     { levels: ["A2"], es: "Decir", en: "Dire", conjugation: [{ pronoun: "Yo", verb: "digo", fr: "Je dis" }, { pronoun: "Tú", verb: "dices", fr: "Tu dis" }] },
-    { levels: ["A2"], es: "Venir", en: "Venir", conjugation: [{ pronoun: "Yo", verb: "vengo", fr: "Je viens" }] },
-    { levels: ["A2"], es: "Salir", en: "Sortir", conjugation: [{ pronoun: "Yo", verb: "salgo", fr: "Je sors" }] },
-    { levels: ["A2"], es: "Poner", en: "Mettre", conjugation: [{ pronoun: "Yo", verb: "pongo", fr: "Je mets" }] },
-    { levels: ["A2"], es: "Entender", en: "Comprendre", conjugation: [{ pronoun: "Yo", verb: "entiendo", fr: "Je comprends" }] },
-
-    // --- NIVEAU B1/B2 (Avancé) ---
+    { levels: ["A2"], es: "Venir", en: "Venir", conjugation: [{ pronoun: "Yo", verb: "vengo", fr: "Je viens" }, { pronoun: "Tú", verb: "vienes", fr: "Tu viens" }] },
+    { levels: ["A2"], es: "Salir", en: "Sortir", conjugation: [{ pronoun: "Yo", verb: "salgo", fr: "Je sors" }, { pronoun: "Tú", verb: "sales", fr: "Tu sors" }] },
+    
+    // B1-C1 (Avancé)
     { levels: ["B1", "B2"], es: "Pensar", en: "Penser", conjugation: [{ pronoun: "Yo", verb: "pienso", fr: "Je pense" }] },
     { levels: ["B1", "B2"], es: "Creer", en: "Croire", conjugation: [{ pronoun: "Yo", verb: "creo", fr: "Je crois" }] },
     { levels: ["B1", "B2"], es: "Sentir", en: "Sentir", conjugation: [{ pronoun: "Yo", verb: "siento", fr: "Je sens" }] },
-    { levels: ["B1", "B2"], es: "Pedir", en: "Demander", conjugation: [{ pronoun: "Yo", verb: "pido", fr: "Je demande" }] },
-    { levels: ["B1", "B2"], es: "Seguir", en: "Suivre", conjugation: [{ pronoun: "Yo", verb: "sigo", fr: "Je suis" }] },
-    { levels: ["B1", "B2"], es: "Encontrar", en: "Trouver", conjugation: [{ pronoun: "Yo", verb: "encuentro", fr: "Je trouve" }] }
+    { levels: ["B2", "C1"], es: "Exigir", en: "Exiger", conjugation: [{ pronoun: "Yo", verb: "exijo", fr: "J'exige" }] },
+    { levels: ["B2", "C1"], es: "Suponer", en: "Supposer", conjugation: [{ pronoun: "Yo", verb: "supongo", fr: "Je suppose" }] }
   ],
 
   nouns: {
@@ -48,14 +76,14 @@ export const DATA_BANK = {
       { es: "La escuela", en: "L'école" }, { es: "El parque", en: "Le parc" },
       { es: "La ciudad", en: "La ville" }, { es: "El cine", en: "Le cinéma" },
       { es: "El restaurante", en: "Le restaurant" }, { es: "El trabajo", en: "Le travail" },
-      { es: "La montaña", en: "La montagne" }, { es: "El hospital", en: "L'hôpital" }
+      { es: "El hospital", en: "L'hôpital" }, { es: "La tienda", en: "Le magasin" }
     ],
     objects: [
       { es: "El libro", en: "Le livre" }, { es: "El coche", en: "La voiture" },
       { es: "El dinero", en: "L'argent" }, { es: "El teléfono", en: "Le téléphone" },
       { es: "La ropa", en: "Les vêtements" }, { es: "El regalo", en: "Le cadeau" },
       { es: "La llave", en: "La clé" }, { es: "La mesa", en: "La table" },
-      { es: "La silla", en: "La chaise" }, { es: "El ordenador", en: "L'ordinateur" }
+      { es: "El ordenador", en: "L'ordinateur" }, { es: "La silla", en: "La chaise" }
     ],
     food: [
       { es: "La comida", en: "La nourriture" }, { es: "El agua", en: "L'eau" },
@@ -100,12 +128,11 @@ export const DATA_BANK = {
     "Le 'V' se prononce presque comme un 'B' doux.",
     "Le 'RR' roulé est typique : mets ta langue sur le palais.",
     "Ser = Identité permanente / Estar = État temporaire.",
-    "Gustar s'accorde avec la chose qu'on aime (Me gustan los libros).",
-    "Hay (Il y a) est invariable."
+    "Gustar s'accorde avec ce qu'on aime (Me gustan los libros)."
   ]
 };
 
-// --- LOGIQUE DE NIVEAUX ---
+// --- 3. CONFIGURATION DU PROGRAMME ---
 export const CURRICULUM_LOGIC = {
   A1: [
     { topic: "Bases & Salutations", grammar: "Présent (Ser)" }, { topic: "La Famille", grammar: "Possession" },
@@ -119,14 +146,13 @@ export const CURRICULUM_LOGIC = {
     { topic: "Les Saisons", grammar: "Comparatifs" }, { topic: "La Nature", grammar: "Démonstratifs" },
     { topic: "Poser des Questions", grammar: "Interrogatifs" }, { topic: "Bilan A1", grammar: "Révision Globale" }
   ],
-  // Génération automatique pour les autres niveaux
   A2: Array(20).fill({ topic: "Niveau A2", grammar: "Avancé" }),
   B1: Array(20).fill({ topic: "Niveau B1", grammar: "Intermédiaire" }),
   B2: Array(20).fill({ topic: "Niveau B2", grammar: "Confirmé" }),
   C1: Array(20).fill({ topic: "Niveau C1", grammar: "Expert" })
 };
 
-// --- LEÇONS MANUELLES (1-20) ---
+// --- 4. LEÇONS MANUELLES (1-20) ---
 export const CONTENT_PART_1 = {
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Salutation universelle", sentence: "Hola, ¿cómo estás?", sentence_trans: "Bonjour, comment vas-tu ?" },
@@ -135,6 +161,31 @@ export const CONTENT_PART_1 = {
     { id: 104, type: "structure", title: "La Phrase Simple", formula: "Sujet + Verbe", example: "Soy Pablo", note: "Le sujet est souvent omis." },
     { id: 105, type: "swipe", es: "Gracias", en: "Merci", context: "Politesse", sentence: "Muchas gracias por todo.", sentence_trans: "Merci beaucoup pour tout." },
     { id: 106, type: "swipe", es: "Adiós", en: "Au revoir", context: "Départ", sentence: "Adiós, hasta mañana.", sentence_trans: "Au revoir, à demain." }
+  ],
+  2: [
+    { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Groupe social", sentence: "Amo a mi familia.", sentence_trans: "J'aime ma famille." },
+    { id: 202, type: "grammar", title: "Avoir (Tener)", description: "Possession", verb: "Tener", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }] },
+    { id: 203, type: "input", question: "J'ai", answer: ["tengo"], hint: "T..." },
+    { id: 204, type: "swipe", es: "Madre", en: "Mère", context: "Parent", sentence: "Mi madre es amable.", sentence_trans: "Ma mère est gentille." },
+    { id: 205, type: "swipe", es: "Padre", en: "Père", context: "Parent", sentence: "Mi padre trabaja mucho.", sentence_trans: "Mon père travaille beaucoup." },
+    { id: 206, type: "structure", title: "Possession", formula: "Mi + Nom", example: "Mi casa", note: "Pas d'article devant" }
+  ],
+  3: [
+    { id: 301, type: "grammar", title: "Verbes -AR", description: "Présent", verb: "Hablar", conjugation: [{ pronoun: "Yo", verb: "-o", fr: "o" }, { pronoun: "Tú", verb: "-as", fr: "as" }] },
+    { id: 302, type: "swipe", es: "Hablar", en: "Parler", context: "Verbe régulier", sentence: "Me gusta hablar español.", sentence_trans: "J'aime parler espagnol." },
+    { id: 303, type: "swipe", es: "Trabajar", en: "Travailler", context: "Job", sentence: "Voy a trabajar mañana.", sentence_trans: "Je vais travailler demain." },
+    { id: 304, type: "input", question: "Je parle", answer: ["hablo"], hint: "Terminaison -o" },
+    { id: 305, type: "structure", title: "Négation", formula: "No + Verbe", example: "No hablo", note: "No se place avant" }
+  ],
+  15: [
+    { id: 1501, type: "swipe", es: "Amigo", en: "Ami", context: "Relation", sentence: "Juan es mi mejor amigo.", sentence_trans: "Juan est mon meilleur ami." },
+    { id: 1502, type: "swipe", es: "Fiesta", en: "Fête", context: "Social", sentence: "Vamos a una fiesta.", sentence_trans: "Nous allons à une fête." },
+    { id: 1503, type: "swipe", es: "Salir", en: "Sortir", context: "Action", sentence: "Quiero salir esta noche.", sentence_trans: "Je veux sortir ce soir." },
+    { id: 1504, type: "swipe", es: "Bailar", en: "Danser", context: "Activité", sentence: "Me encanta bailar salsa.", sentence_trans: "J'adore danser la salsa." },
+    { id: 1505, type: "swipe", es: "Reír", en: "Rire", context: "Émotion", sentence: "Reír es bueno para la salud.", sentence_trans: "Rire est bon pour la santé." },
+    { id: 1506, type: "grammar", title: "Verbe Quedar", description: "Se donner rdv", verb: "Quedar", conjugation: [{ pronoun: "Nosotros", verb: "Quedamos", fr: "On se voit" }, { pronoun: "A las 8", verb: "a las ocho", fr: "à 8h" }] },
+    { id: 1507, type: "structure", title: "Proposer", formula: "¿Te apuntas?", example: "Voy al cine, ¿te apuntas?", note: "Tu viens avec nous ?" },
+    { id: 1508, type: "input", question: "On se voit à 8h", answer: ["quedamos a las 8", "quedamos a las ocho"], hint: "Quedamos..." }
   ],
   20: [
     { id: 2001, type: "structure", title: "BILAN A1", formula: "Bravo !", example: "Niveau 1 validé", note: "Prêt pour A2 ?" },
@@ -148,7 +199,7 @@ export const CONTENT_PART_1 = {
   ]
 };
 
-// --- GÉNÉRATEUR INTELLIGENT DE LEÇONS ---
+// --- 5. GÉNÉRATEUR INTELLIGENT (21-100) ---
 export const generateStructuredLesson = (id) => {
   let level = "A1";
   if (id > 20) level = "A2";
@@ -158,9 +209,8 @@ export const generateStructuredLesson = (id) => {
 
   const config = CURRICULUM_LOGIC[level][(id - 1) % 20] || { topic: "Pratique", grammar: "Révision" };
 
-  // 1. CHOIX DU VERBE (Selon niveau)
+  // 1. CHOIX DU VERBE
   const availableVerbs = DATA_BANK.verbs.filter(v => v.levels.includes(level));
-  // Sécurité : si pas assez de verbes pour le niveau, on prend A1
   const randVerb = availableVerbs.length > 0 ? availableVerbs[id % availableVerbs.length] : DATA_BANK.verbs[0];
 
   // 2. CHOIX DES NOMS (Par catégorie pour la logique)
@@ -169,48 +219,22 @@ export const generateStructuredLesson = (id) => {
   const place = getRand(DATA_BANK.nouns.places);
   const object = getRand(DATA_BANK.nouns.objects);
   const food = getRand(DATA_BANK.nouns.food);
-  const person = getRand(DATA_BANK.nouns.people);
   
   const adj = getRand(DATA_BANK.adjectives);
   const conn = getRand(DATA_BANK.connectors);
   const tip = getRand(DATA_BANK.tips);
 
-  // 3. CONSTRUCTION DE PHRASES LOGIQUES (Phrases simples et universelles)
-  
-  // CARTE 1 : OBJET -> "Necesito" (J'ai besoin)
-  const card1 = {
-      ...object,
-      context: "Besoin",
-      sentence: `Necesito ${object.es.toLowerCase()}.`,
-      sentence_trans: `J'ai besoin de ${object.en.toLowerCase()}.`
-  };
-
-  // CARTE 2 : LIEU -> "Voy a" (Je vais à)
-  const card2 = {
-      ...place,
-      context: "Destination",
-      sentence: `Voy a ${place.es.toLowerCase()}.`,
-      sentence_trans: `Je vais à ${place.en.toLowerCase()}.`
-  };
-
-  // CARTE 3 : NOURRITURE -> "Me gusta" (J'aime)
-  const card3 = {
-      ...food,
-      context: "Goût",
-      sentence: `Me gusta ${food.es.toLowerCase()}.`,
-      sentence_trans: `J'aime ${food.en.toLowerCase()}.`
-  };
+  // 3. CONSTRUCTION PHRASES LOGIQUES
+  const card1 = { ...object, context: "Besoin", sentence: `Necesito ${object.es.toLowerCase()}.`, sentence_trans: `J'ai besoin de ${object.en.toLowerCase()}.` };
+  const card2 = { ...place, context: "Destination", sentence: `Voy a ${place.es.toLowerCase()}.`, sentence_trans: `Je vais à ${place.en.toLowerCase()}.` };
+  const card3 = { ...food, context: "Goût", sentence: `Me gusta ${food.es.toLowerCase()}.`, sentence_trans: `J'aime ${food.en.toLowerCase()}.` };
 
   let cardId = id * 1000;
   const isPlural = id % 2 === 0;
-  
-  // QUESTION DE GRAMMAIRE CORRIGÉE
   const grammarQuestionText = isPlural 
     ? `Conjugue : Vosotros (${randVerb.es})` 
     : `Conjugue : Él/Ella (${randVerb.es})`;
-    
   const grammarAnswer = isPlural 
-     // On cherche "Vos" ou "Nos" dans la liste
     ? [randVerb.conjugation.find(c => c.pronoun.includes("Vos"))?.verb || randVerb.conjugation[0].verb]
     : [randVerb.conjugation.find(c => c.pronoun.includes("Él"))?.verb || randVerb.conjugation[0].verb];
 
@@ -220,7 +244,7 @@ export const generateStructuredLesson = (id) => {
     // Carte 1 (Objet)
     { id: cardId++, type: "swipe", es: card1.es, en: card1.en, context: card1.context, sentence: card1.sentence, sentence_trans: card1.sentence_trans },
     
-    // Grammaire (Tableau + Exercice clair)
+    // Grammaire
     { id: cardId++, type: "grammar", title: `Verbe : ${randVerb.es}`, description: randVerb.en, verb: randVerb.es, conjugation: randVerb.conjugation },
     { id: cardId++, type: "input", question: grammarQuestionText, answer: grammarAnswer, hint: `Verbe ${randVerb.es}` },
 
@@ -238,7 +262,7 @@ export const generateStructuredLesson = (id) => {
 
     { id: cardId++, type: "structure", title: "Astuce", formula: "Bon à savoir", example: tip, note: "Culture" },
     
-    // Exercice final (Traduction simple)
+    // Exercice final
     { id: cardId++, type: "input", question: `Traduis '${card1.en}'`, answer: [card1.es.toLowerCase()], hint: `${card1.es.substring(0,3)}...` }
   ];
 };
@@ -287,17 +311,6 @@ export const generateExamContent = (allContent, startId, endId, levelName, examI
     ...selected.map((item, index) => ({ ...item, id: examId + idx + 1, question: item.type === 'input' ? item.question : `Traduis : ${item.en}`, answer: item.type === 'input' ? item.answer : [item.es.toLowerCase()] }))
   ];
 };
-
-export const getDailyReading = (userLevel) => {
-  const targetLevel = userLevel || "A1";
-  const levelReadings = DAILY_READINGS.filter(r => r.level === targetLevel);
-  const pool = levelReadings.length > 0 ? levelReadings : DAILY_READINGS;
-  const today = new Date();
-  const dayIndex = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
-  return pool[dayIndex % pool.length];
-};
-
-export const getDailyReading = () => DAILY_READINGS[0]; // Simplifié pour l'exemple, vous avez le code complet avant
 
 export const DAILY_READINGS = [
   // ==============================
