@@ -11,8 +11,6 @@ import {
   getDailyReading 
 } from './data/content';
 
-// Dans les imports lucide-react, assure-toi d'avoir 'BookOpen' ou ajoute 'BookOpenText'
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table, Map, CheckCircle, Star, BrainCircuit, Target
@@ -169,31 +167,26 @@ export default function EspanolSprintPro() {
   };
  const startTest = (mode) => {
     if (mode === 'levelup') {
-      // 1. Identifier le niveau actuel
       const levels = ["A1", "A2", "B1", "B2", "C1"];
       const currentLevelIdx = levels.indexOf(userData.level || "A1");
       const levelName = levels[currentLevelIdx];
       
-      // 2. Définir la plage de leçons à réviser (Ex: A1 = leçons 1 à 20)
       const startId = (currentLevelIdx * 20) + 1;
       const endId = (currentLevelIdx + 1) * 20;
 
-      // 3. GÉNÉRER L'EXAMEN À LA VOLÉE
       const examContent = generateExamContent(dynamicLessonsContent, startId, endId, levelName, 9999);
 
-      // 4. Injecter cet examen temporairement
       setDynamicLessonsContent(prev => ({
         ...prev,
         'exam': examContent
       }));
 
-      // 5. Lancer le mode examen
       setTestMode('levelup');
       setActiveLessonId('exam'); 
       setView('lesson');
       
     } else {
-      setView('quiz'); // Mode entraînement rapide classique
+      setView('quiz'); 
     }
   };
 const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0) => {
@@ -258,28 +251,34 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
         return;
     }
 
-    // --- CAS 2 : Leçon normale (CORRIGÉ ET ENRICHI) ---
+    // --- CAS 2 : Leçon normale (AVEC SRS) ---
     // On récupère le contenu intéressant de la leçon actuelle
     const newItems = lessonContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
+    
+    // [SRS-START] Ajout des métadonnées SRS par défaut
+    const enrichedItems = newItems.map(item => ({
+        ...item,
+        grade: 0,        // Score de rétention initial
+        interval: 1,     // Intervalle de révision initial en jours
+        lastReview: new Date().toISOString()
+    }));
+    // [SRS-END]
+
     const today = new Date().toDateString();
     
     if (currentUser) {
       const userRef = doc(db, "users", currentUser.uid);
       
-      // FILTRAGE INTELLIGENT (Le même que pour l'examen)
-      const uniqueNewItems = newItems.filter(item => {
+      // FILTRAGE INTELLIGENT
+      const uniqueNewItems = enrichedItems.filter(item => {
         // 1. Vérif par ID
         const isIdPresent = userData.vocab.some(v => v.id === item.id);
         
-        // 2. Vérif par CONTENU (pour éviter les doublons si l'ID change)
+        // 2. Vérif par CONTENU
         const isContentPresent = userData.vocab.some(v => {
-           // Pour le vocabulaire
            if (item.type === 'swipe' && v.type === 'swipe') return v.es === item.es;
-           // Pour la grammaire
            if (item.type === 'grammar' && v.type === 'grammar') return v.title === item.title;
-           // Pour les structures (C'était ce qu'il manquait !)
            if (item.type === 'structure' && v.type === 'structure') return v.title === item.title;
-           
            return false;
         });
         
@@ -293,14 +292,14 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
       const updateData = {
         xp: increment(xp),
         streak: increment(1),
-        vocab: arrayUnion(...uniqueNewItems), // On ajoute les nouveaux éléments filtrés
+        vocab: arrayUnion(...uniqueNewItems), // On utilise les éléments enrichis SRS
         completedLessons: arrayUnion(lessonId),
         dailyLimit: { date: today, count: newCount }
       };
       
       await updateDoc(userRef, updateData);
       
-      // Mise à jour locale (pour voir les changements tout de suite sans recharger)
+      // Mise à jour locale
       setUserData(prev => ({
         ...prev,
         xp: prev.xp + xp,
@@ -316,25 +315,20 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
     const content = dynamicLessonsContent[lessonId];
     if(!content) return;
 
-    // 1. Import dynamique de la librairie (nécessite 'npm install html2pdf.js')
     let html2pdf;
     try {
-        // On utilise 'await import' car html2pdf ne fonctionne que sur le navigateur (client)
         html2pdf = (await import('html2pdf.js')).default;
     } catch (e) {
-        alert("Erreur : La librairie 'html2pdf.js' n'est pas installée. Lancez 'npm install html2pdf.js' dans votre terminal.");
+        alert("Erreur : La librairie 'html2pdf.js' n'est pas installée.");
         return;
     }
 
-    // 2. Préparation des données
     const vocab = content.filter(c => c.type === 'swipe');
     const grammar = content.filter(c => c.type === 'grammar');
     const structures = content.filter(c => c.type === 'structure');
 
-    // 3. Création du contenu HTML (Invisible pour l'utilisateur)
     const element = document.createElement('div');
     
-    // On garde exactement TON style, mais adapté pour le format A4
     element.innerHTML = `
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
@@ -466,16 +460,14 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
       </div>
     `;
 
-    // 4. Configuration et génération du PDF
     const opt = {
       margin:       10,
       filename:     `Lecon-${lessonId}-EspanolSprint.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true }, // scale:2 améliore la netteté
+      html2canvas:  { scale: 2, useCORS: true }, 
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // C'est cette ligne qui télécharge le fichier au lieu d'ouvrir une fenêtre
     html2pdf().set(opt).from(element).save();
   };
 
@@ -507,12 +499,12 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
               {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} onDownloadPDF={handlePrintPDF}/>}
               {view === 'notebook' && userData && <NotebookContent userVocab={userData.vocab} />}
               {view === 'quiz' && (
-  <QuizZone 
-    onExit={() => setView('dashboard')} 
-    userData={userData} 
-    lessonsContent={dynamicLessonsContent}
-  />
-)}
+                <QuizZone 
+                  onExit={() => setView('dashboard')} 
+                  userData={userData} // on passe tout le userData ici (IMPORTANT pour SRS)
+                  lessonsContent={dynamicLessonsContent}
+                />
+              )}
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
               {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
               {view === 'reading' && <DailyReadingContent userLevel={userData?.level} />}
@@ -521,7 +513,7 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
     userData={userData} 
     email={currentUser.email} 
     onLogout={handleLogout} 
-    onUpload={uploadFullContentToCloud} /* <--- C'est ça qui manquait */
+    onUpload={uploadFullContentToCloud} 
   />
 )}
               {view === 'lesson' && dynamicLessonsContent[activeLessonId] && (
@@ -529,7 +521,7 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
      content={dynamicLessonsContent[activeLessonId]} 
      onComplete={(xp, score) => handleLessonComplete(xp, dynamicLessonsContent[activeLessonId], activeLessonId, score)} 
      onExit={() => setView('dashboard')} 
-     isExam={testMode === 'levelup'} // IMPORTANT
+     isExam={testMode === 'levelup'} 
   />
 )}
               {view === 'complete' && <LessonComplete xp={150} onHome={() => setView('dashboard')} onDownload={() => handlePrintPDF(activeLessonId)} isTest={!!testMode} />}
@@ -568,8 +560,8 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
               key={level} 
               className={`
                 snap-center shrink-0 
-                w-[85vw] md:w-[380px] /* Plus large (85% sur mobile, 380px sur PC) */
-                h-[calc(100dvh-240px)] md:h-[calc(100vh-200px)] /* Hauteur optimisée */
+                w-[85vw] md:w-[380px]
+                h-[calc(100dvh-240px)] md:h-[calc(100vh-200px)]
                 flex flex-col 
                 rounded-3xl border-4 
                 ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} 
@@ -645,15 +637,9 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
   ); 
 };
 const StructuresContent = ({ structures, userVocab }) => {
-  // 1. Récupérer les structures apprises du profil utilisateur
-  // On sécurise l'accès à userVocab comme on l'a fait pour le lexique
   const safeList = Array.isArray(userVocab) ? userVocab : [];
   const learnedStructures = safeList.filter(item => item && item.type === 'structure');
-
-  // 2. Fusionner avec les structures de base
   const allStructures = [...structures, ...learnedStructures];
-
-  // 3. Dédoublonnage (pour éviter d'avoir 2 fois la même si elle est dans la base et apprise)
   const uniqueStructures = allStructures.filter((item, index, self) =>
     index === self.findIndex((t) => t.title === item.title)
   );
@@ -677,18 +663,14 @@ const StructuresContent = ({ structures, userVocab }) => {
             </div>
             
             <div className="space-y-2 mb-4">
-              {/* Gestion des deux formats de données (Base vs Leçons) */}
               {struct.example_es ? (
-                /* Format Base de données */
                 <>
                   <p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p>
                   <p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p>
                 </>
               ) : (
-                /* Format Leçons (souvent juste 'example' et 'note') */
                 <>
                   <p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example}</p>
-                  {/* On n'a pas toujours la trad exacte ici, parfois dans la note */}
                 </>
               )}
             </div>
@@ -713,46 +695,36 @@ const NotebookContent = ({ userVocab, userData }) => {
   const [activeTense, setActiveTense] = useState("Présent");
   const [showReference, setShowReference] = useState(false);
 
-  // 1. SÉCURISATION & FILTRES
   const sourceList = Array.isArray(userVocab) ? userVocab : [];
 
-  // Liste des verbes irréguliers importants à afficher
   const IRREGULAR_VERBS = new Set([
     "Ser", "Estar", "Ir", "Tener", "Haber", "Hacer", "Poder", "Querer", 
     "Decir", "Ver", "Dar", "Saber", "Salir", "Poner", "Venir", "Oír", 
     "Traer", "Conocer", "Caber", "Andar"
   ]);
 
-  // Filtre pour le Vocabulaire (On cache tous les verbes)
   const vocabItems = sourceList.filter(item => {
       if (!item || !item.es || item.type !== 'swipe') return false;
       const contextSafe = item.context ? item.context.toLowerCase() : "";
-      // On cache tout ce qui est verbe (régulier ou non) dans la colonne vocabulaire
       if (contextSafe.includes('verbe') || DATA_BANK.verbs.some(v => v.es === item.es)) return false;
       return true;
   }).filter((item, index, self) => index === self.findIndex((t) => t.es === item.es));
 
-  // Filtre pour les Verbes d'Action (On affiche les verbes réguliers ici, pour le vocabulaire)
   const actionVerbItems = sourceList.filter(item => {
       if (!item || !item.es || item.type !== 'swipe') return false;
       const isVerb = DATA_BANK.verbs.some(v => v.es === item.es);
       return isVerb; 
   });
 
-  // Filtre pour la Grammaire (ON NE GARDE QUE LES IRRÉGULIERS)
   const grammarItems = sourceList
     .filter(c => c && c.type === 'grammar')
     .filter(item => {
-        // On essaie de trouver le nom du verbe
         let vName = item.verb;
         if (!vName) vName = item.title.split('(').pop().replace(')', '').trim();
-        
-        // On garde seulement si c'est un irrégulier
         return IRREGULAR_VERBS.has(vName);
     })
     .filter((item, index, self) => index === self.findIndex((t) => t.title === item.title));
 
-  // DONNÉES DE RÉFÉRENCE (Tableaux de conjugaison)
   const TENSES_DATA = {
     "Présent": [
       { title: "-AR (Hablar)", endings: ["-o", "-as", "-a", "-amos", "-an"] },
@@ -783,7 +755,6 @@ const NotebookContent = ({ userVocab, userData }) => {
         </div>
       </div>
       
-      {/* --- SECTION TERMINAISONS (Onglets) --- */}
       <div className="mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
         <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-slate-800 flex items-center gap-2">
@@ -800,7 +771,6 @@ const NotebookContent = ({ userVocab, userData }) => {
 
         {showReference && (
             <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                {/* Onglets des temps */}
                 <div className="flex gap-2 overflow-x-auto pb-4 mb-2 no-scrollbar">
                     {Object.keys(TENSES_DATA).map(tense => (
                         <button
@@ -817,7 +787,6 @@ const NotebookContent = ({ userVocab, userData }) => {
                     ))}
                 </div>
 
-                {/* Cartes des terminaisons */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {TENSES_DATA[activeTense].map((group, idx) => (
                         <div key={idx} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
@@ -837,7 +806,6 @@ const NotebookContent = ({ userVocab, userData }) => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        {/* COLONNE 1 : VOCABULAIRE */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
             <Edit3 size={18} /> Vocabulaire
@@ -857,7 +825,6 @@ const NotebookContent = ({ userVocab, userData }) => {
           ) : <div className="p-8 text-center text-slate-400 border-2 border-dashed rounded-xl">Vide</div>}
         </div>
 
-        {/* COLONNE 2 : GRAMMAIRE (Seulement irréguliers) */}
         <div className="space-y-4">
           <h3 className="font-bold text-slate-400 uppercase tracking-wider text-sm flex items-center gap-2">
             <BookOpen size={18} /> Verbes Irréguliers
@@ -895,19 +862,14 @@ const LandingPage = ({ onStart }) => (<div className="w-full h-full flex flex-co
 const AuthScreen = ({ onAuth, onGoogle, onBack, error }) => { const [isSignUp, setIsSignUp] = useState(false); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); return (<div className="w-full max-w-md p-8 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500"><button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold"><X size={20} /> Retour</button><div><h2 className="text-4xl font-black text-slate-900 mb-2">{isSignUp ? 'Créer un compte' : 'Bon retour !'}</h2><p className="text-slate-500">Sauvegarde ta progression ☁️</p></div>{error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold mb-4">{error}</div>}<div className="space-y-4"><button onClick={onGoogle} className="w-full bg-white border-2 border-slate-200 text-slate-800 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"><img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" /> Continuer avec Google</button><div className="flex items-center gap-4"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-sm font-bold">OU</span><div className="h-px bg-slate-200 flex-1"></div></div><input type="email" placeholder="Email" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={email} onChange={(e) => setEmail(e.target.value)} /><input type="password" placeholder="Mot de passe" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={password} onChange={(e) => setPassword(e.target.value)} /></div><button onClick={() => onAuth(email, password, isSignUp)} className="w-full bg-yellow-400 text-slate-900 py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all">{isSignUp ? "S'inscrire" : "Se connecter"}</button><div className="text-center"><button onClick={() => setIsSignUp(!isSignUp)} className="text-indigo-600 font-bold text-sm hover:underline">{isSignUp ? "J'ai déjà un compte" : "Je n'ai pas de compte"}</button></div></div>); };
 const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUpload }) => (
   <div className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200 h-full p-6">
-    {/* ... début du composant ... */}
     <nav className="flex-1 space-y-2">
       <SidebarLink icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
       <SidebarLink icon={BrainCircuit} label="Zone Test" active={currentView === 'tests'} onClick={() => onChangeView('tests')} />
-      
-      {/* 👇 AJOUTE CETTE LIGNE ICI 👇 */}
       <SidebarLink icon={BookOpen} label="Lecture" active={currentView === 'reading'} onClick={() => onChangeView('reading')} />
-      
       <SidebarLink icon={Hammer} label="Structures" active={currentView === 'structures'} onClick={() => onChangeView('structures')} />
       <SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
       <SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
     </nav>
-    {/* ... fin du composant ... */}
   </div>
 );
 const SidebarLink = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${active ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}><Icon size={22} strokeWidth={active ? 2.5 : 2} /><span className="font-bold text-base">{label}</span></button>);
@@ -916,16 +878,12 @@ const MobileBottomNav = ({ currentView, onChangeView }) => (
   <div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30">
     <NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
     <NavBtn icon={BrainCircuit} label="Tests" active={currentView === 'tests'} onClick={() => onChangeView('tests')} />
-    
-    {/* 👇 AJOUTE CETTE LIGNE ICI 👇 */}
     <NavBtn icon={BookOpen} label="Lire" active={currentView === 'reading'} onClick={() => onChangeView('reading')} />
-    
     <NavBtn icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
     <NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
   </div>
 );
 const NavBtn = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex flex-col items-center p-2 transition-colors ${active ? 'text-indigo-600' : 'hover:text-slate-600'}`}><Icon size={24} strokeWidth={active ? 2.5 : 2} /><span className="text-[10px] font-bold mt-1">{label}</span></button>);
-// On ajoute 'onUpload' ici
 const ProfileContent = ({ userData, email, onLogout, onUpload }) => (
   <div className="max-w-2xl mx-auto w-full p-6 md:p-12 space-y-8">
     <h2 className="text-3xl font-black text-slate-900">Mon Compte</h2>
@@ -954,7 +912,6 @@ const ProfileContent = ({ userData, email, onLogout, onUpload }) => (
         </div>
       </div>
 
-      {/* --- LE BOUTON MAGIQUE EST ICI --- */}
       <button 
         onClick={onUpload} 
         className="w-full bg-indigo-50 text-indigo-600 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors border border-indigo-100"
@@ -972,14 +929,13 @@ const ProfileContent = ({ userData, email, onLogout, onUpload }) => (
 const LessonEngine = ({ content, onComplete, onExit, isExam }) => { 
   const [currentIndex, setCurrentIndex] = useState(0); 
   const [progress, setProgress] = useState(0); 
-  const [score, setScore] = useState(0); // Compteur de points
+  const [score, setScore] = useState(0); 
 
   const currentCard = content[currentIndex]; 
 
   const handleNext = () => { 
     if (currentIndex + 1 >= content.length) { 
       setProgress(100); 
-      // On envoie le score final à la fonction de complétion !
       setTimeout(() => onComplete(150, score), 500); 
     } else { 
       setProgress(((currentIndex + 1) / content.length) * 100); 
@@ -1007,7 +963,6 @@ const LessonEngine = ({ content, onComplete, onExit, isExam }) => {
         <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
           <div className="h-full bg-teal-500 transition-all duration-500 ease-out rounded-full" style={{ width: `${progress}%` }}></div>
         </div>
-        {/* Affichage du score en mode examen */}
         {isExam && <div className="font-black text-indigo-600">{score} / 20</div>}
       </div>
       <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
@@ -1032,24 +987,18 @@ const SwipeCard = ({ data, onNext, onPrev }) => {
     }, 250);
   };
 
-  // --- AJOUT : Support Clavier ---
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Flèche Gauche = Revoir (Rouge)
       if (e.key === "ArrowLeft") handleSwipe('left');
-      // Flèche Droite = Connu (Vert)
       if (e.key === "ArrowRight") handleSwipe('right');
-      // Espace ou Entrée = Réécouter le son
       if (e.key === " " || e.key === "Enter") {
-         e.preventDefault(); // Empêche le scroll de la page avec Espace
+         e.preventDefault(); 
          speak(data.es);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    // Nettoyage de l'écouteur quand on change de carte
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [data]); // Se déclenche à chaque nouvelle carte (data)
-  // -------------------------------
+  }, [data]);
 
   return (
     <div className={`w-full h-full bg-white rounded-3xl shadow-xl border-b-8 border-slate-100 flex flex-col relative transition-all duration-300 ${swiped === 'left' ? '-translate-x-[150%] rotate-[-20deg] opacity-0' : ''} ${swiped === 'right' ? 'translate-x-[150%] rotate-[20deg] opacity-0' : ''}`}>
@@ -1081,9 +1030,8 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
   const [val, setVal] = useState(''); 
   const [status, setStatus] = useState('idle'); 
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const inputRef = useRef(null); // Référence pour garder le focus
+  const inputRef = useRef(null); 
 
-  // Fonction pour ajouter un accent
   const addChar = (char) => {
     if (isSubmitted) return;
     setVal(prev => prev + char);
@@ -1091,32 +1039,29 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
   };
 
   const checkAnswer = (e) => { 
-    if (e) e.preventDefault(); // Empêche le rechargement si c'est un formulaire
+    if (e) e.preventDefault(); 
     if (isSubmitted) return;
 
-    const userClean = val.trim().toLowerCase().replace(/[¿¡!.,]/g, '');
+    // [SYNTAXE-RIGOR-START]
+    const userClean = val.trim().toLowerCase();
     const answers = Array.isArray(data.answer) ? data.answer : [data.answer];
-    // Vérification souple
-    const isCorrect = answers.some(a => a.toLowerCase().includes(userClean) || userClean === a.toLowerCase());
+    // Validation stricte
+    const isCorrect = answers.some(a => a.trim().toLowerCase() === userClean);
+    // [SYNTAXE-RIGOR-END]
     
     setStatus(isCorrect ? 'success' : 'error'); 
     
     if (isExam) {
-      // --- MODE EXAMEN ---
       setIsSubmitted(true);
-      if (onScore) onScore(isCorrect); // On compte les points
+      if (onScore) onScore(isCorrect); 
       
       speak(isCorrect ? "¡Muy bien!" : "Incorrecto");
       
-      // On affiche la correction (vert/rouge) pendant 2.5s puis ON PASSE À LA SUITE
-      // même si c'est faux !
       setTimeout(() => {
         onNext();
       }, 2500); 
 
     } else {
-      // --- MODE LEÇON (Entraînement) ---
-      // Ici on bloque tant que ce n'est pas juste pour l'apprentissage
       if (isCorrect) { 
         speak("¡Muy bien!"); 
         setTimeout(onNext, 1500); 
@@ -1135,7 +1080,6 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
         <h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3>
       </div>
       
-      {/* BARRE D'ACCENTS (Nouveauté) */}
       <div className="flex gap-2 justify-center flex-wrap">
         {['á','é','í','ó','ú','ñ','¿','¡'].map(char => (
           <button 
@@ -1171,7 +1115,6 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
         </button>
       </form>
       
-      {/* Afficher la correction en mode examen si erreur */}
       {status === 'error' && isExam && (
         <div className="text-center animate-in fade-in slide-in-from-bottom-2">
           <p className="text-red-400 font-bold">Dommage !</p>
@@ -1179,18 +1122,57 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
         </div>
       )}
       
-      {/* En leçon, on donne juste un indice */}
       {status === 'error' && !isExam && (
         <p className="text-center text-red-400 font-bold animate-shake">Indice : {data.hint}</p>
       )}
     </div>
   ); 
 };
-const GrammarCard = ({ data, onNext }) => (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500"><div className="bg-indigo-600 p-8 md:p-10 text-white text-center relative"><button onClick={(e) => { e.stopPropagation(); speak(data.title); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-white"><Volume2 size={20} /></button><h3 className="text-3xl md:text-4xl font-black">{data.title}</h3><p className="text-indigo-200 mt-2">{data.description}</p></div><div className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-slate-50"><div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">{data.conjugation.map((row, idx) => (<div key={idx} className="flex justify-between items-center p-4 border-b border-slate-100 last:border-0"><span className="text-slate-400 font-medium w-1/3">{row.pronoun}</span><span className="text-indigo-600 font-black text-xl w-1/3 text-center">{row.verb}</span><span className="text-slate-300 text-sm w-1/3 text-right italic">{row.fr}</span></div>))}</div><button onClick={onNext} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg hover:bg-yellow-300 active:scale-95 transition-all">J'ai compris</button></div></div>);
+const GrammarCard = ({ data, onNext }) => {
+  // [INTERACTIF-GRAMMAIRE-START]
+  const [revealed, setRevealed] = useState(false);
+
+  return (
+    <div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500">
+      <div className="bg-indigo-600 p-8 md:p-10 text-white text-center relative">
+        <button onClick={(e) => { e.stopPropagation(); speak(data.title); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-white">
+          <Volume2 size={20} />
+        </button>
+        <h3 className="text-3xl md:text-4xl font-black">{data.title}</h3>
+        <p className="text-indigo-200 mt-2">{data.description}</p>
+      </div>
+      
+      <div className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-slate-50">
+        {revealed ? (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {data.conjugation.map((row, idx) => (
+              <div key={idx} className="flex justify-between items-center p-4 border-b border-slate-100 last:border-0">
+                <span className="text-slate-400 font-medium w-1/3">{row.pronoun}</span>
+                <span className="text-indigo-600 font-black text-xl w-1/3 text-center">{row.verb}</span>
+                <span className="text-slate-300 text-sm w-1/3 text-right italic">{row.fr}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-slate-400 italic">Clique ci-dessous pour révéler la conjugaison</p>
+          </div>
+        )}
+
+        <button 
+          onClick={revealed ? onNext : () => setRevealed(true)}
+          className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg hover:bg-yellow-300 active:scale-95 transition-all"
+        >
+          {revealed ? 'J\'ai compris' : 'Voir la Conjugaison'}
+        </button>
+      </div>
+    </div>
+  );
+  // [INTERACTIF-GRAMMAIRE-END]
+};
 const StructureCard = ({ data, onNext }) => (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-500 border-b-[12px] border-slate-100"><div className="bg-amber-400 p-8 text-slate-900 text-center relative"><button onClick={(e) => { e.stopPropagation(); speak(data.example); }} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-slate-900"><Volume2 size={20} /></button><h3 className="text-2xl font-black uppercase tracking-wider">{data.title}</h3></div><div className="flex-1 p-8 flex flex-col justify-center items-center gap-6 bg-slate-50"><div className="bg-white p-6 rounded-xl border-2 border-slate-200 w-full text-center"><p className="font-mono text-indigo-600 font-bold text-lg mb-2">{data.formula}</p><p className="text-slate-500 text-sm">{data.note}</p></div><div className="text-center"><p className="text-2xl font-bold text-slate-800 mb-1">{data.example}</p><p className="text-sm text-slate-400 italic">Exemple</p></div><button onClick={onNext} className="w-full mt-auto bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-lg active:scale-95 transition-all">C'est noté !</button></div></div>);
 const LessonComplete = ({ xp, onHome, onDownload, isTest }) => (<div className="h-full w-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in duration-500"><div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform"><Trophy size={100} className="text-yellow-500 fill-yellow-500" /></div><div><h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">{isTest ? "Examen Réussi !" : "Increíble!"}</h2><p className="text-xl text-yellow-900 font-bold opacity-80">{isTest ? "Niveau Validé" : "Leçon terminée et sauvegardée."}</p></div><div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div><div className="flex flex-col gap-4 w-full max-w-sm"><button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all"><Download size={20} /> Télécharger le PDF</button><button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all">Continuer</button></div></div>);
-const DailyReadingContent = ({ userLevel }) => { // Ajout de la prop userLevel
-  // On passe le niveau à la fonction de récupération
+const DailyReadingContent = ({ userLevel }) => { 
   const reading = getDailyReading(userLevel); 
   const [showTranslation, setShowTranslation] = useState(false);
 
@@ -1202,15 +1184,12 @@ const DailyReadingContent = ({ userLevel }) => { // Ajout de la prop userLevel
         </span>
         <h2 className="text-3xl font-black text-slate-900 mt-2">{reading.title_es}</h2>
         
-        {/* Affichage dynamique de la difficulté */}
         <div className="flex justify-center gap-2 mt-2">
             <span className="text-slate-400 italic text-sm">{reading.difficulty}</span>
-            {/* Petit badge pour confirmer que c'est adapté */}
             <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded font-bold">Adapté à ton niveau</span>
         </div>
       </div>
 
-      {/* Carte Espagnol */}
       <div className="bg-white p-8 rounded-3xl shadow-lg border-b-4 border-slate-100 relative overflow-hidden group">
         <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-xl">
           Español
@@ -1227,7 +1206,6 @@ const DailyReadingContent = ({ userLevel }) => { // Ajout de la prop userLevel
         </p>
       </div>
 
-      {/* Bouton Toggle */}
       <div className="flex justify-center">
         <button 
           onClick={() => setShowTranslation(!showTranslation)}
@@ -1237,7 +1215,6 @@ const DailyReadingContent = ({ userLevel }) => { // Ajout de la prop userLevel
         </button>
       </div>
 
-      {/* Carte Français (Révélée) */}
       {showTranslation && (
         <div className="bg-slate-50 p-8 rounded-3xl border-2 border-dashed border-slate-200 animate-in fade-in slide-in-from-top-4 duration-500">
            <h3 className="text-slate-400 font-bold text-sm uppercase mb-2 tracking-wider">Français</h3>
@@ -1273,21 +1250,16 @@ const QuizZone = ({ onExit, userData, lessonsContent }) => {
   useEffect(() => {
     // Import dynamique du moteur
     import('./data/quizengine').then(module => {
-       const completedIds = userData?.completedLessons || [];
-       
-       // SÉCURITÉ : Si lessonsContent est vide (chargement), on utilise INITIAL_LESSONS_CONTENT
-       // Cela évite le crash si la base de données met du temps à répondre
        const sourceContent = (lessonsContent && Object.keys(lessonsContent).length > 0) 
           ? lessonsContent 
           : INITIAL_LESSONS_CONTENT;
 
-       // On génère le quiz avec le contenu À JOUR (celui qui a les phrases)
-       const generated = module.generateSuperQuiz(sourceContent, completedIds);
+       // On passe userData complet pour le SRS
+       const generated = module.generateSuperQuiz(sourceContent, userData);
        setQuestions(generated);
     });
-  }, [userData, lessonsContent]); // On recharge si les données changent
+  }, [userData, lessonsContent]);
 
-  // Focus automatique
   useEffect(() => {
     if (questions[currentIdx]?.type === 'input' && !feedback) {
       setTimeout(() => inputRef.current?.focus(), 100);
@@ -1297,8 +1269,6 @@ const QuizZone = ({ onExit, userData, lessonsContent }) => {
   if (questions.length === 0) return <div className="p-10 text-center flex items-center justify-center h-full"><Loader2 className="animate-spin mr-2"/> Chargement du quiz...</div>;
 
   const currentQ = questions[currentIdx];
-
-  // --- LOGIQUE DE JEU ---
 
   const handleNext = () => {
     setFeedback(null);
@@ -1319,7 +1289,6 @@ const QuizZone = ({ onExit, userData, lessonsContent }) => {
       setFeedback('wrong');
       speak("Incorrecto");
     }
-    // On laisse un peu de temps pour voir la correction
     setTimeout(handleNext, 2000);
   };
 
@@ -1327,10 +1296,10 @@ const QuizZone = ({ onExit, userData, lessonsContent }) => {
     e?.preventDefault();
     if (!inputValue.trim()) return;
     
-    const userClean = inputValue.trim().toLowerCase().replace(/[¿¡!.,]/g, '');
-    const correctClean = currentQ.correctAnswer.toLowerCase().replace(/[¿¡!.,]/g, '');
+    // Validation stricte ici aussi
+    const userClean = inputValue.trim().toLowerCase();
+    const correctClean = currentQ.correctAnswer.trim().toLowerCase();
     
-    // Tolérance pour les fautes de frappe mineures ou casse
     validateAnswer(userClean === correctClean);
   };
 
@@ -1339,7 +1308,6 @@ const QuizZone = ({ onExit, userData, lessonsContent }) => {
     inputRef.current?.focus();
   };
 
-  // --- ÉCRAN DE FIN ---
   if (finished) {
     return (
       <div className="h-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in">
@@ -1357,10 +1325,8 @@ const QuizZone = ({ onExit, userData, lessonsContent }) => {
     );
   }
 
-  // --- INTERFACE QUESTION ---
   return (
     <div className="h-full flex flex-col bg-slate-50">
-      {/* Barre de progression */}
       <div className="px-6 py-4 bg-white border-b border-slate-100 flex items-center justify-between">
         <button onClick={onExit} className="p-2 hover:bg-slate-100 rounded-full text-slate-400"><X size={24} /></button>
         <div className="flex-1 mx-4 h-3 bg-slate-100 rounded-full overflow-hidden">
@@ -1371,7 +1337,6 @@ const QuizZone = ({ onExit, userData, lessonsContent }) => {
 
       <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-md mx-auto w-full">
         
-        {/* Enoncé */}
         <div className="text-center mb-8 space-y-2">
             <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                 Question {currentIdx + 1}
@@ -1382,7 +1347,6 @@ const QuizZone = ({ onExit, userData, lessonsContent }) => {
             <p className="text-slate-500 font-medium text-sm">{currentQ.hint}</p>
         </div>
 
-        {/* Feedback Visuel */}
         {feedback === 'correct' && (
             <div className="mb-6 px-6 py-3 bg-green-100 text-green-700 rounded-2xl font-bold animate-bounce flex items-center gap-2">
                 <CheckCircle size={20}/> Bonne réponse !
@@ -1395,10 +1359,8 @@ const QuizZone = ({ onExit, userData, lessonsContent }) => {
             </div>
         )}
 
-        {/* Zone de saisie */}
         {!feedback && (
           <form onSubmit={handleInputSubmit} className="w-full">
-            {/* Clavier accents */}
             <div className="flex gap-2 justify-center mb-6 flex-wrap">
               {['á','é','í','ó','ú','ñ','¿','¡'].map(char => (
                 <button key={char} type="button" onClick={() => addChar(char)} className="w-10 h-10 bg-white border-2 border-slate-200 shadow-sm hover:border-indigo-400 hover:text-indigo-600 text-slate-700 font-bold rounded-xl transition-all text-lg active:scale-95">

@@ -5,62 +5,95 @@ const shuffleArray = (array) => {
   return array.sort(() => Math.random() - 0.5);
 };
 
-export const generateSuperQuiz = (allLessonsContent, completedIds) => {
+// [SRS-LOGIC-START]
+export const generateSuperQuiz = (allLessonsContent, userData) => {
   let quizQuestions = [];
   
-  // 1. SÉCURITÉ
-  const targetIds = (completedIds && completedIds.length > 0) ? completedIds : [1];
+  // 1. SÉCURITÉ & RÉCUPÉRATION DONNÉES
+  const completedIds = userData?.completedLessons || [1];
+  const userVocab = userData?.vocab || [];
 
-  // 2. RÉCUPÉRATION DU CONTENU
-  const allCards = targetIds.flatMap(id => allLessonsContent[id] || []);
+  // 2. SRS : RÉCUPÉRER LES CARTES À REVOIR
+  const now = Date.now();
+  const srsReviewCards = userVocab.filter(item => {
+      // On vérifie que c'est une carte valide avec SRS
+      if(!item.lastReview || !item.interval || item.type !== 'swipe') return false;
+      
+      const lastReviewTime = new Date(item.lastReview).getTime();
+      const intervalMs = item.interval * 24 * 60 * 60 * 1000;
+      
+      // Est-ce que l'intervalle est dépassé ?
+      return (now - lastReviewTime) > intervalMs;
+  });
+
+  // 3. TRANSFORMER LES CARTES SRS EN QUESTIONS
+  const srsQuestions = srsReviewCards.map(item => ({
+      id: `srs-${item.id}-${now}`,
+      type: 'input',
+      question: `Rappel SRS : Comment dit-on "${item.en}" ?`,
+      correctAnswer: item.es,
+      hint: item.context || "Révision espacée"
+  }));
+
+  // On ajoute d'abord les questions SRS prioritaires (jusqu'à 10 max pour laisser de la place aux autres)
+  quizQuestions = [...shuffleArray(srsQuestions).slice(0, 10)];
+
+  // 4. COMPLÉTER AVEC LE CONTENU STANDARD (LOGIQUE EXISTANTE)
+  // ---------------------------------------------------------
+  
+  // RÉCUPÉRATION DU CONTENU DES LEÇONS COMPLÉTÉES
+  const allCards = completedIds.flatMap(id => allLessonsContent[id] || []);
   
   const vocabCards = allCards.filter(item => item.type === 'swipe');
   const grammarCards = allCards.filter(item => item.type === 'grammar');
   
-  if (vocabCards.length === 0 && grammarCards.length === 0) return [];
+  if (vocabCards.length === 0 && grammarCards.length === 0 && quizQuestions.length === 0) return [];
 
-  // --- PARTIE 1 : VOCABULAIRE (8 Questions min) ---
-  const selectedVocab = shuffleArray(vocabCards).slice(0, 8);
+  // --- PARTIE VOCABULAIRE (Complément) ---
+  const remainingSlots = 20 - quizQuestions.length;
+  if (remainingSlots > 0) {
+      const selectedVocab = shuffleArray(vocabCards).slice(0, Math.floor(remainingSlots / 2));
 
-  selectedVocab.forEach(item => {
-    const hasSentence = !!item.sentence;
-    let questionText = "";
-    let hintText = "";
+      selectedVocab.forEach(item => {
+        const hasSentence = !!item.sentence;
+        let questionText = "";
+        let hintText = "";
 
-    if (hasSentence) {
-        try {
-            const escapedWord = item.es.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(escapedWord, 'gi');
-            const maskedSentence = item.sentence.replace(regex, '_______');
-            
-            questionText = `Complète la phrase :\n"${maskedSentence}"`;
-            hintText = `Mot recherché : ${item.en}`;
-        } catch (e) {
+        if (hasSentence) {
+            try {
+                const escapedWord = item.es.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(escapedWord, 'gi');
+                const maskedSentence = item.sentence.replace(regex, '_______');
+                
+                questionText = `Complète la phrase :\n"${maskedSentence}"`;
+                hintText = `Mot recherché : ${item.en}`;
+            } catch (e) {
+                questionText = `Comment dit-on "${item.en}" ?`;
+                hintText = item.context;
+            }
+        } else {
             questionText = `Comment dit-on "${item.en}" ?`;
             hintText = item.context;
         }
-    } else {
-        questionText = `Comment dit-on "${item.en}" ?`;
-        hintText = item.context;
-    }
 
-    quizQuestions.push({
-      id: `vocab-${item.id}`,
-      type: 'input',
-      question: questionText,
-      correctAnswer: item.es,
-      hint: hintText
-    });
-  });
+        quizQuestions.push({
+          id: `vocab-${item.id}`,
+          type: 'input',
+          question: questionText,
+          correctAnswer: item.es,
+          hint: hintText
+        });
+      });
+  }
 
-  // --- PARTIE 2 : GRAMMAIRE INTELLIGENTE (6 Questions) ---
+  // --- PARTIE GRAMMAIRE INTELLIGENTE ---
+  // On remplit le reste avec de la grammaire ou des phrases
   const selectedGrammar = shuffleArray(grammarCards).slice(0, 6);
 
   selectedGrammar.forEach(item => {
       if (item.conjugation && item.conjugation.length > 0) {
           const line = item.conjugation[Math.floor(Math.random() * item.conjugation.length)];
           
-          // NETTOYAGE DU TITRE (ex: "Ir (Rappel)" -> "Ir")
           let verbName = item.title;
           const ignoreList = ["Rappel", "Météo", "Auxiliaire", "Singulier", "Pluriel", "Intro", "Nuances", "Terminaison"];
           
@@ -71,18 +104,14 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
           }
           verbName = verbName.replace(/Verbe\s*:?/i, "").trim();
 
-          // ADAPTATION DE LA QUESTION
           let questionText = `Conjugue "${verbName}" :\n${line.pronoun} ...`;
 
-          // 1. Cas des terminaisons (ex: -o, -as)
           if (line.verb.startsWith('-')) {
               questionText = `Quelle est la terminaison pour "${verbName}" avec "${line.pronoun}" ?`;
           }
-          // 2. Cas de l'heure
           else if (item.title.includes("Heure")) {
                questionText = `Quelle heure est-il ?\n${line.pronoun} ...`;
           }
-          // 3. Cas des pronoms
           else if (item.title.includes("Pronom") || item.title.includes("COD")) {
                questionText = `Traduis avec le bon pronom :\n${line.pronoun} ...`;
           }
@@ -97,32 +126,20 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
       }
   });
 
-  // --- PARTIE 3 : TRADUCTION DE PHRASE (Jusqu'à 6 questions) ---
-  const sentenceCards = vocabCards.filter(item => item.sentence && item.sentence_trans);
-  const selectedSentences = shuffleArray(sentenceCards).slice(0, 6);
-
-  selectedSentences.forEach(item => {
-      quizQuestions.push({
-          id: `sentence-${item.id}`,
-          type: 'input',
-          question: `Traduis cette phrase en espagnol :\n"${item.sentence_trans}"`,
-          correctAnswer: item.sentence,
-          hint: `Indice : ${item.es}...`
-      });
-  });
-
-  // --- PARTIE 4 : REMPLISSAGE AUTOMATIQUE (FILLER) ---
-  // C'est ce qui garantit d'avoir 20 questions même si les phrases manquent
-  
-  // On prend tout le vocabulaire disponible pour combler les trous
+  // --- REMPLISSAGE FINAL (FILLER) ---
   const fillerVocab = shuffleArray(vocabCards);
   let fillerIndex = 0;
 
   while (quizQuestions.length < 20 && fillerIndex < fillerVocab.length) {
       const item = fillerVocab[fillerIndex];
       
-      // On évite de poser deux fois la même question vocabulaire exacte
-      if (!quizQuestions.some(q => q.id === `vocab-${item.id}`)) {
+      // On évite de poser deux fois la même question
+      const isDuplicate = quizQuestions.some(q => 
+          q.id === `vocab-${item.id}` || 
+          q.id.startsWith(`srs-${item.id}`)
+      );
+
+      if (!isDuplicate) {
            quizQuestions.push({
               id: `filler-${item.id}`,
               type: 'input',
@@ -136,3 +153,4 @@ export const generateSuperQuiz = (allLessonsContent, completedIds) => {
 
   return shuffleArray(quizQuestions).slice(0, 20);
 };
+// [SRS-LOGIC-END]

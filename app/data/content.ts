@@ -194,7 +194,6 @@ export const CONTENT_PART_1 = {
 };
 
 // --- 5. GÉNÉRATEUR INTELLIGENT (21-100) ---
-// --- GÉNÉRATEUR INTELLIGENT DE LEÇONS (THÉMATIQUE) ---
 // --- GÉNÉRATEUR INTELLIGENT DE LEÇONS (VRAIMENT THÉMATIQUE) ---
 export const generateStructuredLesson = (id) => {
   let level = "A1";
@@ -248,10 +247,13 @@ export const generateStructuredLesson = (id) => {
   const availableVerbs = DATA_BANK.verbs.filter(v => v.levels.includes(level));
   const randVerb = availableVerbs.length > 0 ? availableVerbs[id % availableVerbs.length] : DATA_BANK.verbs[0];
 
+  // [COHERENCE-THEMATIQUE-START]
   // 4. SÉLECTION DES MOTS (Maintenant cohérente avec le titre !)
-  const place = getSmartNoun('places');   // Si le thème est "Cuisine", ça deviendra de la nourriture !
-  const object = getSmartNoun('objects');
-  const food = getSmartNoun('food');
+  // On force l'utilisation de la catégorie cible si elle a été détectée
+  const card1Noun = getSmartNoun(targetCategory !== 'random' ? targetCategory : 'objects');
+  const card2Noun = getSmartNoun(targetCategory !== 'random' ? targetCategory : 'places');
+  const card3Noun = getSmartNoun(targetCategory !== 'random' ? targetCategory : 'food');
+  // [COHERENCE-THEMATIQUE-END]
   
   const adj = DATA_BANK.adjectives[(id + 2) % DATA_BANK.adjectives.length];
   const conn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
@@ -267,9 +269,9 @@ export const generateStructuredLesson = (id) => {
   const grammarAnswer = conjFn ? [conjFn.verb] : [randVerb.conjugation[0].verb];
 
   // Construction des phrases logiques
-  const card1 = { ...object, context: "Mot clé", sentence: `Necesito ${object.es.toLowerCase()}.`, sentence_trans: `J'ai besoin de ${object.en.toLowerCase()}.` };
-  const card2 = { ...place, context: "Contexte", sentence: `Voy a ${place.es.toLowerCase()}.`, sentence_trans: `Je vais à ${place.en.toLowerCase()}.` };
-  const card3 = { ...food, context: "Exemple", sentence: `Me gusta ${food.es.toLowerCase()}.`, sentence_trans: `J'aime ${food.en.toLowerCase()}.` };
+  const card1 = { ...card1Noun, context: "Mot clé", sentence: `Necesito ${card1Noun.es.toLowerCase()}.`, sentence_trans: `J'ai besoin de ${card1Noun.en.toLowerCase()}.` };
+  const card2 = { ...card2Noun, context: "Contexte", sentence: `Voy a ${card2Noun.es.toLowerCase()}.`, sentence_trans: `Je vais à ${card2Noun.en.toLowerCase()}.` };
+  const card3 = { ...card3Noun, context: "Exemple", sentence: `Me gusta ${card3Noun.es.toLowerCase()}.`, sentence_trans: `J'aime ${card3Noun.en.toLowerCase()}.` };
 
   return [
     { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Verbe focus : ${randVerb.es}`, note: `Niveau ${level}` },
@@ -285,7 +287,7 @@ export const generateStructuredLesson = (id) => {
     { id: cardId++, type: "swipe", es: card2.es, en: card2.en, context: card2.context, sentence: card2.sentence, sentence_trans: card2.sentence_trans },
     
     // Structure
-    { id: cardId++, type: "structure", title: "L'Accord", formula: "Nom + Adjectif", example: `${object.es} ${adj.es.toLowerCase()}`, note: "L'adjectif s'accorde." },
+    { id: cardId++, type: "structure", title: "L'Accord", formula: "Nom + Adjectif", example: `${card1Noun.es} ${adj.es.toLowerCase()}`, note: "L'adjectif s'accorde." },
 
     // Carte 3
     { id: cardId++, type: "swipe", es: card3.es, en: card3.en, context: card3.context, sentence: card3.sentence, sentence_trans: card3.sentence_trans },
