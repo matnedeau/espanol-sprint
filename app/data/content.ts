@@ -2,7 +2,7 @@
 // @ts-nocheck
 
 /* 📚 CONTENT EXPANSION PACK 
-   Généré pour EspañolSprint - Vocabulaire Enrichi & Lectures Longues
+   Généré pour EspañolSprint - Vocabulaire Enrichi & Lectures Longues & Conjugaisons Complètes
 */
 
 // --- 1. LECTURES QUOTIDIENNES ---
@@ -42,58 +42,409 @@ export const DAILY_READINGS = [
 export const DATA_BANK = {
   verbs: [
     // --- VERBES PRIORITAIRES (A1-A2) ---
-    { levels: ["A1"], es: "Ser", en: "Être (Identité)", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él/Ella", verb: "es", fr: "Il est" }, { pronoun: "Nosotros", verb: "somos", fr: "Nous sommes" }, { pronoun: "Vosotros", verb: "sois", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "son", fr: "Ils sont" }] },
-    { levels: ["A1"], es: "Estar", en: "Être (État/Lieu)", conjugation: [{ pronoun: "Yo", verb: "estoy", fr: "Je suis" }, { pronoun: "Tú", verb: "estás", fr: "Tu es" }, { pronoun: "Él", verb: "está", fr: "Il est" }, { pronoun: "Nos", verb: "estamos", fr: "Nous sommes" }, { pronoun: "Vos", verb: "estáis", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "están", fr: "Ils sont" }] },
-    { levels: ["A1"], es: "Tener", en: "Avoir", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él", verb: "tiene", fr: "Il a" }, { pronoun: "Nos", verb: "tenemos", fr: "Nous avons" }, { pronoun: "Ellos", verb: "tienen", fr: "Ils ont" }] },
-    { levels: ["A1"], es: "Haber", en: "Avoir (Auxiliaire)", conjugation: [{ pronoun: "Yo", verb: "he", fr: "J'ai" }, { pronoun: "Tú", verb: "has", fr: "Tu as" }, { pronoun: "Hay", verb: "hay", fr: "Il y a" }] },
-    { levels: ["A1"], es: "Hacer", en: "Faire", conjugation: [{ pronoun: "Yo", verb: "hago", fr: "Je fais" }, { pronoun: "Tú", verb: "haces", fr: "Tu fais" }, { pronoun: "Él", verb: "hace", fr: "Il fait" }] },
-    { levels: ["A1"], es: "Ir", en: "Aller", conjugation: [{ pronoun: "Yo", verb: "voy", fr: "Je vais" }, { pronoun: "Tú", verb: "vas", fr: "Tu vas" }, { pronoun: "Él", verb: "va", fr: "Il va" }, { pronoun: "Nos", verb: "vamos", fr: "Nous allons" }, { pronoun: "Ellos", verb: "van", fr: "Ils vont" }] },
-    { levels: ["A1"], es: "Venir", en: "Venir", conjugation: [{ pronoun: "Yo", verb: "vengo", fr: "Je viens" }, { pronoun: "Tú", verb: "vienes", fr: "Tu viens" }, { pronoun: "Él", verb: "viene", fr: "Il vient" }] },
-    { levels: ["A1"], es: "Decir", en: "Dire", conjugation: [{ pronoun: "Yo", verb: "digo", fr: "Je dis" }, { pronoun: "Tú", verb: "dices", fr: "Tu dis" }, { pronoun: "Él", verb: "dice", fr: "Il dit" }] },
-    { levels: ["A1"], es: "Poder", en: "Pouvoir", conjugation: [{ pronoun: "Yo", verb: "puedo", fr: "Je peux" }, { pronoun: "Tú", verb: "puedes", fr: "Tu peux" }, { pronoun: "Él", verb: "puede", fr: "Il peut" }, { pronoun: "Nos", verb: "podemos", fr: "Nous pouvons" }] },
-    { levels: ["A1"], es: "Querer", en: "Vouloir", conjugation: [{ pronoun: "Yo", verb: "quiero", fr: "Je veux" }, { pronoun: "Tú", verb: "quieres", fr: "Tu veux" }, { pronoun: "Nos", verb: "queremos", fr: "Nous voulons" }] },
-    { levels: ["A1"], es: "Saber", en: "Savoir", conjugation: [{ pronoun: "Yo", verb: "sé", fr: "Je sais" }, { pronoun: "Tú", verb: "sabes", fr: "Tu sais" }, { pronoun: "Él", verb: "sabe", fr: "Il sait" }] },
-    { levels: ["A1"], es: "Poner", en: "Mettre", conjugation: [{ pronoun: "Yo", verb: "pongo", fr: "Je mets" }, { pronoun: "Tú", verb: "pones", fr: "Tu mets" }, { pronoun: "Él", verb: "pone", fr: "Il met" }] },
-    { levels: ["A1"], es: "Ver", en: "Voir", conjugation: [{ pronoun: "Yo", verb: "veo", fr: "Je vois" }, { pronoun: "Tú", verb: "ves", fr: "Tu vois" }, { pronoun: "Él", verb: "ve", fr: "Il voit" }] },
-    { levels: ["A1"], es: "Dar", en: "Donner", conjugation: [{ pronoun: "Yo", verb: "doy", fr: "Je donne" }, { pronoun: "Tú", verb: "das", fr: "Tu donnes" }, { pronoun: "Él", verb: "da", fr: "Il donne" }] },
-    { levels: ["A1"], es: "Comer", en: "Manger", conjugation: [{ pronoun: "Yo", verb: "como", fr: "Je mange" }, { pronoun: "Tú", verb: "comes", fr: "Tu manges" }, { pronoun: "Nos", verb: "comemos", fr: "Nous mangeons" }] },
-    { levels: ["A1"], es: "Vivir", en: "Vivre", conjugation: [{ pronoun: "Yo", verb: "vivo", fr: "Je vis" }, { pronoun: "Tú", verb: "vives", fr: "Tu vis" }, { pronoun: "Nos", verb: "vivimos", fr: "Nous vivons" }] },
-    { levels: ["A1"], es: "Hablar", en: "Parler", conjugation: [{ pronoun: "Yo", verb: "hablo", fr: "Je parle" }, { pronoun: "Tú", verb: "hablas", fr: "Tu parles" }, { pronoun: "Nos", verb: "hablamos", fr: "Nous parlons" }] },
-    { levels: ["A2"], es: "Salir", en: "Sortir", conjugation: [{ pronoun: "Yo", verb: "salgo", fr: "Je sors" }, { pronoun: "Tú", verb: "sales", fr: "Tu sors" }] },
-    { levels: ["A2"], es: "Llevar", en: "Porter/Emmener", conjugation: [{ pronoun: "Yo", verb: "llevo", fr: "Je porte" }, { pronoun: "Tú", verb: "llevas", fr: "Tu portes" }] },
-    { levels: ["A2"], es: "Dejar", en: "Laisser", conjugation: [{ pronoun: "Yo", verb: "dejo", fr: "Je laisse" }, { pronoun: "Tú", verb: "dejas", fr: "Tu laisses" }] },
-    { levels: ["A2"], es: "Seguir", en: "Suivre", conjugation: [{ pronoun: "Yo", verb: "sigo", fr: "Je suis" }, { pronoun: "Tú", verb: "sigues", fr: "Tu suis" }, { pronoun: "Él", verb: "sigue", fr: "Il suit" }] },
-    { levels: ["A2"], es: "Encontrar", en: "Trouver", conjugation: [{ pronoun: "Yo", verb: "encuentro", fr: "Je trouve" }, { pronoun: "Tú", verb: "encuentras", fr: "Tu trouves" }] },
-    { levels: ["A2"], es: "Llamar", en: "Appeler", conjugation: [{ pronoun: "Yo", verb: "llamo", fr: "J'appelle" }, { pronoun: "Tú", verb: "llamas", fr: "Tu appelles" }] },
-    { levels: ["A2"], es: "Trabajar", en: "Travailler", conjugation: [{ pronoun: "Yo", verb: "trabajo", fr: "Je travaille" }, { pronoun: "Tú", verb: "trabajas", fr: "Tu travailles" }] },
-    { levels: ["A2"], es: "Escribir", en: "Écrire", conjugation: [{ pronoun: "Yo", verb: "escribo", fr: "J'écris" }, { pronoun: "Tú", verb: "escribes", fr: "Tu écris" }] },
-    { levels: ["A2"], es: "Leer", en: "Lire", conjugation: [{ pronoun: "Yo", verb: "leo", fr: "Je lis" }, { pronoun: "Tú", verb: "lees", fr: "Tu lis" }] },
-    { levels: ["A2"], es: "Jugar", en: "Jouer", conjugation: [{ pronoun: "Yo", verb: "juego", fr: "Je joue" }, { pronoun: "Tú", verb: "juegas", fr: "Tu joues" }, { pronoun: "Nos", verb: "jugamos", fr: "Nous jouons" }] },
-    { levels: ["A2"], es: "Dormir", en: "Dormir", conjugation: [{ pronoun: "Yo", verb: "duermo", fr: "Je dors" }, { pronoun: "Tú", verb: "duermes", fr: "Tu dors" }, { pronoun: "Nos", verb: "dormimos", fr: "Nous dormons" }] },
-    { levels: ["A2"], es: "Pedir", en: "Demander", conjugation: [{ pronoun: "Yo", verb: "pido", fr: "Je demande" }, { pronoun: "Tú", verb: "pides", fr: "Tu demandes" }] },
-    { levels: ["A2"], es: "Pensar", en: "Penser", conjugation: [{ pronoun: "Yo", verb: "pienso", fr: "Je pense" }, { pronoun: "Tú", verb: "piensas", fr: "Tu penses" }] },
+    { levels: ["A1"], es: "Ser", en: "Être (Identité)", conjugation: [
+      { pronoun: "Yo", verb: "soy", fr: "Je suis" },
+      { pronoun: "Tú", verb: "eres", fr: "Tu es" },
+      { pronoun: "Él", verb: "es", fr: "Il est" },
+      { pronoun: "Nosotros", verb: "somos", fr: "Nous sommes" },
+      { pronoun: "Vosotros", verb: "sois", fr: "Vous êtes" },
+      { pronoun: "Ellos", verb: "son", fr: "Ils sont" }
+    ]},
+    { levels: ["A1"], es: "Estar", en: "Être (État/Lieu)", conjugation: [
+      { pronoun: "Yo", verb: "estoy", fr: "Je suis" },
+      { pronoun: "Tú", verb: "estás", fr: "Tu es" },
+      { pronoun: "Él", verb: "está", fr: "Il est" },
+      { pronoun: "Nosotros", verb: "estamos", fr: "Nous sommes" },
+      { pronoun: "Vosotros", verb: "estáis", fr: "Vous êtes" },
+      { pronoun: "Ellos", verb: "están", fr: "Ils sont" }
+    ]},
+    { levels: ["A1"], es: "Tener", en: "Avoir", conjugation: [
+      { pronoun: "Yo", verb: "tengo", fr: "J'ai" },
+      { pronoun: "Tú", verb: "tienes", fr: "Tu as" },
+      { pronoun: "Él", verb: "tiene", fr: "Il a" },
+      { pronoun: "Nosotros", verb: "tenemos", fr: "Nous avons" },
+      { pronoun: "Vosotros", verb: "tenéis", fr: "Vous avez" },
+      { pronoun: "Ellos", verb: "tienen", fr: "Ils ont" }
+    ]},
+    { levels: ["A1"], es: "Haber", en: "Avoir (Auxiliaire)", conjugation: [
+      { pronoun: "Yo", verb: "he", fr: "J'ai" },
+      { pronoun: "Tú", verb: "has", fr: "Tu as" },
+      { pronoun: "Él", verb: "ha", fr: "Il a" },
+      { pronoun: "Nosotros", verb: "hemos", fr: "Nous avons" },
+      { pronoun: "Vosotros", verb: "habéis", fr: "Vous avez" },
+      { pronoun: "Ellos", verb: "han", fr: "Ils ont" },
+      { pronoun: "Hay", verb: "hay", fr: "Il y a" } // Forme impersonnelle souvent utilisée
+    ]},
+    { levels: ["A1"], es: "Hacer", en: "Faire", conjugation: [
+      { pronoun: "Yo", verb: "hago", fr: "Je fais" },
+      { pronoun: "Tú", verb: "haces", fr: "Tu fais" },
+      { pronoun: "Él", verb: "hace", fr: "Il fait" },
+      { pronoun: "Nosotros", verb: "hacemos", fr: "Nous faisons" },
+      { pronoun: "Vosotros", verb: "hacéis", fr: "Vous faites" },
+      { pronoun: "Ellos", verb: "hacen", fr: "Ils font" }
+    ]},
+    { levels: ["A1"], es: "Ir", en: "Aller", conjugation: [
+      { pronoun: "Yo", verb: "voy", fr: "Je vais" },
+      { pronoun: "Tú", verb: "vas", fr: "Tu vas" },
+      { pronoun: "Él", verb: "va", fr: "Il va" },
+      { pronoun: "Nosotros", verb: "vamos", fr: "Nous allons" },
+      { pronoun: "Vosotros", verb: "vais", fr: "Vous allez" },
+      { pronoun: "Ellos", verb: "van", fr: "Ils vont" }
+    ]},
+    { levels: ["A1"], es: "Venir", en: "Venir", conjugation: [
+      { pronoun: "Yo", verb: "vengo", fr: "Je viens" },
+      { pronoun: "Tú", verb: "vienes", fr: "Tu viens" },
+      { pronoun: "Él", verb: "viene", fr: "Il vient" },
+      { pronoun: "Nosotros", verb: "venimos", fr: "Nous venons" },
+      { pronoun: "Vosotros", verb: "venís", fr: "Vous venez" },
+      { pronoun: "Ellos", verb: "vienen", fr: "Ils viennent" }
+    ]},
+    { levels: ["A1"], es: "Decir", en: "Dire", conjugation: [
+      { pronoun: "Yo", verb: "digo", fr: "Je dis" },
+      { pronoun: "Tú", verb: "dices", fr: "Tu dis" },
+      { pronoun: "Él", verb: "dice", fr: "Il dit" },
+      { pronoun: "Nosotros", verb: "decimos", fr: "Nous disons" },
+      { pronoun: "Vosotros", verb: "decís", fr: "Vous dites" },
+      { pronoun: "Ellos", verb: "dicen", fr: "Ils disent" }
+    ]},
+    { levels: ["A1"], es: "Poder", en: "Pouvoir", conjugation: [
+      { pronoun: "Yo", verb: "puedo", fr: "Je peux" },
+      { pronoun: "Tú", verb: "puedes", fr: "Tu peux" },
+      { pronoun: "Él", verb: "puede", fr: "Il peut" },
+      { pronoun: "Nosotros", verb: "podemos", fr: "Nous pouvons" },
+      { pronoun: "Vosotros", verb: "podéis", fr: "Vous pouvez" },
+      { pronoun: "Ellos", verb: "pueden", fr: "Ils peuvent" }
+    ]},
+    { levels: ["A1"], es: "Querer", en: "Vouloir", conjugation: [
+      { pronoun: "Yo", verb: "quiero", fr: "Je veux" },
+      { pronoun: "Tú", verb: "quieres", fr: "Tu veux" },
+      { pronoun: "Él", verb: "quiere", fr: "Il veut" },
+      { pronoun: "Nosotros", verb: "queremos", fr: "Nous voulons" },
+      { pronoun: "Vosotros", verb: "queréis", fr: "Vous voulez" },
+      { pronoun: "Ellos", verb: "quieren", fr: "Ils veulent" }
+    ]},
+    { levels: ["A1"], es: "Saber", en: "Savoir", conjugation: [
+      { pronoun: "Yo", verb: "sé", fr: "Je sais" },
+      { pronoun: "Tú", verb: "sabes", fr: "Tu sais" },
+      { pronoun: "Él", verb: "sabe", fr: "Il sait" },
+      { pronoun: "Nosotros", verb: "sabemos", fr: "Nous savons" },
+      { pronoun: "Vosotros", verb: "sabéis", fr: "Vous savez" },
+      { pronoun: "Ellos", verb: "saben", fr: "Ils savent" }
+    ]},
+    { levels: ["A1"], es: "Poner", en: "Mettre", conjugation: [
+      { pronoun: "Yo", verb: "pongo", fr: "Je mets" },
+      { pronoun: "Tú", verb: "pones", fr: "Tu mets" },
+      { pronoun: "Él", verb: "pone", fr: "Il met" },
+      { pronoun: "Nosotros", verb: "ponemos", fr: "Nous mettons" },
+      { pronoun: "Vosotros", verb: "ponéis", fr: "Vous mettez" },
+      { pronoun: "Ellos", verb: "ponen", fr: "Ils mettent" }
+    ]},
+    { levels: ["A1"], es: "Ver", en: "Voir", conjugation: [
+      { pronoun: "Yo", verb: "veo", fr: "Je vois" },
+      { pronoun: "Tú", verb: "ves", fr: "Tu vois" },
+      { pronoun: "Él", verb: "ve", fr: "Il voit" },
+      { pronoun: "Nosotros", verb: "vemos", fr: "Nous voyons" },
+      { pronoun: "Vosotros", verb: "veis", fr: "Vous voyez" },
+      { pronoun: "Ellos", verb: "ven", fr: "Ils voient" }
+    ]},
+    { levels: ["A1"], es: "Dar", en: "Donner", conjugation: [
+      { pronoun: "Yo", verb: "doy", fr: "Je donne" },
+      { pronoun: "Tú", verb: "das", fr: "Tu donnes" },
+      { pronoun: "Él", verb: "da", fr: "Il donne" },
+      { pronoun: "Nosotros", verb: "damos", fr: "Nous donnons" },
+      { pronoun: "Vosotros", verb: "dais", fr: "Vous donnez" },
+      { pronoun: "Ellos", verb: "dan", fr: "Ils donnent" }
+    ]},
+    { levels: ["A1"], es: "Comer", en: "Manger", conjugation: [
+      { pronoun: "Yo", verb: "como", fr: "Je mange" },
+      { pronoun: "Tú", verb: "comes", fr: "Tu manges" },
+      { pronoun: "Él", verb: "come", fr: "Il mange" },
+      { pronoun: "Nosotros", verb: "comemos", fr: "Nous mangeons" },
+      { pronoun: "Vosotros", verb: "coméis", fr: "Vous mangez" },
+      { pronoun: "Ellos", verb: "comen", fr: "Ils mangent" }
+    ]},
+    { levels: ["A1"], es: "Vivir", en: "Vivre", conjugation: [
+      { pronoun: "Yo", verb: "vivo", fr: "Je vis" },
+      { pronoun: "Tú", verb: "vives", fr: "Tu vis" },
+      { pronoun: "Él", verb: "vive", fr: "Il vit" },
+      { pronoun: "Nosotros", verb: "vivimos", fr: "Nous vivons" },
+      { pronoun: "Vosotros", verb: "vivís", fr: "Vous vivez" },
+      { pronoun: "Ellos", verb: "viven", fr: "Ils vivent" }
+    ]},
+    { levels: ["A1"], es: "Hablar", en: "Parler", conjugation: [
+      { pronoun: "Yo", verb: "hablo", fr: "Je parle" },
+      { pronoun: "Tú", verb: "hablas", fr: "Tu parles" },
+      { pronoun: "Él", verb: "habla", fr: "Il parle" },
+      { pronoun: "Nosotros", verb: "hablamos", fr: "Nous parlons" },
+      { pronoun: "Vosotros", verb: "habláis", fr: "Vous parlez" },
+      { pronoun: "Ellos", verb: "hablan", fr: "Ils parlent" }
+    ]},
+    { levels: ["A2"], es: "Salir", en: "Sortir", conjugation: [
+      { pronoun: "Yo", verb: "salgo", fr: "Je sors" },
+      { pronoun: "Tú", verb: "sales", fr: "Tu sors" },
+      { pronoun: "Él", verb: "sale", fr: "Il sort" },
+      { pronoun: "Nosotros", verb: "salimos", fr: "Nous sortons" },
+      { pronoun: "Vosotros", verb: "salís", fr: "Vous sortez" },
+      { pronoun: "Ellos", verb: "salen", fr: "Ils sortent" }
+    ]},
+    { levels: ["A2"], es: "Llevar", en: "Porter/Emmener", conjugation: [
+      { pronoun: "Yo", verb: "llevo", fr: "Je porte" },
+      { pronoun: "Tú", verb: "llevas", fr: "Tu portes" },
+      { pronoun: "Él", verb: "lleva", fr: "Il porte" },
+      { pronoun: "Nosotros", verb: "llevamos", fr: "Nous portons" },
+      { pronoun: "Vosotros", verb: "lleváis", fr: "Vous portez" },
+      { pronoun: "Ellos", verb: "llevan", fr: "Ils portent" }
+    ]},
+    { levels: ["A2"], es: "Dejar", en: "Laisser", conjugation: [
+      { pronoun: "Yo", verb: "dejo", fr: "Je laisse" },
+      { pronoun: "Tú", verb: "dejas", fr: "Tu laisses" },
+      { pronoun: "Él", verb: "deja", fr: "Il laisse" },
+      { pronoun: "Nosotros", verb: "dejamos", fr: "Nous laissons" },
+      { pronoun: "Vosotros", verb: "dejáis", fr: "Vous laissez" },
+      { pronoun: "Ellos", verb: "dejan", fr: "Ils laissent" }
+    ]},
+    { levels: ["A2"], es: "Seguir", en: "Suivre/Continuer", conjugation: [
+      { pronoun: "Yo", verb: "sigo", fr: "Je suis" },
+      { pronoun: "Tú", verb: "sigues", fr: "Tu suis" },
+      { pronoun: "Él", verb: "sigue", fr: "Il suit" },
+      { pronoun: "Nosotros", verb: "seguimos", fr: "Nous suivons" },
+      { pronoun: "Vosotros", verb: "seguís", fr: "Vous suivez" },
+      { pronoun: "Ellos", verb: "siguen", fr: "Ils suivent" }
+    ]},
+    { levels: ["A2"], es: "Encontrar", en: "Trouver", conjugation: [
+      { pronoun: "Yo", verb: "encuentro", fr: "Je trouve" },
+      { pronoun: "Tú", verb: "encuentras", fr: "Tu trouves" },
+      { pronoun: "Él", verb: "encuentra", fr: "Il trouve" },
+      { pronoun: "Nosotros", verb: "encontramos", fr: "Nous trouvons" },
+      { pronoun: "Vosotros", verb: "encontráis", fr: "Vous trouvez" },
+      { pronoun: "Ellos", verb: "encuentran", fr: "Ils trouvent" }
+    ]},
+    { levels: ["A2"], es: "Llamar", en: "Appeler", conjugation: [
+      { pronoun: "Yo", verb: "llamo", fr: "J'appelle" },
+      { pronoun: "Tú", verb: "llamas", fr: "Tu appelles" },
+      { pronoun: "Él", verb: "llama", fr: "Il appelle" },
+      { pronoun: "Nosotros", verb: "llamamos", fr: "Nous appelons" },
+      { pronoun: "Vosotros", verb: "llamáis", fr: "Vous appelez" },
+      { pronoun: "Ellos", verb: "llaman", fr: "Ils appellent" }
+    ]},
+    { levels: ["A2"], es: "Trabajar", en: "Travailler", conjugation: [
+      { pronoun: "Yo", verb: "trabajo", fr: "Je travaille" },
+      { pronoun: "Tú", verb: "trabajas", fr: "Tu travailles" },
+      { pronoun: "Él", verb: "trabaja", fr: "Il travaille" },
+      { pronoun: "Nosotros", verb: "trabajamos", fr: "Nous travaillons" },
+      { pronoun: "Vosotros", verb: "trabajáis", fr: "Vous travaillez" },
+      { pronoun: "Ellos", verb: "trabajan", fr: "Ils travaillent" }
+    ]},
+    { levels: ["A2"], es: "Escribir", en: "Écrire", conjugation: [
+      { pronoun: "Yo", verb: "escribo", fr: "J'écris" },
+      { pronoun: "Tú", verb: "escribes", fr: "Tu écris" },
+      { pronoun: "Él", verb: "escribe", fr: "Il écrit" },
+      { pronoun: "Nosotros", verb: "escribimos", fr: "Nous écrivons" },
+      { pronoun: "Vosotros", verb: "escribís", fr: "Vous écrivez" },
+      { pronoun: "Ellos", verb: "escriben", fr: "Ils écrivent" }
+    ]},
+    { levels: ["A2"], es: "Leer", en: "Lire", conjugation: [
+      { pronoun: "Yo", verb: "leo", fr: "Je lis" },
+      { pronoun: "Tú", verb: "lees", fr: "Tu lis" },
+      { pronoun: "Él", verb: "lee", fr: "Il lit" },
+      { pronoun: "Nosotros", verb: "leemos", fr: "Nous lisons" },
+      { pronoun: "Vosotros", verb: "leéis", fr: "Vous lisez" },
+      { pronoun: "Ellos", verb: "leen", fr: "Ils lisent" }
+    ]},
+    { levels: ["A2"], es: "Jugar", en: "Jouer", conjugation: [
+      { pronoun: "Yo", verb: "juego", fr: "Je joue" },
+      { pronoun: "Tú", verb: "juegas", fr: "Tu joues" },
+      { pronoun: "Él", verb: "juega", fr: "Il joue" },
+      { pronoun: "Nosotros", verb: "jugamos", fr: "Nous jouons" },
+      { pronoun: "Vosotros", verb: "jugáis", fr: "Vous jouez" },
+      { pronoun: "Ellos", verb: "juegan", fr: "Ils jouent" }
+    ]},
+    { levels: ["A2"], es: "Dormir", en: "Dormir", conjugation: [
+      { pronoun: "Yo", verb: "duermo", fr: "Je dors" },
+      { pronoun: "Tú", verb: "duermes", fr: "Tu dors" },
+      { pronoun: "Él", verb: "duerme", fr: "Il dort" },
+      { pronoun: "Nosotros", verb: "dormimos", fr: "Nous dormons" },
+      { pronoun: "Vosotros", verb: "dormís", fr: "Vous dormez" },
+      { pronoun: "Ellos", verb: "duermen", fr: "Ils dorment" }
+    ]},
+    { levels: ["A2"], es: "Pedir", en: "Demander", conjugation: [
+      { pronoun: "Yo", verb: "pido", fr: "Je demande" },
+      { pronoun: "Tú", verb: "pides", fr: "Tu demandes" },
+      { pronoun: "Él", verb: "pide", fr: "Il demande" },
+      { pronoun: "Nosotros", verb: "pedimos", fr: "Nous demandons" },
+      { pronoun: "Vosotros", verb: "pedís", fr: "Vous demandez" },
+      { pronoun: "Ellos", verb: "piden", fr: "Ils demandent" }
+    ]},
+    { levels: ["A2"], es: "Pensar", en: "Penser", conjugation: [
+      { pronoun: "Yo", verb: "pienso", fr: "Je pense" },
+      { pronoun: "Tú", verb: "piensas", fr: "Tu penses" },
+      { pronoun: "Él", verb: "piensa", fr: "Il pense" },
+      { pronoun: "Nosotros", verb: "pensamos", fr: "Nous pensons" },
+      { pronoun: "Vosotros", verb: "pensáis", fr: "Vous pensez" },
+      { pronoun: "Ellos", verb: "piensan", fr: "Ils pensent" }
+    ]},
     
     // --- VERBES INTERMÉDIAIRES (B1-B2) ---
-    { levels: ["B1"], es: "Volver", en: "Revenir", conjugation: [{ pronoun: "Yo", verb: "vuelvo", fr: "Je reviens" }, { pronoun: "Tú", verb: "vuelves", fr: "Tu reviens" }] },
-    { levels: ["B1"], es: "Empezar", en: "Commencer", conjugation: [{ pronoun: "Yo", verb: "empiezo", fr: "Je commence" }, { pronoun: "Tú", verb: "empiezas", fr: "Tu commences" }] },
-    { levels: ["B1"], es: "Conocer", en: "Connaître", conjugation: [{ pronoun: "Yo", verb: "conozco", fr: "Je connais" }, { pronoun: "Tú", verb: "conoces", fr: "Tu connais" }] },
-    { levels: ["B1"], es: "Sentir", en: "Sentir", conjugation: [{ pronoun: "Yo", verb: "siento", fr: "Je sens" }, { pronoun: "Tú", verb: "sientes", fr: "Tu sens" }] },
-    { levels: ["B1"], es: "Buscar", en: "Chercher", conjugation: [{ pronoun: "Yo", verb: "busco", fr: "Je cherche" }] },
-    { levels: ["B1"], es: "Necesitar", en: "Avoir besoin", conjugation: [{ pronoun: "Yo", verb: "necesito", fr: "J'ai besoin" }] },
-    { levels: ["B1"], es: "Quedar", en: "Rester/RDV", conjugation: [{ pronoun: "Yo", verb: "quedo", fr: "Je reste" }] },
-    { levels: ["B2"], es: "Esperar", en: "Attendre/Espérer", conjugation: [{ pronoun: "Yo", verb: "espero", fr: "J'attends" }] },
-    { levels: ["B2"], es: "Gustar", en: "Aimer", conjugation: [{ pronoun: "A mí", verb: "me gusta", fr: "J'aime" }, { pronoun: "A ti", verb: "te gusta", fr: "Tu aimes" }] },
-    { levels: ["B2"], es: "Parecer", en: "Sembler", conjugation: [{ pronoun: "Yo", verb: "parezco", fr: "Je semble" }, { pronoun: "Él", verb: "parece", fr: "Il semble" }] },
-    { levels: ["B2"], es: "Creer", en: "Croire", conjugation: [{ pronoun: "Yo", verb: "creo", fr: "Je crois" }] },
-    { levels: ["B2"], es: "Tomar", en: "Prendre", conjugation: [{ pronoun: "Yo", verb: "tomo", fr: "Je prends" }] },
-    { levels: ["C1"], es: "Recordar", en: "Se souvenir", conjugation: [{ pronoun: "Yo", verb: "recuerdo", fr: "Je me souviens" }] },
-    { levels: ["C1"], es: "Entender", en: "Comprendre", conjugation: [{ pronoun: "Yo", verb: "entiendo", fr: "Je comprends" }] },
-    { levels: ["C1"], es: "Oír", en: "Entendre", conjugation: [{ pronoun: "Yo", verb: "oigo", fr: "J'entends" }, { pronoun: "Tú", verb: "oyes", fr: "Tu entends" }] },
-    { levels: ["C1"], es: "Traer", en: "Apporter", conjugation: [{ pronoun: "Yo", verb: "traigo", fr: "J'apporte" }] },
-    { levels: ["C1"], es: "Abrir", en: "Ouvrir", conjugation: [{ pronoun: "Yo", verb: "abro", fr: "J'ouvre" }] },
-    { levels: ["C1"], es: "Cerrar", en: "Fermer", conjugation: [{ pronoun: "Yo", verb: "cierro", fr: "Je ferme" }] },
-    { levels: ["C1"], es: "Nacer", en: "Naître", conjugation: [{ pronoun: "Yo", verb: "nazco", fr: "Je nais" }] },
-    { levels: ["C1"], es: "Morir", en: "Mourir", conjugation: [{ pronoun: "Yo", verb: "muero", fr: "Je meurs" }, { pronoun: "Él", verb: "muere", fr: "Il meurt" }] }
+    { levels: ["B1"], es: "Volver", en: "Revenir", conjugation: [
+      { pronoun: "Yo", verb: "vuelvo", fr: "Je reviens" },
+      { pronoun: "Tú", verb: "vuelves", fr: "Tu reviens" },
+      { pronoun: "Él", verb: "vuelve", fr: "Il revient" },
+      { pronoun: "Nosotros", verb: "volvemos", fr: "Nous revenons" },
+      { pronoun: "Vosotros", verb: "volvéis", fr: "Vous revenez" },
+      { pronoun: "Ellos", verb: "vuelven", fr: "Ils reviennent" }
+    ]},
+    { levels: ["B1"], es: "Empezar", en: "Commencer", conjugation: [
+      { pronoun: "Yo", verb: "empiezo", fr: "Je commence" },
+      { pronoun: "Tú", verb: "empiezas", fr: "Tu commences" },
+      { pronoun: "Él", verb: "empieza", fr: "Il commence" },
+      { pronoun: "Nosotros", verb: "empezamos", fr: "Nous commençons" },
+      { pronoun: "Vosotros", verb: "empezáis", fr: "Vous commencez" },
+      { pronoun: "Ellos", verb: "empiezan", fr: "Ils commencent" }
+    ]},
+    { levels: ["B1"], es: "Conocer", en: "Connaître", conjugation: [
+      { pronoun: "Yo", verb: "conozco", fr: "Je connais" },
+      { pronoun: "Tú", verb: "conoces", fr: "Tu connais" },
+      { pronoun: "Él", verb: "conoce", fr: "Il connaît" },
+      { pronoun: "Nosotros", verb: "conocemos", fr: "Nous connaissons" },
+      { pronoun: "Vosotros", verb: "conocéis", fr: "Vous connaissez" },
+      { pronoun: "Ellos", verb: "conocen", fr: "Ils connaissent" }
+    ]},
+    { levels: ["B1"], es: "Sentir", en: "Sentir", conjugation: [
+      { pronoun: "Yo", verb: "siento", fr: "Je sens" },
+      { pronoun: "Tú", verb: "sientes", fr: "Tu sens" },
+      { pronoun: "Él", verb: "siente", fr: "Il sent" },
+      { pronoun: "Nosotros", verb: "sentimos", fr: "Nous sentons" },
+      { pronoun: "Vosotros", verb: "sentís", fr: "Vous sentez" },
+      { pronoun: "Ellos", verb: "sienten", fr: "Ils sentent" }
+    ]},
+    { levels: ["B1"], es: "Buscar", en: "Chercher", conjugation: [
+      { pronoun: "Yo", verb: "busco", fr: "Je cherche" },
+      { pronoun: "Tú", verb: "buscas", fr: "Tu cherches" },
+      { pronoun: "Él", verb: "busca", fr: "Il cherche" },
+      { pronoun: "Nosotros", verb: "buscamos", fr: "Nous cherchons" },
+      { pronoun: "Vosotros", verb: "buscáis", fr: "Vous cherchez" },
+      { pronoun: "Ellos", verb: "buscan", fr: "Ils cherchent" }
+    ]},
+    { levels: ["B1"], es: "Necesitar", en: "Avoir besoin", conjugation: [
+      { pronoun: "Yo", verb: "necesito", fr: "J'ai besoin" },
+      { pronoun: "Tú", verb: "necesitas", fr: "Tu as besoin" },
+      { pronoun: "Él", verb: "necesita", fr: "Il a besoin" },
+      { pronoun: "Nosotros", verb: "necesitamos", fr: "Nous avons besoin" },
+      { pronoun: "Vosotros", verb: "necesitáis", fr: "Vous avez besoin" },
+      { pronoun: "Ellos", verb: "necesitan", fr: "Ils ont besoin" }
+    ]},
+    { levels: ["B1"], es: "Quedar", en: "Rester/RDV", conjugation: [
+      { pronoun: "Yo", verb: "quedo", fr: "Je reste" },
+      { pronoun: "Tú", verb: "quedas", fr: "Tu restes" },
+      { pronoun: "Él", verb: "queda", fr: "Il reste" },
+      { pronoun: "Nosotros", verb: "quedamos", fr: "Nous restons" },
+      { pronoun: "Vosotros", verb: "quedáis", fr: "Vous restez" },
+      { pronoun: "Ellos", verb: "quedan", fr: "Ils restent" }
+    ]},
+    { levels: ["B2"], es: "Esperar", en: "Attendre/Espérer", conjugation: [
+      { pronoun: "Yo", verb: "espero", fr: "J'attends" },
+      { pronoun: "Tú", verb: "esperas", fr: "Tu attends" },
+      { pronoun: "Él", verb: "espera", fr: "Il attend" },
+      { pronoun: "Nosotros", verb: "esperamos", fr: "Nous attendons" },
+      { pronoun: "Vosotros", verb: "esperáis", fr: "Vous attendez" },
+      { pronoun: "Ellos", verb: "esperan", fr: "Ils attendent" }
+    ]},
+    { levels: ["B2"], es: "Gustar", en: "Aimer", conjugation: [
+      { pronoun: "A mí", verb: "me gusta", fr: "J'aime" },
+      { pronoun: "A ti", verb: "te gusta", fr: "Tu aimes" },
+      { pronoun: "A él", verb: "le gusta", fr: "Il aime" },
+      { pronoun: "A nosotros", verb: "nos gusta", fr: "Nous aimons" },
+      { pronoun: "A vosotros", verb: "os gusta", fr: "Vous aimez" },
+      { pronoun: "A ellos", verb: "les gusta", fr: "Ils aiment" }
+    ]},
+    { levels: ["B2"], es: "Parecer", en: "Sembler", conjugation: [
+      { pronoun: "Yo", verb: "parezco", fr: "Je semble" },
+      { pronoun: "Tú", verb: "pareces", fr: "Tu sembles" },
+      { pronoun: "Él", verb: "parece", fr: "Il semble" },
+      { pronoun: "Nosotros", verb: "parecemos", fr: "Nous semblons" },
+      { pronoun: "Vosotros", verb: "parecéis", fr: "Vous semblez" },
+      { pronoun: "Ellos", verb: "parecen", fr: "Ils semblent" }
+    ]},
+    { levels: ["B2"], es: "Creer", en: "Croire", conjugation: [
+      { pronoun: "Yo", verb: "creo", fr: "Je crois" },
+      { pronoun: "Tú", verb: "crees", fr: "Tu crois" },
+      { pronoun: "Él", verb: "cree", fr: "Il croit" },
+      { pronoun: "Nosotros", verb: "creemos", fr: "Nous croyons" },
+      { pronoun: "Vosotros", verb: "creéis", fr: "Vous croyez" },
+      { pronoun: "Ellos", verb: "creen", fr: "Ils croient" }
+    ]},
+    { levels: ["B2"], es: "Tomar", en: "Prendre", conjugation: [
+      { pronoun: "Yo", verb: "tomo", fr: "Je prends" },
+      { pronoun: "Tú", verb: "tomas", fr: "Tu prends" },
+      { pronoun: "Él", verb: "toma", fr: "Il prend" },
+      { pronoun: "Nosotros", verb: "tomamos", fr: "Nous prenons" },
+      { pronoun: "Vosotros", verb: "tomáis", fr: "Vous prenez" },
+      { pronoun: "Ellos", verb: "toman", fr: "Ils prennent" }
+    ]},
+    { levels: ["C1"], es: "Recordar", en: "Se souvenir", conjugation: [
+      { pronoun: "Yo", verb: "recuerdo", fr: "Je me souviens" },
+      { pronoun: "Tú", verb: "recuerdas", fr: "Tu te souviens" },
+      { pronoun: "Él", verb: "recuerda", fr: "Il se souvient" },
+      { pronoun: "Nosotros", verb: "recordamos", fr: "Nous nous souvenons" },
+      { pronoun: "Vosotros", verb: "recordáis", fr: "Vous vous souvenez" },
+      { pronoun: "Ellos", verb: "recuerdan", fr: "Ils se souviennent" }
+    ]},
+    { levels: ["C1"], es: "Entender", en: "Comprendre", conjugation: [
+      { pronoun: "Yo", verb: "entiendo", fr: "Je comprends" },
+      { pronoun: "Tú", verb: "entiendes", fr: "Tu comprends" },
+      { pronoun: "Él", verb: "entiende", fr: "Il comprend" },
+      { pronoun: "Nosotros", verb: "entendemos", fr: "Nous comprenons" },
+      { pronoun: "Vosotros", verb: "entendéis", fr: "Vous comprenez" },
+      { pronoun: "Ellos", verb: "entienden", fr: "Ils comprennent" }
+    ]},
+    { levels: ["C1"], es: "Oír", en: "Entendre", conjugation: [
+      { pronoun: "Yo", verb: "oigo", fr: "J'entends" },
+      { pronoun: "Tú", verb: "oyes", fr: "Tu entends" },
+      { pronoun: "Él", verb: "oye", fr: "Il entend" },
+      { pronoun: "Nosotros", verb: "oímos", fr: "Nous entendons" },
+      { pronoun: "Vosotros", verb: "oís", fr: "Vous entendez" },
+      { pronoun: "Ellos", verb: "oyen", fr: "Ils entendent" }
+    ]},
+    { levels: ["C1"], es: "Traer", en: "Apporter", conjugation: [
+      { pronoun: "Yo", verb: "traigo", fr: "J'apporte" },
+      { pronoun: "Tú", verb: "traes", fr: "Tu apportes" },
+      { pronoun: "Él", verb: "trae", fr: "Il apporte" },
+      { pronoun: "Nosotros", verb: "traemos", fr: "Nous apportons" },
+      { pronoun: "Vosotros", verb: "traéis", fr: "Vous apportez" },
+      { pronoun: "Ellos", verb: "traen", fr: "Ils apportent" }
+    ]},
+    { levels: ["C1"], es: "Abrir", en: "Ouvrir", conjugation: [
+      { pronoun: "Yo", verb: "abro", fr: "J'ouvre" },
+      { pronoun: "Tú", verb: "abres", fr: "Tu ouvres" },
+      { pronoun: "Él", verb: "abre", fr: "Il ouvre" },
+      { pronoun: "Nosotros", verb: "abrimos", fr: "Nous ouvrons" },
+      { pronoun: "Vosotros", verb: "abrís", fr: "Vous ouvrez" },
+      { pronoun: "Ellos", verb: "abren", fr: "Ils ouvrent" }
+    ]},
+    { levels: ["C1"], es: "Cerrar", en: "Fermer", conjugation: [
+      { pronoun: "Yo", verb: "cierro", fr: "Je ferme" },
+      { pronoun: "Tú", verb: "cierras", fr: "Tu fermes" },
+      { pronoun: "Él", verb: "cierra", fr: "Il ferme" },
+      { pronoun: "Nosotros", verb: "cerramos", fr: "Nous fermons" },
+      { pronoun: "Vosotros", verb: "cerráis", fr: "Vous fermez" },
+      { pronoun: "Ellos", verb: "cierran", fr: "Ils ferment" }
+    ]},
+    { levels: ["C1"], es: "Nacer", en: "Naître", conjugation: [
+      { pronoun: "Yo", verb: "nazco", fr: "Je nais" },
+      { pronoun: "Tú", verb: "naces", fr: "Tu nais" },
+      { pronoun: "Él", verb: "nace", fr: "Il naît" },
+      { pronoun: "Nosotros", verb: "nacemos", fr: "Nous naissons" },
+      { pronoun: "Vosotros", verb: "nacéis", fr: "Vous naissez" },
+      { pronoun: "Ellos", verb: "nacen", fr: "Ils naissent" }
+    ]},
+    { levels: ["C1"], es: "Morir", en: "Mourir", conjugation: [
+      { pronoun: "Yo", verb: "muero", fr: "Je meurs" },
+      { pronoun: "Tú", verb: "mueres", fr: "Tu meurs" },
+      { pronoun: "Él", verb: "muere", fr: "Il meurt" },
+      { pronoun: "Nosotros", verb: "morimos", fr: "Nous mourons" },
+      { pronoun: "Vosotros", verb: "morís", fr: "Vous mourez" },
+      { pronoun: "Ellos", verb: "mueren", fr: "Ils meurent" }
+    ]}
   ],
 
   nouns: {
