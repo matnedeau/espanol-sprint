@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bubbleGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFC400;stop-opacity:1" /> <stop offset="100%" style="stop-color:#FFEB3B;stop-opacity:1" /> </linearGradient>
+  </defs>
+  
+  <path d="M 40 20 C 28.954 20 20 28.954 20 40 L 20 140 C 20 151.046 28.954 160 40 160 L 60 160 L 40 185 L 85 160 L 160 160 C 171.046 160 180 151.046 180 140 L 180 40 C 180 28.954 171.046 20 160 20 L 40 20 Z" fill="url(#bubbleGradient)" stroke="#F57F17" stroke-width="4"/>
+  
+  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="'Arial Black', 'Helvetica Neue', sans-serif" font-weight="bold" font-size="110" fill="#D32F2F">
+    Ñ
+  </text>
+  
+  </svg>

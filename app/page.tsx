@@ -11,6 +11,17 @@ import {
   getDailyReading 
 } from './data/content';
 
+import Image from "next/image";
+
+// ... dans votre composant (le return) :
+
+<Image
+  src="/logo.svg" 
+  alt="Logo Apprentissage Espagnol"
+  width={100}
+  height={100}
+/>
+
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table, Map, CheckCircle, Star, BrainCircuit, Target
