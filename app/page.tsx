@@ -15,7 +15,7 @@ import {
 import Image from "next/image";
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, BookOpen, LogOut, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Loader2, CloudUpload, Volume2, Download, Hammer, ArrowRight, RotateCcw, Table, CheckCircle, BrainCircuit, Target, MessageCircle, Ear, Bot
+  Flame, ChevronRight, X, Check, Trophy, User, BookOpen, LogOut, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Loader2, CloudUpload, Volume2, Download, Hammer, ArrowRight, RotateCcw, Table, CheckCircle, BrainCircuit, Target, MessageCircle, Ear, Bot, Calendar
 } from 'lucide-react';
 
 import { initializeApp } from "firebase/app";
@@ -133,6 +133,7 @@ export default function EspanolSprintPro() {
   const [authError, setAuthError] = useState(""); 
   const [testMode, setTestMode] = useState(null);
   const [activeStory, setActiveStory] = useState(null);
+  const [dailyStoryContent, setDailyStoryContent] = useState(null);
   
   const [dynamicLessonsList, setDynamicLessonsList] = useState(INITIAL_LESSONS_LIST);
   const [dynamicLessonsContent, setDynamicLessonsContent] = useState({});
@@ -149,7 +150,17 @@ export default function EspanolSprintPro() {
             setUserData(userSnap.data());
           } else {
             const name = user.displayName || user.email.split('@')[0];
-            const newProfile = { name, xp: 0, streak: 1, level: "A1", vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 } };
+            const newProfile = { 
+                name, 
+                xp: 0, 
+                streak: 1, 
+                level: "A1", 
+                vocab: [], 
+                completedLessons: [], 
+                dailyLimit: { date: new Date().toDateString(), count: 0 },
+                dailyStory: { date: "", storyId: "" }, // Nouveau champ
+                readStories: [] // Nouveau champ
+            };
             await setDoc(userRef, newProfile);
             setUserData(newProfile);
           }
@@ -172,6 +183,70 @@ export default function EspanolSprintPro() {
     return () => unsubscribe();
   }, []);
 
+  // --- LOGIQUE STORY DU JOUR ---
+  useEffect(() => {
+    const assignDailyStory = async () => {
+        if (!userData || !currentUser) return;
+
+        const today = new Date().toDateString();
+        const currentDaily = userData.dailyStory; // { date: "...", storyId: "..." }
+        
+        // 1. Si déjà assignée aujourd'hui, on la récupère
+        if (currentDaily?.date === today) {
+            const existingStory = STORIES_DATA.find(s => s.id === currentDaily.storyId);
+            if (existingStory) {
+                setDailyStoryContent(existingStory);
+                return;
+            }
+        }
+
+        // 2. Sinon, tirage au sort (Nouveau jour)
+        const levels = ["A1", "A2", "B1", "B2", "C1"];
+        const userLevelIdx = levels.indexOf(userData.level || "A1");
+        // On prend tous les niveaux <= niveau utilisateur
+        const allowedLevels = levels.slice(0, userLevelIdx + 1);
+        
+        const validStories = STORIES_DATA.filter(s => allowedLevels.includes(s.level));
+        const readIds = userData.readStories || [];
+        
+        // Filtrer les histoires déjà lues
+        let candidates = validStories.filter(s => !readIds.includes(s.id));
+
+        // Si le deck est vide (toutes lues), on réinitialise virtuellement
+        if (candidates.length === 0) {
+            candidates = validStories;
+        }
+
+        if (candidates.length === 0) return; // Sécurité
+
+        // Tirage
+        const randomStory = candidates[Math.floor(Math.random() * candidates.length)];
+
+        try {
+            const userRef = doc(db, "users", currentUser.uid);
+            await updateDoc(userRef, {
+                dailyStory: { date: today, storyId: randomStory.id },
+                readStories: arrayUnion(randomStory.id)
+            });
+
+            setUserData(prev => ({
+                ...prev,
+                dailyStory: { date: today, storyId: randomStory.id },
+                readStories: [...(prev.readStories || []), randomStory.id]
+            }));
+            
+            setDailyStoryContent(randomStory);
+        } catch (e) {
+            console.error("Erreur story du jour:", e);
+        }
+    };
+
+    if (!loading && userData && STORIES_DATA.length > 0) {
+        assignDailyStory();
+    }
+  }, [userData?.dailyStory?.date, currentUser, loading]);
+
+
   const uploadFullContentToCloud = async () => {
     if (!confirm("ADMIN : Initialiser les 100 leçons structurées ?")) return;
     try {
@@ -193,7 +268,7 @@ export default function EspanolSprintPro() {
     try {
       if (isSignUp) {
         const cred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
-        await setDoc(doc(db, "users", cred.user.uid), { name: cleanEmail.split('@')[0], email: cleanEmail, xp: 0, streak: 1, level: "A1", vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 } });
+        await setDoc(doc(db, "users", cred.user.uid), { name: cleanEmail.split('@')[0], email: cleanEmail, xp: 0, streak: 1, level: "A1", vocab: [], completedLessons: [], dailyLimit: { date: new Date().toDateString(), count: 0 }, readStories: [], dailyStory: { date: "", storyId: "" } });
       } else { await signInWithEmailAndPassword(auth, cleanEmail, password); }
     } catch (error) { setAuthError(error.message); setLoading(false); }
   };
@@ -218,7 +293,8 @@ export default function EspanolSprintPro() {
   };
 
   const startStory = (storyId) => {
-     const story = STORIES_DATA.find(s => s.id === storyId);
+     // Si c'est l'histoire du jour, on utilise dailyStoryContent, sinon on cherche dans DATA
+     const story = dailyStoryContent?.id === storyId ? dailyStoryContent : STORIES_DATA.find(s => s.id === storyId);
      if (story) {
         setActiveStory(story);
         setView('story');
@@ -339,71 +415,81 @@ export default function EspanolSprintPro() {
               {view === 'quiz' && <QuizZone onExit={() => setView('dashboard')} userData={userData} lessonsContent={dynamicLessonsContent} />}
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
               {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
+              
+              {/* --- VUE READING / STORY DU JOUR --- */}
               {view === 'reading' && (
-                <div className="p-6 pb-24 space-y-8 max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-black text-slate-900 mb-6">Lectures & Histoires</h2>
-                    
-                    <div className="space-y-4">
-                        <h3 className="font-bold text-slate-500 uppercase text-sm flex items-center gap-2">
-                            <MessageCircle size={16}/> Histoires Interactives
-                        </h3>
-                        
-                        {/* --- DÉBUT DU FILTRAGE --- */}
-                        {(() => {
-                            // 1. Définir l'ordre des niveaux
-                            const levelsOrder = ["A1", "A2", "B1", "B2", "C1"];
-                            // 2. Trouver l'index du niveau de l'utilisateur (ex: A2 = 1)
-                            const userLevelIndex = levelsOrder.indexOf(userData?.level || "A1");
-
-                            return STORIES_DATA.map(story => {
-                                // 3. Trouver l'index du niveau de l'histoire
-                                const storyLevelIndex = levelsOrder.indexOf(story.level);
-                                // 4. Vérifier si c'est accessible (Niveau histoire <= Niveau utilisateur)
-                                const isLocked = storyLevelIndex > userLevelIndex;
-
-                                if (isLocked) return null; // On cache complètement les niveaux supérieurs
-                                // (Si vous préférez les afficher en grisé avec un cadenas, changez le code ci-dessous)
-
-                                return (
-                                    <div 
-                                        key={story.id} 
-                                        onClick={() => startStory(story.id)} 
-                                        className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md transition-all flex items-center gap-4 group"
-                                    >
-                                        <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">💬</div>
-                                        <div className="flex-1">
-                                            <h4 className="font-bold text-lg text-slate-900">{story.title}</h4>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span className={`text-xs font-bold px-2 py-0.5 rounded text-white ${
-                                                    story.level === 'A1' ? 'bg-green-400' : 
-                                                    story.level === 'A2' ? 'bg-teal-400' : 
-                                                    story.level === 'B1' ? 'bg-yellow-400' : 
-                                                    story.level === 'B2' ? 'bg-orange-400' : 'bg-red-400'
-                                                }`}>
-                                                    {story.level}
-                                                </span>
-                                                <span className="text-xs text-slate-400">Jour {story.day || '?'}</span>
-                                            </div>
-                                        </div>
-                                        <ChevronRight className="ml-auto text-slate-300" />
-                                    </div>
-                                );
-                            });
-                        })()}
-                        {/* --- FIN DU FILTRAGE --- */}
-                        
-                        {/* Message si tout est fini ou pour encourager */}
-                        <div className="text-center p-4 bg-slate-100 rounded-xl border border-slate-200 text-slate-500 text-sm italic">
-                            Termine le niveau <strong>{userData?.level}</strong> pour débloquer la suite ! 🚀
-                        </div>
+                <div className="p-6 pb-24 space-y-8 max-w-2xl mx-auto min-h-screen flex flex-col">
+                    <div className="text-center space-y-2">
+                        <span className="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Story Mode</span>
+                        <h2 className="text-3xl font-black text-slate-900">L'Histoire du Jour 📖</h2>
+                        <p className="text-slate-500">Une nouvelle aventure toutes les 24h.</p>
                     </div>
 
-                    <div className="space-y-4">
-                        <h3 className="font-bold text-slate-500 uppercase text-sm">Lecture du jour</h3>
+                    <div className="flex-1 flex flex-col items-center justify-center">
+                        {dailyStoryContent ? (
+                            <div 
+                                onClick={() => startStory(dailyStoryContent.id)}
+                                className="w-full bg-white p-8 rounded-[2rem] shadow-xl border-4 border-slate-100 cursor-pointer group hover:border-pink-200 hover:shadow-2xl transition-all duration-300 relative overflow-hidden"
+                            >
+                                {/* Badge Niveau */}
+                                <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 font-bold px-4 py-2 rounded-bl-2xl z-10">
+                                    Niveau {dailyStoryContent.level}
+                                </div>
+
+                                <div className="flex flex-col items-center text-center space-y-6 relative z-10">
+                                    {/* Avatar animé */}
+                                    <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center text-5xl group-hover:scale-110 transition-transform duration-500 shadow-inner border-4 border-white">
+                                        💬
+                                    </div>
+                                    
+                                    <div>
+                                        <h3 className="text-2xl font-black text-slate-800 mb-2 group-hover:text-pink-600 transition-colors">
+                                            {dailyStoryContent.title}
+                                        </h3>
+                                        <p className="text-slate-400 font-medium flex items-center justify-center gap-2">
+                                            <Calendar size={16}/> Jour {dailyStoryContent.day}
+                                        </p>
+                                    </div>
+
+                                    <div className="w-full bg-slate-50 rounded-xl p-4 flex items-center justify-between text-sm font-bold text-slate-500">
+                                        <span className="flex items-center gap-2">
+                                            <User size={16}/> 2 Persos
+                                        </span>
+                                        <span className="flex items-center gap-2">
+                                            <PlayCircle size={16} className="text-pink-500"/> Audio IA
+                                        </span>
+                                    </div>
+
+                                    <button className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg shadow-lg group-hover:bg-pink-600 transition-colors flex items-center justify-center gap-2">
+                                        Lire maintenant <ChevronRight size={20}/>
+                                    </button>
+                                </div>
+                                
+                                {/* Décoration de fond */}
+                                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-pink-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center space-y-4 py-12">
+                                <Loader2 className="animate-spin text-pink-400" size={48} />
+                                <p className="text-slate-400 font-bold">Recherche de la meilleure histoire...</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="space-y-4 pt-4 border-t border-slate-200">
+                        <h3 className="font-bold text-slate-500 uppercase text-sm">Lecture du jour (Texte)</h3>
                         <DailyReadingContent userLevel={userData?.level} />
+                    </div>
+
+                    <div className="pt-4">
+                        <button disabled className="w-full py-4 text-slate-400 font-bold bg-slate-50 rounded-xl flex items-center justify-center gap-2 opacity-60 cursor-not-allowed">
+                            <Library size={20} />
+                            Bibliothèque (Bientôt disponible)
+                        </button>
                     </div>
                 </div>
               )}
+
               {view === 'story' && activeStory && <StoryEngine story={activeStory} onComplete={() => setView('reading')} />}
               {view === 'leaderboard' && <LeaderboardView userData={userData} />}
               {view === 'profile' && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} onUpload={uploadFullContentToCloud} />}
@@ -431,10 +517,7 @@ const StoryEngine = ({ story, onComplete }) => {
     const [index, setIndex] = useState(0);
     const [visibleMessages, setVisibleMessages] = useState([story.dialogue[0]]);
     const messagesEndRef = useRef(null);
-    
-    // --- CORRECTIF : Variable pour empêcher le double démarrage ---
     const hasPlayedStart = useRef(false);
-
     const currentItem = story.dialogue[index];
     const isFinished = index >= story.dialogue.length - 1;
 
@@ -462,17 +545,13 @@ const StoryEngine = ({ story, onComplete }) => {
 
     useEffect(() => { 
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
-        
-        // --- CORRECTIF : On vérifie si on a DÉJÀ parlé ---
-        // On ne lance l'audio que si c'est le début (index 0) ET que 'hasPlayedStart' est faux
-        if(index === 0 && story.dialogue[0].type === 'bubble' && !hasPlayedStart.current) {
-            hasPlayedStart.current = true; // On verrouille immédiatement : "C'est bon, j'ai parlé !"
-            
+        if(index===0 && story.dialogue[0].type === 'bubble' && !hasPlayedStart.current) {
+            hasPlayedStart.current = true;
             const speakerKey = story.dialogue[0].speaker;
             const character = story.characters[speakerKey];
             speak(story.dialogue[0].text_es, character?.voiceId);
         }
-    }, [visibleMessages]); // On garde la dépendance, mais la condition if() nous protège
+    }, [visibleMessages]);
 
     return (
         <div className="h-full flex flex-col bg-slate-50">
@@ -485,7 +564,7 @@ const StoryEngine = ({ story, onComplete }) => {
                 {visibleMessages.map((msg, i) => {
                     if (msg.type === 'bubble') {
                         const char = story.characters[msg.speaker];
-                        const isMe = msg.speaker === 'pablo'; 
+                        const isMe = msg.speaker === 'pablo' || msg.speaker.includes('2'); // Fallback simple pour identifier "moi"
                         return (
                             <div key={i} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : ''} animate-in slide-in-from-bottom-2`}>
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm ${char.color}`}>{char.avatar}</div>
@@ -592,10 +671,7 @@ const ListeningCard = ({ data, onNext, onScore }) => {
         if(onScore) onScore(correct); 
         
         if (correct) { 
-            // SILENCE (retrait de "¡Correcto!")
             setTimeout(onNext, 1500); 
-        } else { 
-            // SILENCE (retrait de "Incorrecto")
         } 
     };
     return (
@@ -622,7 +698,7 @@ const LessonEngine = ({ content, onComplete, onExit, isExam }) => {
   const next = () => { 
       if (idx + 1 >= content.length) { 
           setProg(100); 
-          setTimeout(() => onComplete(150, [], 0, score), 500); // Passer le score
+          setTimeout(() => onComplete(150, [], 0, score), 500); 
       } else { 
           setProg(((idx + 1) / content.length) * 100); 
           setIdx(i => i + 1); 
@@ -675,10 +751,8 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
       if(onScore) onScore(ok); 
       
       if (ok) { 
-          // SILENCE
           setTimeout(onNext, 1500); 
       } else { 
-          // SILENCE (Pour l'entraînement on peut laisser le speak("Inténtalo") si on veut, mais ici on uniformise le silence)
           if(isExam) {
              setTimeout(onNext, 2500);
           }
