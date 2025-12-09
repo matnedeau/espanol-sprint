@@ -6,8 +6,8 @@
 import { 
   INITIAL_LESSONS_LIST, 
   INITIAL_LESSONS_CONTENT, 
-  SENTENCE_STRUCTURES, 
   STORIES_DATA, 
+  SENTENCE_STRUCTURES,
   generateExamContent,
   getDailyReading 
 } from './data/content';
@@ -15,7 +15,7 @@ import {
 import Image from "next/image";
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Flame, ChevronRight, X, Check, Trophy, User, Book, Zap, Edit3, BookOpen, LogOut, Save, GraduationCap, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Mail, Bell, Settings, Loader2, CloudUpload, Volume2, Download, Printer, PenTool, Hammer, ArrowRight, RotateCcw, Table, Map, CheckCircle, Star, BrainCircuit, Target, MessageCircle, Ear, Bot
+  Flame, ChevronRight, X, Check, Trophy, User, BookOpen, LogOut, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Loader2, CloudUpload, Volume2, Download, Hammer, ArrowRight, RotateCcw, Table, CheckCircle, BrainCircuit, Target, MessageCircle, Ear, Bot
 } from 'lucide-react';
 
 import { initializeApp } from "firebase/app";
@@ -38,56 +38,29 @@ const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
 // --- SYSTÈME AUDIO PREMIUM (ElevenLabs + Fallback) ---
-
-// 1. Variable GLOBALE (très important qu'elle soit ici, en dehors de la fonction)
+// Variable GLOBALE pour gérer le son unique
 let currentAudio = null;
 
-const speak = async (text) => {
+const speak = async (text, voiceId = null) => {
   if (!text) return;
 
-  // 2. LE GRAND SILENCE (On coupe tout avant de commencer)
-  
-  // A. On fait taire le robot du navigateur
+  // 1. SILENCE : On coupe tout le monde (Robot + MP3 précédent)
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
-
-  // B. On fait taire la voix ElevenLabs précédente (C'est ça qui manquait !)
   if (currentAudio) {
-    currentAudio.pause();       // Stop
-    currentAudio.currentTime = 0; // Rembobine
-    currentAudio = null;        // Oublie
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
   }
 
-  // 3. TENTATIVE API ELEVENLABS
-  try {
-    const response = await fetch('/api/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-    });
-
-    if (response.ok) {
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      
-      // C. On enregistre ce nouvel audio comme étant "celui qui parle"
-      currentAudio = audio;
-      
-      audio.play();
-      return; // Succès, on s'arrête là
-    }
-  } catch (error) {
-    console.warn("API TTS échouée, passage au mode hors-ligne.");
-  }
-
-  // 4. FALLBACK : Voix du navigateur (si l'API a échoué)
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+  // Fonction locale pour lancer le Robot (Fallback)
+  const playRobotVoice = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
     
-    // Recherche de la meilleure voix possible
     const esVoice = voices.find(v => 
       (v.name.includes('Google') || v.name.includes('Microsoft')) && 
       (v.lang.includes('es-ES') || v.lang.includes('es'))
@@ -98,12 +71,53 @@ const speak = async (text) => {
     utterance.rate = 0.9;
     
     window.speechSynthesis.speak(utterance);
+  };
+
+  // 2. TENTATIVE VOIX PREMIUM (ElevenLabs) AVEC TIMEOUT
+  try {
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Timeout")), 3000)
+    );
+
+    const apiPromise = fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, voiceId }), // On passe l'ID ici
+    });
+
+    const response = await Promise.race([apiPromise, timeoutPromise]);
+
+    if (response.ok) {
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      
+      currentAudio = audio;
+      
+      audio.onerror = () => {
+        console.warn("Erreur lecture audio, fallback robot.");
+        playRobotVoice();
+      };
+      
+      audio.play();
+      return; // SUCCÈS
+    } else {
+      console.warn("Erreur API (Quota ou Clé), fallback robot.");
+    }
+  } catch (error) {
+    console.warn("Erreur ou Timeout API, fallback robot.", error);
+  }
+
+  // 3. FALLBACK
+  if (window.speechSynthesis.getVoices().length === 0) {
+    window.speechSynthesis.onvoiceschanged = playRobotVoice;
+  } else {
+    playRobotVoice();
   }
 };
 
 // --- SIMULATION TUTEUR IA ---
 const askAITutor = async (question) => {
-    // Simulation délai réseau
     await new Promise(r => setTimeout(r, 1500));
     return "💡 Coach IA : En espagnol, le sujet est souvent omis car la terminaison du verbe indique déjà la personne. C'est plus naturel !";
 };
@@ -158,6 +172,20 @@ export default function EspanolSprintPro() {
     return () => unsubscribe();
   }, []);
 
+  const uploadFullContentToCloud = async () => {
+    if (!confirm("ADMIN : Initialiser les 100 leçons structurées ?")) return;
+    try {
+      await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST });
+      let count = 0;
+      for (const [id, content] of Object.entries(INITIAL_LESSONS_CONTENT)) {
+        await setDoc(doc(db, "lessons", id), { content: content });
+        count++;
+      }
+      alert(`✅ ${count} Leçons intelligentes mises à jour !`);
+      window.location.reload(); 
+    } catch (e) { alert("Erreur: " + e.message); }
+  };
+
   const handleAuth = async (email, password, isSignUp) => {
     setLoading(true); setAuthError("");
     const cleanEmail = email.trim();
@@ -197,15 +225,57 @@ export default function EspanolSprintPro() {
      }
   };
 
-  const handleLessonComplete = async (xp, lessonContent, lessonId) => {
-      // Logique simplifiée pour l'intégration
+  const startTest = (mode) => {
+    if (mode === 'levelup') {
+      const levels = ["A1", "A2", "B1", "B2", "C1"];
+      const currentLevelIdx = levels.indexOf(userData.level || "A1");
+      const levelName = levels[currentLevelIdx];
+      const startId = (currentLevelIdx * 20) + 1;
+      const endId = (currentLevelIdx + 1) * 20;
+      const examContent = generateExamContent(dynamicLessonsContent, startId, endId, levelName, 9999);
+      setDynamicLessonsContent(prev => ({ ...prev, 'exam': examContent }));
+      setTestMode('levelup');
+      setActiveLessonId('exam'); 
+      setView('lesson');
+    } else {
+      setView('quiz'); 
+    }
+  };
+
+  const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0) => {
+      // MODE EXAMEN
+      if (testMode === 'levelup') {
+          const passed = finalScore >= 16;
+          if (passed) {
+              const levels = ["A1", "A2", "B1", "B2", "C1"];
+              const currentIdx = levels.indexOf(userData.level);
+              const nextLevel = levels[currentIdx + 1] || "C1";
+              if (currentUser) {
+                  const userRef = doc(db, "users", currentUser.uid);
+                  await updateDoc(userRef, { xp: increment(500), level: nextLevel });
+                  setUserData(prev => ({ ...prev, level: nextLevel, xp: prev.xp + 500 }));
+              }
+          } 
+          setTestMode(null);
+          setView('complete');
+          return;
+      }
+
+      // MODE STANDARD
       const newItems = lessonContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
-      const enrichedItems = newItems.map(item => ({ ...item, grade: 0, interval: 1, lastReview: new Date().toISOString() }));
+      // Ajout des propriétés SRS
+      const newItemsWithSRS = newItems.map(item => ({ 
+        ...item, 
+        grade: 0, 
+        interval: 1, 
+        lastReview: new Date().toISOString() 
+      }));
+
       const today = new Date().toDateString();
       
       if (currentUser) {
         const userRef = doc(db, "users", currentUser.uid);
-        const uniqueNewItems = enrichedItems.filter(item => !userData.vocab.some(v => v.id === item.id));
+        const uniqueNewItems = newItemsWithSRS.filter(item => !userData.vocab.some(v => v.id === item.id));
         const isNew = !userData.completedLessons.includes(lessonId);
         const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
         
@@ -234,16 +304,8 @@ export default function EspanolSprintPro() {
     if(!content) return;
     let html2pdf;
     try { html2pdf = (await import('html2pdf.js')).default; } catch (e) { alert("Erreur PDF"); return; }
-    
-    // Génération PDF simplifiée pour tenir dans le fichier
     const element = document.createElement('div');
-    element.innerHTML = `
-        <div style="font-family:sans-serif; padding:20px;">
-            <h1 style="color:#4f46e5;">Leçon #${lessonId}</h1>
-            <p>Vocabulaire et Grammaire de EspañolSprint</p>
-            ${content.map(c => c.es ? `<p><b>${c.es}</b> = ${c.en}</p>` : '').join('')}
-        </div>
-    `;
+    element.innerHTML = `<div style="font-family:sans-serif; padding:20px;"><h1 style="color:#4f46e5;">Leçon #${lessonId}</h1>${content.map(c => c.es ? `<p><b>${c.es}</b> = ${c.en}</p>` : '').join('')}</div>`;
     html2pdf().from(element).save(`Lecon-${lessonId}.pdf`);
   };
 
@@ -251,6 +313,16 @@ export default function EspanolSprintPro() {
 
   return (
     <div className="h-[100dvh] w-full bg-slate-50 font-sans text-slate-800 flex flex-col md:flex-row overflow-hidden">
+      {showLimitModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center space-y-6">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500"><AlertCircle size={40} /></div>
+            <div><h3 className="text-2xl font-black text-slate-900">Repos ! 🧠</h3><p className="text-slate-500 mt-2">4 nouvelles leçons max.</p></div>
+            <button onClick={() => setShowLimitModal(false)} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">Compris</button>
+          </div>
+        </div>
+      )}
+
       {(!currentUser || view === 'landing' || view === 'auth') ? (
         <div className="w-full h-full flex items-center justify-center bg-white">
            {view === 'landing' && <LandingPage onStart={() => setView('auth')} />}
@@ -258,13 +330,15 @@ export default function EspanolSprintPro() {
         </div>
       ) : (
         <>
-          <SidebarDesktop userData={userData} currentView={view} onChangeView={setView} onLogout={handleLogout} />
+          <SidebarDesktop userData={userData} currentView={view} onChangeView={setView} onLogout={handleLogout} onUpload={uploadFullContentToCloud}/>
           <main className="flex-1 h-full overflow-hidden relative flex flex-col">
             <MobileHeader userData={userData} />
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
               {view === 'dashboard' && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} onDownloadPDF={handlePrintPDF}/>}
               {view === 'notebook' && <NotebookContent userVocab={userData.vocab} />}
               {view === 'quiz' && <QuizZone onExit={() => setView('dashboard')} userData={userData} lessonsContent={dynamicLessonsContent} />}
+              {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
+              {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
               {view === 'reading' && (
                 <div className="p-6 pb-24 space-y-8 max-w-2xl mx-auto">
                     <h2 className="text-3xl font-black text-slate-900 mb-6">Lectures & Histoires</h2>
@@ -286,15 +360,16 @@ export default function EspanolSprintPro() {
               )}
               {view === 'story' && activeStory && <StoryEngine story={activeStory} onComplete={() => setView('reading')} />}
               {view === 'leaderboard' && <LeaderboardView userData={userData} />}
-              {view === 'profile' && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} />}
+              {view === 'profile' && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} onUpload={uploadFullContentToCloud} />}
               {view === 'lesson' && dynamicLessonsContent[activeLessonId] && (
                 <LessonEngine 
                     content={dynamicLessonsContent[activeLessonId]} 
                     onComplete={(xp, score) => handleLessonComplete(xp, dynamicLessonsContent[activeLessonId], activeLessonId, score)} 
                     onExit={() => setView('dashboard')} 
+                    isExam={testMode === 'levelup'}
                 />
               )}
-              {view === 'complete' && <LessonComplete xp={150} onHome={() => setView('dashboard')} onDownload={() => handlePrintPDF(activeLessonId)} />}
+              {view === 'complete' && <LessonComplete xp={150} onHome={() => setView('dashboard')} onDownload={() => handlePrintPDF(activeLessonId)} isTest={!!testMode} />}
             </div>
             {view !== 'lesson' && view !== 'complete' && view !== 'story' && <MobileBottomNav currentView={view} onChangeView={setView} />}
           </main>
@@ -305,6 +380,7 @@ export default function EspanolSprintPro() {
 }
 
 /* --- SOUS-COMPOSANTS --- */
+
 const StoryEngine = ({ story, onComplete }) => {
     const [index, setIndex] = useState(0);
     const [visibleMessages, setVisibleMessages] = useState([story.dialogue[0]]);
@@ -317,21 +393,35 @@ const StoryEngine = ({ story, onComplete }) => {
         const nextIndex = index + 1;
         setIndex(nextIndex);
         setVisibleMessages(prev => [...prev, story.dialogue[nextIndex]]);
-        if (story.dialogue[nextIndex].type === 'bubble') speak(story.dialogue[nextIndex].text_es);
+        
+        if (story.dialogue[nextIndex].type === 'bubble') {
+            const speakerKey = story.dialogue[nextIndex].speaker;
+            const character = story.characters[speakerKey];
+            // On passe l'ID de voix du personnage !
+            speak(story.dialogue[nextIndex].text_es, character?.voiceId);
+        }
     };
 
     const handleAnswer = (option) => {
         if (option === currentItem.answer) { 
-            // On a enlevé le speak("¡Correcto!");
+            // SILENCE : On ne dit plus "Correcto"
             handleNext(); 
         } 
         else { 
-            // On a enlevé le speak("Incorrecto");
+            // SILENCE : On ne dit plus "Incorrecto"
             alert("Mauvaise réponse !"); 
         }
     };
 
-    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); if(index===0) speak(story.dialogue[0].text_es); }, [visibleMessages]);
+    useEffect(() => { 
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
+        // Speak du premier message au chargement
+        if(index===0 && story.dialogue[0].type === 'bubble') {
+            const speakerKey = story.dialogue[0].speaker;
+            const character = story.characters[speakerKey];
+            speak(story.dialogue[0].text_es, character?.voiceId);
+        }
+    }, [visibleMessages]);
 
     return (
         <div className="h-full flex flex-col bg-slate-50">
@@ -451,13 +541,13 @@ const ListeningCard = ({ data, onNext, onScore }) => {
         if(onScore) onScore(correct); 
         
         if (correct) { 
-            // Silence (retrait de "¡Correcto!")
+            // SILENCE (retrait de "¡Correcto!")
             setTimeout(onNext, 1500); 
         } else { 
-            // Silence (retrait de "Incorrecto")
+            // SILENCE (retrait de "Incorrecto")
         } 
     };
-        return (
+    return (
         <div className="bg-white p-8 rounded-3xl shadow-xl flex flex-col items-center gap-6 w-full animate-in zoom-in">
              <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-xs font-bold uppercase">Écoute</span>
              <button onClick={() => speak(data.audioText)} className="w-24 h-24 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 active:scale-95 transition-all animate-pulse"><Ear size={40} /></button>
@@ -467,176 +557,214 @@ const ListeningCard = ({ data, onNext, onScore }) => {
     );
 };
 
-// --- COMPOSANTS EXISTANTS (Style conservé) ---
 const LeaderboardView = ({ userData }) => {
     const rivals = [{ name: "Maria L.", xp: 1450, avatar: "👩" }, { name: "Thomas B.", xp: 1200, avatar: "👨" }, { name: userData?.name + " (Toi)", xp: userData?.xp || 0, avatar: "😎", isMe: true }, { name: "Juan P.", xp: 850, avatar: "🧔" }].sort((a, b) => b.xp - a.xp);
     return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-6"><div className="text-center space-y-2 mb-8"><div className="inline-block p-4 bg-yellow-100 rounded-full text-yellow-600 mb-2"><Trophy size={40} /></div><h2 className="text-3xl font-black text-slate-900">Ligue Diamant</h2><p className="text-slate-500 font-medium">Fin dans 2j 4h</p></div><div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">{rivals.map((user, idx) => (<div key={idx} className={`flex items-center gap-4 p-4 border-b border-slate-50 ${user.isMe ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''}`}><div className="font-black text-slate-300 w-6">{idx + 1}</div><div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-xl">{user.avatar}</div><div className="flex-1 font-bold text-slate-800">{user.name}</div><div className="font-black text-slate-900">{user.xp} XP</div></div>))}</div></div>);
 };
-const LessonEngine = ({ content, onComplete, onExit }) => { 
-  const [idx, setIdx] = useState(0); const [prog, setProg] = useState(0); const card = content[idx]; 
-  const next = () => { if (idx + 1 >= content.length) { setProg(100); setTimeout(() => onComplete(150), 500); } else { setProg(((idx + 1) / content.length) * 100); setIdx(i => i + 1); } };
+
+const LessonEngine = ({ content, onComplete, onExit, isExam }) => { 
+  const [idx, setIdx] = useState(0); 
+  const [prog, setProg] = useState(0); 
+  const [score, setScore] = useState(0);
+  const card = content[idx]; 
+
+  const next = () => { 
+      if (idx + 1 >= content.length) { 
+          setProg(100); 
+          setTimeout(() => onComplete(150, [], 0, score), 500); // Passer le score
+      } else { 
+          setProg(((idx + 1) / content.length) * 100); 
+          setIdx(i => i + 1); 
+      } 
+  };
+  
+  const handleScore = (correct) => { if(correct) setScore(s => s + 1); };
+
   useEffect(() => { if (idx === 0 && card?.es) speak(card.es); }, [idx]);
-  return (<div className="h-full w-full flex flex-col bg-slate-50"><div className="px-6 py-4 flex items-center gap-6 bg-white border-b z-10"><button onClick={onExit}><X className="text-slate-400" /></button><div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-teal-500 transition-all duration-500" style={{ width: `${prog}%` }}></div></div></div><div className="flex-1 flex items-center justify-center p-4 overflow-hidden"><div className="w-full max-w-md aspect-[3/4] md:aspect-auto md:h-[600px] perspective-1000">{card.type === 'swipe' && <SwipeCard data={card} onNext={next} />}{card.type === 'input' && <InputCard data={card} onNext={next} isExam={false} />}{card.type === 'grammar' && <GrammarCard data={card} onNext={next} />}{card.type === 'structure' && <StructureCard data={card} onNext={next} />}</div></div></div>); 
-};
-// --- AJOUTER CE BLOC À LA FIN DE app/page.tsx ---
-
-const NotebookContent = ({ userVocab }) => {
-  const [activeTab, setActiveTab] = useState('vocab');
-  // Sécurité : on s'assure que userVocab est bien un tableau
-  const safeVocab = Array.isArray(userVocab) ? userVocab : [];
-
-  const vocabItems = safeVocab.filter(item => item.type === 'swipe');
-  const grammarItems = safeVocab.filter(item => item.type === 'grammar');
-  const structureItems = safeVocab.filter(item => item.type === 'structure');
-
+  
   return (
-    <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24 space-y-6">
-      <h2 className="text-3xl font-black text-slate-900">Mon Lexique 📚</h2>
-      
-      {/* Onglets */}
-      <div className="flex space-x-2 bg-slate-100 p-1 rounded-xl">
-        {['vocab', 'grammar', 'structure'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${
-              activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            {tab === 'vocab' && 'Vocabulaire'}
-            {tab === 'grammar' && 'Grammaire'}
-            {tab === 'structure' && 'Structures'}
-          </button>
-        ))}
-      </div>
-
-      {/* Contenu Vocabulaire */}
-      {activeTab === 'vocab' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {vocabItems.length > 0 ? vocabItems.map((item, idx) => (
-            <div key={idx} className="bg-white p-4 rounded-xl border border-slate-100 flex justify-between items-center">
-              <div>
-                <p className="font-bold text-slate-800">{item.es}</p>
-                <p className="text-xs text-slate-400 italic">{item.context}</p>
-              </div>
-              <p className="text-indigo-600 font-medium">{item.en}</p>
+    <div className="h-full w-full flex flex-col bg-slate-50">
+        <div className="px-6 py-4 flex items-center gap-6 bg-white border-b z-10">
+            <button onClick={onExit}><X className="text-slate-400" /></button>
+            <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-full bg-teal-500 transition-all duration-500" style={{ width: `${prog}%` }}></div>
             </div>
-          )) : <p className="text-slate-400 text-center col-span-2 py-10">Rien ici pour l'instant.</p>}
+            {isExam && <div className="font-black text-indigo-600">{score} / 20</div>}
         </div>
-      )}
-
-      {/* Contenu Grammaire */}
-      {activeTab === 'grammar' && (
-        <div className="space-y-4">
-          {grammarItems.length > 0 ? grammarItems.map((item, idx) => (
-            <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-              <h4 className="font-bold text-lg text-indigo-600 mb-2">{item.title}</h4>
-              <p className="text-slate-600 mb-4 text-sm">{item.description}</p>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                {item.conjugation && item.conjugation.map((row, rIdx) => (
-                  <div key={rIdx} className="flex justify-between bg-slate-50 p-2 rounded">
-                    <span className="text-slate-400">{row.pronoun}</span>
-                    <span className="font-bold text-slate-800">{row.verb}</span>
-                  </div>
-                ))}
-              </div>
+        <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+            <div className="w-full max-w-md aspect-[3/4] md:aspect-auto md:h-[600px] perspective-1000">
+                {card.type === 'swipe' && <SwipeCard data={card} onNext={next} />}
+                {card.type === 'input' && <InputCard data={card} onNext={next} isExam={isExam} onScore={handleScore} />}
+                {card.type === 'grammar' && <GrammarCard data={card} onNext={next} />}
+                {card.type === 'structure' && <StructureCard data={card} onNext={next} />}
             </div>
-          )) : <p className="text-slate-400 text-center py-10">Aucune règle de grammaire sauvée.</p>}
         </div>
-      )}
-
-      {/* Contenu Structures (Nouveau Design) */}
-      {activeTab === 'structure' && (
-        <div className="grid gap-6">
-           {structureItems.length > 0 ? structureItems.map((item, idx) => (
-             <div key={idx} className="group relative bg-white overflow-hidden rounded-3xl border-2 border-slate-100 hover:border-indigo-100 transition-all shadow-sm hover:shadow-md">
-               {/* Décoration d'arrière-plan */}
-               <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-[4rem] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-               
-               <div className="relative p-6">
-                 {/* En-tête */}
-                 <div className="flex items-center gap-4 mb-6">
-                   <div className="w-12 h-12 bg-white border-2 border-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">
-                     <Hammer size={24} />
-                   </div>
-                   <div>
-                     <h4 className="font-black text-xl text-slate-800 leading-tight">{item.title}</h4>
-                     <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Grammaire</span>
-                   </div>
-                 </div>
-
-                 {/* La Formule (Mise en avant) */}
-                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 flex flex-col items-center text-center relative overflow-hidden">
-                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-10"></div>
-                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 z-10">Construction</span>
-                   <code className="font-mono text-lg md:text-xl font-bold text-indigo-600 bg-white px-4 py-2 rounded-xl border-b-4 border-indigo-100 shadow-sm z-10">
-                     {item.formula}
-                   </code>
-                 </div>
-
-                 {/* L'Exemple et la Note */}
-                 <div className="space-y-3">
-                   <div className="flex gap-4 items-start pl-2">
-                     <div className="w-1 h-12 bg-green-400 rounded-full shrink-0 mt-1"></div>
-                     <div>
-                       <p className="text-xs font-bold text-slate-400 uppercase mb-1">Exemple</p>
-                       <p className="text-lg font-medium text-slate-700 italic">"{item.example}"</p>
-                     </div>
-                   </div>
-                   
-                   {/* Affichage de la note/astuce si elle existe */}
-                   {item.note && (
-                     <div className="mt-4 bg-yellow-50 p-3 rounded-xl border border-yellow-100 flex gap-3 items-start">
-                        <span className="text-lg">💡</span>
-                        <p className="text-sm text-yellow-800 font-medium leading-relaxed">{item.note}</p>
-                     </div>
-                   )}
-                 </div>
-               </div>
-             </div>
-           )) : (
-             <div className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center">
-                <div className="p-4 bg-white rounded-full shadow-sm mb-4">
-                    <Hammer className="h-8 w-8 text-slate-300" />
-                </div>
-                <p className="text-slate-900 font-bold text-lg">Aucune structure découverte</p>
-                <p className="text-slate-500 text-sm mt-1 max-w-xs mx-auto">Avance dans les leçons pour débloquer tes premières fiches de construction de phrases !</p>
-             </div>
-           )}
-        </div>
-      )}
     </div>
-  );
+  ); 
 };
+
 const InputCard = ({ data, onNext, isExam, onScore }) => { 
-  const [val, setVal] = useState(''); const [status, setStatus] = useState('idle'); const [sub, setSub] = useState(false); const inputRef = useRef(null);
+  const [val, setVal] = useState(''); 
+  const [status, setStatus] = useState('idle'); 
+  const [sub, setSub] = useState(false); 
+  const inputRef = useRef(null);
+
   const addChar = (c) => { if (sub) return; setVal(p => p + c); inputRef.current?.focus(); };
+  
   const check = (e) => { 
       e?.preventDefault(); 
       if (sub) return; 
       
       const clean = val.trim().toLowerCase(); 
       const ans = Array.isArray(data.answer) ? data.answer : [data.answer]; 
-      // Note : J'ai gardé votre logique de validation stricte/souple actuelle
       const ok = ans.some(a => a.trim().toLowerCase() === clean); 
       
       setStatus(ok ? 'success' : 'error'); 
+      setSub(true);
       if(onScore) onScore(ok); 
       
       if (ok) { 
-          // Silence ici (on a retiré le "¡Muy bien!")
+          // SILENCE
           setTimeout(onNext, 1500); 
       } else { 
-          // Silence ici aussi
+          // SILENCE (Pour l'entraînement on peut laisser le speak("Inténtalo") si on veut, mais ici on uniformise le silence)
+          if(isExam) {
+             setTimeout(onNext, 2500);
+          }
       } 
   };
-    return (<div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-8 md:p-12 justify-center space-y-6 animate-in zoom-in"><div className="text-center space-y-2">{isExam && <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase">Examen</span>}<h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3></div><div className="flex gap-2 justify-center flex-wrap">{['á','é','í','ó','ú','ñ','¿','¡'].map(c => (<button key={c} type="button" onClick={() => addChar(c)} disabled={sub} className="w-10 h-10 bg-white border-2 border-slate-200 shadow-sm font-bold rounded-xl active:scale-95">{c}</button>))}</div><form onSubmit={check} className="w-full space-y-6"><input ref={inputRef} type="text" value={val} onChange={(e) => { if(!sub) { setVal(e.target.value); setStatus('idle'); } }} disabled={sub} className={`w-full text-center text-2xl font-bold p-6 rounded-2xl border-4 outline-none ${status === 'error' ? 'border-red-400 bg-red-50 text-red-500' : status === 'success' ? 'border-green-400 bg-green-50 text-green-600' : 'border-slate-100 focus:border-yellow-400'}`} placeholder="..." autoComplete="off"/><button type="submit" disabled={sub || !val.trim()} className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl active:scale-95 ${status === 'success' ? 'bg-green-500' : status === 'error' ? 'bg-red-500' : 'bg-slate-900'}`}>{status === 'success' ? 'Validé !' : status === 'error' ? 'Réessayer' : 'Vérifier'}</button></form>{status === 'error' && !isExam && <p className="text-center text-red-400 font-bold animate-shake">Indice : {data.hint}</p>}</div>); 
+
+  return (
+    <div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-8 md:p-12 justify-center space-y-6 animate-in zoom-in">
+        <div className="text-center space-y-2">
+            {isExam && <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase">Examen</span>}
+            <h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3>
+        </div>
+        <div className="flex gap-2 justify-center flex-wrap">
+            {['á','é','í','ó','ú','ñ','¿','¡'].map(c => (
+                <button key={c} type="button" onClick={() => addChar(c)} disabled={sub} className="w-10 h-10 bg-white border-2 border-slate-200 shadow-sm font-bold rounded-xl active:scale-95">{c}</button>
+            ))}
+        </div>
+        <form onSubmit={check} className="w-full space-y-6">
+            <input ref={inputRef} type="text" value={val} onChange={(e) => { if(!sub) { setVal(e.target.value); setStatus('idle'); } }} disabled={sub} className={`w-full text-center text-2xl font-bold p-6 rounded-2xl border-4 outline-none ${status === 'error' ? 'border-red-400 bg-red-50 text-red-500' : status === 'success' ? 'border-green-400 bg-green-50 text-green-600' : 'border-slate-100 focus:border-yellow-400'}`} placeholder="..." autoComplete="off"/>
+            <button type="submit" disabled={sub || !val.trim()} className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl active:scale-95 ${status === 'success' ? 'bg-green-500' : status === 'error' ? 'bg-red-500' : 'bg-slate-900'}`}>
+                {status === 'success' ? 'Validé !' : status === 'error' ? 'Suivant' : 'Vérifier'}
+            </button>
+        </form>
+        {status === 'error' && !isExam && <p className="text-center text-red-400 font-bold animate-shake">Indice : {data.hint}</p>}
+        {status === 'error' && isExam && <div className="text-center text-red-500 font-bold"><p>Réponse : {Array.isArray(data.answer) ? data.answer[0] : data.answer}</p></div>}
+    </div>
+  ); 
 };
-const SwipeCard = ({ data, onNext }) => { const [swiped, setSwiped] = useState(null); const swipe = (dir) => { setSwiped(dir); setTimeout(onNext, 250); }; useEffect(() => { const handler = (e) => { if(e.key==="ArrowRight") swipe('right'); if(e.key===" " || e.key==="Enter") { e.preventDefault(); speak(data.es); } }; window.addEventListener("keydown", handler); return () => window.removeEventListener("keydown", handler); }, [data]); return (<div className={`w-full h-full bg-white rounded-3xl shadow-xl border-b-8 border-slate-100 flex flex-col relative transition-all duration-300 ${swiped ? 'opacity-0 translate-x-full' : ''}`}><div className="absolute top-4 right-4"><button onClick={(e) => { e.stopPropagation(); speak(data.es); }} className="p-3 bg-slate-100 rounded-full text-indigo-600"><Volume2 size={24}/></button></div><div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6"><h2 className="text-5xl font-black text-slate-800">{data.es}</h2><div className="bg-indigo-50 px-6 py-3 rounded-2xl"><p className="text-xl font-bold text-indigo-600">{data.en}</p></div><p className="text-sm text-slate-400 italic">"{data.context}"</p></div><div className="p-6 flex justify-center"><button onClick={() => swipe('right')} className="w-full py-4 bg-teal-500 text-white rounded-xl font-bold text-xl shadow-lg">Compris !</button></div></div>); };
-const GrammarCard = ({ data, onNext }) => { const [rev, setRev] = useState(false); return (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"><div className="bg-indigo-600 p-8 text-white text-center relative"><button onClick={() => speak(data.title)} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full"><Volume2 size={20}/></button><h3 className="text-3xl font-black">{data.title}</h3><p className="text-indigo-200 mt-2">{data.description}</p></div><div className="flex-1 p-6 flex flex-col justify-between bg-slate-50">{rev ? (<div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">{data.conjugation.map((row, i) => (<div key={i} className="flex justify-between p-4 border-b last:border-0"><span className="text-slate-400 font-medium w-1/3">{row.pronoun}</span><span className="text-indigo-600 font-black text-xl w-1/3 text-center">{row.verb}</span><span className="text-slate-300 text-sm w-1/3 text-right italic">{row.fr}</span></div>))}</div>) : (<div className="flex-1 flex items-center justify-center"><p className="text-slate-400 italic">Clique pour révéler</p></div>)}<button onClick={rev ? onNext : () => setRev(true)} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg">{rev ? 'Continuer' : 'Voir Conjugaison'}</button></div></div>); };
-const StructureCard = ({ data, onNext }) => (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col border-b-[12px] border-slate-100"><div className="bg-amber-400 p-8 text-slate-900 text-center relative"><button onClick={() => speak(data.example)} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full"><Volume2 size={20}/></button><h3 className="text-2xl font-black uppercase tracking-wider">{data.title}</h3></div><div className="flex-1 p-8 flex flex-col justify-center items-center gap-6 bg-slate-50"><div className="bg-white p-6 rounded-xl border-2 border-slate-200 w-full text-center"><p className="font-mono text-indigo-600 font-bold text-lg mb-2">{data.formula}</p><p className="text-slate-500 text-sm">{data.note}</p></div><div className="text-center"><p className="text-2xl font-bold text-slate-800 mb-1">{data.example}</p><p className="text-sm text-slate-400 italic">Exemple</p></div><button onClick={onNext} className="w-full mt-auto bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-lg">C'est noté !</button></div></div>);
-const LessonComplete = ({ xp, onHome, onDownload }) => (<div className="h-full w-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in"><div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform"><Trophy size={100} className="text-yellow-500 fill-yellow-500" /></div><div><h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">Increíble!</h2><p className="text-xl text-yellow-900 font-bold opacity-80">Leçon terminée !</p></div><div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div><div className="flex flex-col gap-4 w-full max-w-sm"><button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2"><Download size={20} /> Télécharger PDF</button><button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl">Continuer</button></div></div>);
-const DailyReadingContent = ({ userLevel }) => { const reading = getDailyReading(userLevel); const [trans, setTrans] = useState(false); return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-8"><div className="text-center"><span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase">Lecture du jour</span><h2 className="text-3xl font-black text-slate-900 mt-2">{reading.title_es}</h2></div><div className="bg-white p-8 rounded-3xl shadow-lg border-b-4 border-slate-100 relative overflow-hidden group"><div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-xl">Español</div><button onClick={() => speak(reading.text_es)} className="absolute top-6 right-6 p-3 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors"><Volume2 size={20} /></button><p className="text-xl text-slate-800 leading-relaxed font-medium mt-4">{reading.text_es}</p></div><div className="flex justify-center"><button onClick={() => setTrans(!trans)} className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-bold transition-colors">{trans ? <><X size={16}/> Masquer</> : <><Check size={16}/> Traduction</>}</button></div>{trans && <div className="bg-slate-50 p-8 rounded-3xl border-2 border-dashed border-slate-200"><h4 className="text-lg font-bold text-slate-700 mb-2">{reading.title_fr}</h4><p className="text-slate-600 leading-relaxed">{reading.text_fr}</p></div>}</div>); };
+
+const SwipeCard = ({ data, onNext }) => { 
+    const [swiped, setSwiped] = useState(null); 
+    const swipe = (dir) => { setSwiped(dir); setTimeout(onNext, 250); }; 
+    useEffect(() => { 
+        const handler = (e) => { 
+            if(e.key==="ArrowRight") swipe('right'); 
+            if(e.key===" " || e.key==="Enter") { e.preventDefault(); speak(data.es); } 
+        }; 
+        window.addEventListener("keydown", handler); 
+        return () => window.removeEventListener("keydown", handler); 
+    }, [data]); 
+    return (
+        <div className={`w-full h-full bg-white rounded-3xl shadow-xl border-b-8 border-slate-100 flex flex-col relative transition-all duration-300 ${swiped ? 'opacity-0 translate-x-full' : ''}`}>
+            <div className="absolute top-4 right-4"><button onClick={(e) => { e.stopPropagation(); speak(data.es); }} className="p-3 bg-slate-100 rounded-full text-indigo-600"><Volume2 size={24}/></button></div>
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6">
+                <h2 className="text-5xl font-black text-slate-800">{data.es}</h2>
+                <div className="bg-indigo-50 px-6 py-3 rounded-2xl"><p className="text-xl font-bold text-indigo-600">{data.en}</p></div>
+                <p className="text-sm text-slate-400 italic">"{data.context}"</p>
+            </div>
+            <div className="p-6 flex justify-center"><button onClick={() => swipe('right')} className="w-full py-4 bg-teal-500 text-white rounded-xl font-bold text-xl shadow-lg">Compris !</button></div>
+        </div>
+    ); 
+};
+
+const GrammarCard = ({ data, onNext }) => { 
+    const [rev, setRev] = useState(false); 
+    return (
+        <div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="bg-indigo-600 p-8 text-white text-center relative">
+                <button onClick={() => speak(data.title)} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full"><Volume2 size={20}/></button>
+                <h3 className="text-3xl font-black">{data.title}</h3>
+                <p className="text-indigo-200 mt-2">{data.description}</p>
+            </div>
+            <div className="flex-1 p-6 flex flex-col justify-between bg-slate-50">
+                {rev ? (
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        {data.conjugation.map((row, i) => (
+                            <div key={i} className="flex justify-between p-4 border-b last:border-0">
+                                <span className="text-slate-400 font-medium w-1/3">{row.pronoun}</span>
+                                <span className="text-indigo-600 font-black text-xl w-1/3 text-center">{row.verb}</span>
+                                <span className="text-slate-300 text-sm w-1/3 text-right italic">{row.fr}</span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex-1 flex items-center justify-center"><p className="text-slate-400 italic">Clique pour révéler</p></div>
+                )}
+                <button onClick={rev ? onNext : () => setRev(true)} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg">{rev ? 'Continuer' : 'Voir Conjugaison'}</button>
+            </div>
+        </div>
+    ); 
+};
+
+const StructureCard = ({ data, onNext }) => (
+    <div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col border-b-[12px] border-slate-100">
+        <div className="bg-amber-400 p-8 text-slate-900 text-center relative">
+            <button onClick={() => speak(data.example)} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full"><Volume2 size={20}/></button>
+            <h3 className="text-2xl font-black uppercase tracking-wider">{data.title}</h3>
+        </div>
+        <div className="flex-1 p-8 flex flex-col justify-center items-center gap-6 bg-slate-50">
+            <div className="bg-white p-6 rounded-xl border-2 border-slate-200 w-full text-center">
+                <p className="font-mono text-indigo-600 font-bold text-lg mb-2">{data.formula}</p>
+                <p className="text-slate-500 text-sm">{data.note}</p>
+            </div>
+            <div className="text-center">
+                <p className="text-2xl font-bold text-slate-800 mb-1">{data.example}</p>
+                <p className="text-sm text-slate-400 italic">Exemple</p>
+            </div>
+            <button onClick={onNext} className="w-full mt-auto bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-lg">C'est noté !</button>
+        </div>
+    </div>
+);
+
+const LessonComplete = ({ xp, onHome, onDownload, isTest }) => (
+    <div className="h-full w-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in">
+        <div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform"><Trophy size={100} className="text-yellow-500 fill-yellow-500" /></div>
+        <div>
+            <h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">{isTest ? "Examen Réussi !" : "Increíble!"}</h2>
+            <p className="text-xl text-yellow-900 font-bold opacity-80">{isTest ? "Niveau Validé" : "Leçon terminée !"}</p>
+        </div>
+        <div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div>
+        <div className="flex flex-col gap-4 w-full max-w-sm">
+            <button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2"><Download size={20} /> Télécharger PDF</button>
+            <button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl">Continuer</button>
+        </div>
+    </div>
+);
+
+const DailyReadingContent = ({ userLevel }) => { 
+    const reading = getDailyReading(userLevel); 
+    const [trans, setTrans] = useState(false); 
+    return (
+        <div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-8">
+            <div className="text-center">
+                <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase">Lecture du jour</span>
+                <h2 className="text-3xl font-black text-slate-900 mt-2">{reading.title_es}</h2>
+            </div>
+            <div className="bg-white p-8 rounded-3xl shadow-lg border-b-4 border-slate-100 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-xl">Español</div>
+                <button onClick={() => speak(reading.text_es)} className="absolute top-6 right-6 p-3 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors"><Volume2 size={20} /></button>
+                <p className="text-xl text-slate-800 leading-relaxed font-medium mt-4">{reading.text_es}</p>
+            </div>
+            <div className="flex justify-center"><button onClick={() => setTrans(!trans)} className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-bold transition-colors">{trans ? <><X size={16}/> Masquer</> : <><Check size={16}/> Traduction</>}</button></div>
+            {trans && <div className="bg-slate-50 p-8 rounded-3xl border-2 border-dashed border-slate-200"><h4 className="text-lg font-bold text-slate-700 mb-2">{reading.title_fr}</h4><p className="text-slate-600 leading-relaxed">{reading.text_fr}</p></div>}
+        </div>
+    ); 
+};
+
 const LandingPage = ({ onStart }) => (<div className="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-400 relative overflow-hidden text-center"><div className="z-10 space-y-8 max-w-md"><div className="w-32 h-32 bg-white rounded-[2rem] shadow-2xl mx-auto flex items-center justify-center rotate-6 hover:rotate-12 transition-transform duration-500"><span className="text-6xl">🇪🇸</span></div><div><h1 className="text-5xl md:text-6xl font-black tracking-tighter text-slate-900 mb-4">Español<span className="text-red-600">Sprint</span></h1><p className="text-slate-800 font-medium text-xl md:text-2xl opacity-90">La méthode la plus rapide.</p></div><button onClick={onStart} className="w-full bg-slate-900 text-white py-5 px-8 rounded-2xl font-bold text-xl shadow-xl hover:scale-105 active:scale-95 transition-all">Commencer</button></div></div>);
 const AuthScreen = ({ onAuth, onGoogle, onBack, error }) => { const [isSignUp, setIsSignUp] = useState(false); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); return (<div className="w-full max-w-md p-8 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500"><button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold"><X size={20} /> Retour</button><div><h2 className="text-4xl font-black text-slate-900 mb-2">{isSignUp ? 'Créer un compte' : 'Bon retour !'}</h2><p className="text-slate-500">Sauvegarde ta progression ☁️</p></div>{error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold mb-4">{error}</div>}<div className="space-y-4"><button onClick={onGoogle} className="w-full bg-white border-2 border-slate-200 text-slate-800 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"><img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" /> Continuer avec Google</button><div className="flex items-center gap-4"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-sm font-bold">OU</span><div className="h-px bg-slate-200 flex-1"></div></div><input type="email" placeholder="Email" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={email} onChange={(e) => setEmail(e.target.value)} /><input type="password" placeholder="Mot de passe" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={password} onChange={(e) => setPassword(e.target.value)} /></div><button onClick={() => onAuth(email, password, isSignUp)} className="w-full bg-yellow-400 text-slate-900 py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all">{isSignUp ? "S'inscrire" : "Se connecter"}</button><div className="text-center"><button onClick={() => setIsSignUp(!isSignUp)} className="text-indigo-600 font-bold text-sm hover:underline">{isSignUp ? "J'ai déjà un compte" : "Je n'ai pas de compte"}</button></div></div>); };
 const SidebarLink = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${active ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}><Icon size={22} strokeWidth={active ? 2.5 : 2} /><span className="font-bold text-base">{label}</span></button>);
@@ -656,27 +784,14 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
         <h2 className="text-3xl font-black text-slate-900 mb-2">Ton Parcours</h2>
         <p className="text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p>
       </div>
-      
       <div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-6 snap-x snap-mandatory flex gap-6 md:gap-10 items-start">
         {levels.map((level, index) => { 
           const isLocked = index > currentLevelIndex; 
           const isCurrent = index === currentLevelIndex; 
           const isCompleted = index < currentLevelIndex; 
           const levelLessons = allLessons.filter(l => l.level === level); 
-          
           return (
-            <div 
-              key={level} 
-              className={`
-                snap-center shrink-0 
-                w-[85vw] md:w-[380px] 
-                h-[calc(100dvh-240px)] md:h-[calc(100vh-200px)] 
-                flex flex-col 
-                rounded-3xl border-4 
-                ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} 
-                p-5 md:p-6 relative overflow-hidden transition-all shadow-sm
-              `}
-            >
+            <div key={level} className={`snap-center shrink-0 w-[85vw] md:w-[380px] h-[calc(100dvh-240px)] md:h-[calc(100vh-200px)] flex flex-col rounded-3xl border-4 ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} p-5 md:p-6 relative overflow-hidden transition-all shadow-sm`}>
               <div className="flex justify-between items-center mb-5 shrink-0">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3>
@@ -685,49 +800,15 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
                 {isLocked && <Lock size={24} className="text-slate-400" />}
                 {isCompleted && <div className="bg-green-500 text-white p-1.5 rounded-full"><Check size={18} /></div>}
               </div>
-
               <div className="flex-1 overflow-y-auto space-y-3 pb-4 pr-2 custom-scrollbar">
                 {levelLessons.map((lesson) => { 
                   const isLessonDone = userData.completedLessons.includes(lesson.id); 
                   const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id); 
-                  
-                  if (isCompleted) { 
-                    return (
-                      <div key={lesson.id} className="w-full flex gap-2 group">
-                         <button onClick={() => onStartLesson(lesson.id)} className="flex-1 p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-3 hover:bg-green-200 transition-colors">
-                            <CheckCircle size={18} className="shrink-0" />
-                            <span className="text-sm font-bold truncate flex-1 text-left">{lesson.title}</span>
-                            <span className="text-[10px] uppercase font-bold opacity-60 group-hover:opacity-100 hidden sm:inline">Réviser</span>
-                         </button>
-                         <button onClick={() => onDownloadPDF(lesson.id)} className="p-4 rounded-2xl bg-white border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all" title="Télécharger PDF">
-                            <Download size={20} />
-                         </button>
-                      </div>
-                    ); 
-                  } 
-                  
-                  return (
-                    <button key={lesson.id} disabled={!isAccessible} onClick={() => onStartLesson(lesson.id)} className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${isLessonDone ? 'bg-green-500 text-white shadow-md' : isAccessible ? 'bg-yellow-400 text-slate-900 shadow-lg scale-[1.02] font-bold ring-4 ring-yellow-100' : 'bg-slate-200 text-slate-400'}`}>
-                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">
-                        {isLessonDone ? <Check size={16} /> : lesson.id}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate">{lesson.title}</p>
-                      </div>
-                      {isAccessible && !isLessonDone && <PlayCircle size={22} className="shrink-0" />}
-                    </button>
-                  ); 
+                  if (isCompleted) { return (<div key={lesson.id} className="w-full flex gap-2 group"><button onClick={() => onStartLesson(lesson.id)} className="flex-1 p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-3 hover:bg-green-200 transition-colors"><CheckCircle size={18} className="shrink-0" /><span className="text-sm font-bold truncate flex-1 text-left">{lesson.title}</span><span className="text-[10px] uppercase font-bold opacity-60 group-hover:opacity-100 hidden sm:inline">Réviser</span></button><button onClick={() => onDownloadPDF(lesson.id)} className="p-4 rounded-2xl bg-white border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all" title="Télécharger PDF"><Download size={20} /></button></div>); } 
+                  return (<button key={lesson.id} disabled={!isAccessible} onClick={() => onStartLesson(lesson.id)} className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${isLessonDone ? 'bg-green-500 text-white shadow-md' : isAccessible ? 'bg-yellow-400 text-slate-900 shadow-lg scale-[1.02] font-bold ring-4 ring-yellow-100' : 'bg-slate-200 text-slate-400'}`}><div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">{isLessonDone ? <Check size={16} /> : lesson.id}</div><div className="flex-1 min-w-0"><p className="text-sm font-bold truncate">{lesson.title}</p></div>{isAccessible && !isLessonDone && <PlayCircle size={22} className="shrink-0" />}</button>); 
                 })}
               </div>
-
-              {isLocked && (
-                <div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[2px] flex items-center justify-center z-10">
-                  <div className="bg-white p-6 rounded-2xl shadow-xl text-center border border-slate-100">
-                    <Lock size={32} className="mx-auto text-slate-300 mb-2" />
-                    <h4 className="font-bold text-slate-800">Niveau Bloqué</h4>
-                  </div>
-                </div>
-              )}
+              {isLocked && (<div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[2px] flex items-center justify-center z-10"><div className="bg-white p-6 rounded-2xl shadow-xl text-center border border-slate-100"><Lock size={32} className="mx-auto text-slate-300 mb-2" /><h4 className="font-bold text-slate-800">Niveau Bloqué</h4></div></div>)}
             </div>
           ); 
         })}
@@ -737,3 +818,102 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
   ); 
 };
 const TestDashboard = ({ userData, onStartTest }) => { const levels = ["A1", "A2", "B1", "B2", "C1"]; const currentIdx = levels.indexOf(userData.level || "A1"); const nextLevel = levels[currentIdx + 1]; const lessonsDone = userData.completedLessons.length; const canTakeExam = lessonsDone >= (currentIdx + 1) * 20; return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-8"><div className="text-center"><h2 className="text-3xl font-black text-slate-900 mb-2">Zone Test 🧠</h2><p className="text-slate-500">Valide tes acquis.</p></div><div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all cursor-pointer group" onClick={() => onStartTest('training')}><div className="flex items-center gap-6"><div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform"><BrainCircuit size={32} /></div><div className="flex-1"><h3 className="text-xl font-bold text-slate-900">Entraînement Rapide</h3><p className="text-sm text-slate-500 mt-1">Révision intelligente.</p></div><ChevronRight className="text-slate-300" /></div></div><div className={`bg-white p-8 rounded-3xl shadow-sm border border-slate-200 transition-all relative overflow-hidden ${!canTakeExam ? 'opacity-60 grayscale' : 'cursor-pointer hover:shadow-md group'}`} onClick={() => canTakeExam && onStartTest('levelup')}><div className="flex items-center gap-6"><div className="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center text-yellow-600 group-hover:rotate-6 transition-transform"><Target size={32} /></div><div className="flex-1"><h3 className="text-xl font-bold text-slate-900">Examen {nextLevel}</h3><p className="text-sm text-slate-500 mt-1">Passage de niveau.</p></div>{canTakeExam ? <ChevronRight className="text-slate-300" /> : <Lock className="text-slate-300" />}</div>{!canTakeExam && <div className="absolute bottom-2 right-4 text-xs font-bold text-red-400 bg-red-50 px-2 py-1 rounded">Finis le niveau d'abord</div>}</div></div>); };
+const StructuresContent = ({ structures, userVocab }) => {
+  const safeList = Array.isArray(userVocab) ? userVocab : [];
+  const learnedStructures = safeList.filter(item => item && item.type === 'structure');
+  const allStructures = [...structures, ...learnedStructures];
+  const uniqueStructures = allStructures.filter((item, index, self) => index === self.findIndex((t) => t.title === item.title));
+  return (
+    <div className="max-w-3xl mx-auto w-full p-6 pb-24">
+      <h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2>
+      <div className="space-y-6">
+        {uniqueStructures.map((struct, idx) => (
+          <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div>
+            <div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div>
+            <div className="space-y-2 mb-4">{struct.example_es ? (<><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></>) : (<><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example}</p></>)}</div>
+            <p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation || struct.note}</p>
+          </div>
+        ))}
+        {uniqueStructures.length === 0 && (<div className="text-center text-slate-400 py-10"><p>Aucune structure découverte pour le moment.</p><p className="text-sm">Avance dans les leçons pour en débloquer !</p></div>)}
+      </div>
+    </div>
+  );
+};
+
+// --- NOTEBOOK CONTENT (DESIGN PRO) ---
+const NotebookContent = ({ userVocab }) => {
+  const [activeTab, setActiveTab] = useState('vocab');
+  const safeVocab = Array.isArray(userVocab) ? userVocab : [];
+  const vocabItems = safeVocab.filter(item => item.type === 'swipe');
+  const grammarItems = safeVocab.filter(item => item.type === 'grammar');
+  const structureItems = safeVocab.filter(item => item.type === 'structure');
+
+  return (
+    <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24 space-y-6">
+      <h2 className="text-3xl font-black text-slate-900">Mon Lexique 📚</h2>
+      <div className="flex space-x-2 bg-slate-100 p-1 rounded-xl">
+        {['vocab', 'grammar', 'structure'].map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+            {tab === 'vocab' && 'Vocabulaire'}
+            {tab === 'grammar' && 'Grammaire'}
+            {tab === 'structure' && 'Structures'}
+          </button>
+        ))}
+      </div>
+      {activeTab === 'vocab' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {vocabItems.length > 0 ? vocabItems.map((item, idx) => (
+            <div key={idx} className="bg-white p-4 rounded-xl border border-slate-100 flex justify-between items-center">
+              <div><p className="font-bold text-slate-800">{item.es}</p><p className="text-xs text-slate-400 italic">{item.context}</p></div><p className="text-indigo-600 font-medium">{item.en}</p>
+            </div>
+          )) : <p className="text-slate-400 text-center col-span-2 py-10">Rien ici pour l'instant.</p>}
+        </div>
+      )}
+      {activeTab === 'grammar' && (
+        <div className="space-y-4">
+          {grammarItems.length > 0 ? grammarItems.map((item, idx) => (
+            <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+              <h4 className="font-bold text-lg text-indigo-600 mb-2">{item.title}</h4>
+              <p className="text-slate-600 mb-4 text-sm">{item.description}</p>
+              <div className="grid grid-cols-2 gap-2 text-sm">{item.conjugation && item.conjugation.map((row, rIdx) => (<div key={rIdx} className="flex justify-between bg-slate-50 p-2 rounded"><span className="text-slate-400">{row.pronoun}</span><span className="font-bold text-slate-800">{row.verb}</span></div>))}</div>
+            </div>
+          )) : <p className="text-slate-400 text-center py-10">Aucune règle de grammaire sauvée.</p>}
+        </div>
+      )}
+      {activeTab === 'structure' && (
+        <div className="grid gap-6">
+           {structureItems.length > 0 ? structureItems.map((item, idx) => (
+             <div key={idx} className="group relative bg-white overflow-hidden rounded-3xl border-2 border-slate-100 hover:border-indigo-100 transition-all shadow-sm hover:shadow-md">
+               <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-[4rem] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+               <div className="relative p-6">
+                 <div className="flex items-center gap-4 mb-6">
+                   <div className="w-12 h-12 bg-white border-2 border-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform"><Hammer size={24} /></div>
+                   <div><h4 className="font-black text-xl text-slate-800 leading-tight">{item.title}</h4><span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Grammaire</span></div>
+                 </div>
+                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 flex flex-col items-center text-center relative overflow-hidden">
+                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-10"></div>
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 z-10">Construction</span>
+                   <code className="font-mono text-lg md:text-xl font-bold text-indigo-600 bg-white px-4 py-2 rounded-xl border-b-4 border-indigo-100 shadow-sm z-10">{item.formula}</code>
+                 </div>
+                 <div className="space-y-3">
+                   <div className="flex gap-4 items-start pl-2">
+                     <div className="w-1 h-12 bg-green-400 rounded-full shrink-0 mt-1"></div>
+                     <div><p className="text-xs font-bold text-slate-400 uppercase mb-1">Exemple</p><p className="text-lg font-medium text-slate-700 italic">"{item.example}"</p></div>
+                   </div>
+                   {item.note && (<div className="mt-4 bg-yellow-50 p-3 rounded-xl border border-yellow-100 flex gap-3 items-start"><span className="text-lg">💡</span><p className="text-sm text-yellow-800 font-medium leading-relaxed">{item.note}</p></div>)}
+                 </div>
+               </div>
+             </div>
+           )) : (
+             <div className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center">
+                <div className="p-4 bg-white rounded-full shadow-sm mb-4"><Hammer className="h-8 w-8 text-slate-300" /></div>
+                <p className="text-slate-900 font-bold text-lg">Aucune structure découverte</p>
+                <p className="text-slate-500 text-sm mt-1 max-w-xs mx-auto">Avance dans les leçons pour débloquer tes premières fiches de construction de phrases !</p>
+             </div>
+           )}
+        </div>
+      )}
+    </div>
+  );
+};

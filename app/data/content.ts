@@ -12,9 +12,22 @@ export const STORIES_DATA = [
     title: "La Rencontre (El Encuentro)",
     level: "A1",
     characters: {
-      pablo: { name: "Pablo", avatar: "👨‍🦱", color: "bg-blue-100 text-blue-900" },
-      sofia: { name: "Sofía", avatar: "👩‍🦰", color: "bg-pink-100 text-pink-900" }
+      pablo: { 
+        name: "Pablo", 
+        avatar: "👨‍🦱", 
+        color: "bg-blue-100 text-blue-900",
+        // 👇 AJOUTEZ L'ID DE LA VOIX HOMME ICI
+        voiceId: "ErXwobaYiN019PkySvjV" 
+      },
+      sofia: { 
+        name: "Sofía", 
+        avatar: "👩‍🦰", 
+        color: "bg-pink-100 text-pink-900",
+        // 👇 AJOUTEZ L'ID DE LA VOIX FEMME ICI
+        voiceId: "21m00Tcm4TlvDq8ikWAM" 
+      }
     },
+    //
     dialogue: [
       { type: "bubble", speaker: "pablo", text_es: "¡Hola! ¿Eres nueva aquí?", text_fr: "Salut ! Tu es nouvelle ici ?" },
       { type: "bubble", speaker: "sofia", text_es: "Sí, soy Sofía. Acabo de llegar de Madrid.", text_fr: "Oui, je suis Sofía. Je viens d'arriver de Madrid." },
