@@ -433,6 +433,88 @@ const LessonEngine = ({ content, onComplete, onExit }) => {
   useEffect(() => { if (idx === 0 && card?.es) speak(card.es); }, [idx]);
   return (<div className="h-full w-full flex flex-col bg-slate-50"><div className="px-6 py-4 flex items-center gap-6 bg-white border-b z-10"><button onClick={onExit}><X className="text-slate-400" /></button><div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-teal-500 transition-all duration-500" style={{ width: `${prog}%` }}></div></div></div><div className="flex-1 flex items-center justify-center p-4 overflow-hidden"><div className="w-full max-w-md aspect-[3/4] md:aspect-auto md:h-[600px] perspective-1000">{card.type === 'swipe' && <SwipeCard data={card} onNext={next} />}{card.type === 'input' && <InputCard data={card} onNext={next} isExam={false} />}{card.type === 'grammar' && <GrammarCard data={card} onNext={next} />}{card.type === 'structure' && <StructureCard data={card} onNext={next} />}</div></div></div>); 
 };
+// --- AJOUTER CE BLOC À LA FIN DE app/page.tsx ---
+
+const NotebookContent = ({ userVocab }) => {
+  const [activeTab, setActiveTab] = useState('vocab');
+  // Sécurité : on s'assure que userVocab est bien un tableau
+  const safeVocab = Array.isArray(userVocab) ? userVocab : [];
+
+  const vocabItems = safeVocab.filter(item => item.type === 'swipe');
+  const grammarItems = safeVocab.filter(item => item.type === 'grammar');
+  const structureItems = safeVocab.filter(item => item.type === 'structure');
+
+  return (
+    <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24 space-y-6">
+      <h2 className="text-3xl font-black text-slate-900">Mon Lexique 📚</h2>
+      
+      {/* Onglets */}
+      <div className="flex space-x-2 bg-slate-100 p-1 rounded-xl">
+        {['vocab', 'grammar', 'structure'].map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${
+              activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            {tab === 'vocab' && 'Vocabulaire'}
+            {tab === 'grammar' && 'Grammaire'}
+            {tab === 'structure' && 'Structures'}
+          </button>
+        ))}
+      </div>
+
+      {/* Contenu Vocabulaire */}
+      {activeTab === 'vocab' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {vocabItems.length > 0 ? vocabItems.map((item, idx) => (
+            <div key={idx} className="bg-white p-4 rounded-xl border border-slate-100 flex justify-between items-center">
+              <div>
+                <p className="font-bold text-slate-800">{item.es}</p>
+                <p className="text-xs text-slate-400 italic">{item.context}</p>
+              </div>
+              <p className="text-indigo-600 font-medium">{item.en}</p>
+            </div>
+          )) : <p className="text-slate-400 text-center col-span-2 py-10">Rien ici pour l'instant.</p>}
+        </div>
+      )}
+
+      {/* Contenu Grammaire */}
+      {activeTab === 'grammar' && (
+        <div className="space-y-4">
+          {grammarItems.length > 0 ? grammarItems.map((item, idx) => (
+            <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+              <h4 className="font-bold text-lg text-indigo-600 mb-2">{item.title}</h4>
+              <p className="text-slate-600 mb-4 text-sm">{item.description}</p>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                {item.conjugation && item.conjugation.map((row, rIdx) => (
+                  <div key={rIdx} className="flex justify-between bg-slate-50 p-2 rounded">
+                    <span className="text-slate-400">{row.pronoun}</span>
+                    <span className="font-bold text-slate-800">{row.verb}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )) : <p className="text-slate-400 text-center py-10">Aucune règle de grammaire sauvée.</p>}
+        </div>
+      )}
+
+      {/* Contenu Structures */}
+      {activeTab === 'structure' && (
+        <div className="space-y-4">
+           {structureItems.length > 0 ? structureItems.map((item, idx) => (
+             <div key={idx} className="bg-amber-50 p-6 rounded-2xl border border-amber-100">
+               <h4 className="font-bold text-amber-800 mb-2">{item.title}</h4>
+               <p className="font-mono text-amber-600 bg-white/50 p-2 rounded mb-2 text-center">{item.formula}</p>
+               <p className="text-sm text-amber-700 italic">Ex: {item.example}</p>
+             </div>
+           )) : <p className="text-slate-400 text-center py-10">Aucune structure apprise.</p>}
+        </div>
+      )}
+    </div>
+  );
+};
 const InputCard = ({ data, onNext, isExam, onScore }) => { 
   const [val, setVal] = useState(''); const [status, setStatus] = useState('idle'); const [sub, setSub] = useState(false); const inputRef = useRef(null);
   const addChar = (c) => { if (sub) return; setVal(p => p + c); inputRef.current?.focus(); };
