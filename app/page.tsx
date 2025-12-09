@@ -38,13 +38,19 @@ const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
 // --- SYSTÈME AUDIO PREMIUM (ElevenLabs + Fallback) ---
-// Variable GLOBALE pour gérer le son unique
 let currentAudio = null;
+let audioController = null; // 🆕 Variable pour contrôler l'annulation
 
 const speak = async (text, voiceId = null) => {
   if (!text) return;
 
-  // 1. SILENCE : On coupe tout le monde (Robot + MP3 précédent)
+  // 1. SILENCE ABSOLU : On coupe tout ce qui est en cours
+  // Si une requête précédente est en train de charger, on l'annule !
+  if (audioController) {
+      audioController.abort();
+  }
+  audioController = new AbortController(); // Nouveau contrôleur pour cette demande
+
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
@@ -73,7 +79,7 @@ const speak = async (text, voiceId = null) => {
     window.speechSynthesis.speak(utterance);
   };
 
-  // 2. TENTATIVE VOIX PREMIUM (ElevenLabs) AVEC TIMEOUT
+  // 2. TENTATIVE VOIX PREMIUM (ElevenLabs)
   try {
     const timeoutPromise = new Promise((_, reject) => 
       setTimeout(() => reject(new Error("Timeout")), 3000)
@@ -82,7 +88,8 @@ const speak = async (text, voiceId = null) => {
     const apiPromise = fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, voiceId }), // On passe l'ID ici
+      body: JSON.stringify({ text, voiceId }),
+      signal: audioController.signal, // 🆕 On lie la requête au contrôleur
     });
 
     const response = await Promise.race([apiPromise, timeoutPromise]);
@@ -100,11 +107,12 @@ const speak = async (text, voiceId = null) => {
       };
       
       audio.play();
-      return; // SUCCÈS
-    } else {
-      console.warn("Erreur API (Quota ou Clé), fallback robot.");
+      return; 
     }
   } catch (error) {
+    // 🆕 Si l'erreur est une annulation volontaire, on ne fait rien (pas de fallback)
+    if (error.name === 'AbortError') return;
+    
     console.warn("Erreur ou Timeout API, fallback robot.", error);
   }
 
@@ -115,7 +123,6 @@ const speak = async (text, voiceId = null) => {
     playRobotVoice();
   }
 };
-
 // --- SIMULATION TUTEUR IA ---
 const askAITutor = async (question) => {
     await new Promise(r => setTimeout(r, 1500));
@@ -729,7 +736,7 @@ const LeaderboardView = ({ userData }) => {
     return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-6"><div className="text-center space-y-2 mb-8"><div className="inline-block p-4 bg-yellow-100 rounded-full text-yellow-600 mb-2"><Trophy size={40} /></div><h2 className="text-3xl font-black text-slate-900">Ligue Diamant</h2><p className="text-slate-500 font-medium">Fin dans 2j 4h</p></div><div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">{rivals.map((user, idx) => (<div key={idx} className={`flex items-center gap-4 p-4 border-b border-slate-50 ${user.isMe ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''}`}><div className="font-black text-slate-300 w-6">{idx + 1}</div><div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-xl">{user.avatar}</div><div className="flex-1 font-bold text-slate-800">{user.name}</div><div className="font-black text-slate-900">{user.xp} XP</div></div>))}</div></div>);
 };
 const LessonEngine = ({ content, onComplete, onExit, isExam }) => { 
-  // 1. Nettoyage sécurisé
+  // 1. SÉCURITÉ : Nettoyage des données pour éviter les trous
   const safeContent = React.useMemo(() => {
     if (!Array.isArray(content)) return [];
     return content.filter(item => item && item.type);
@@ -739,11 +746,13 @@ const LessonEngine = ({ content, onComplete, onExit, isExam }) => {
   const [prog, setProg] = useState(0); 
   const [score, setScore] = useState(0);
   
+  // 2. SÉCURITÉ : Récupération sécurisée de la carte
   const card = safeContent[idx]; 
 
   const next = () => { 
       if (idx + 1 >= safeContent.length) { 
           setProg(100); 
+          // Petit délai pour voir la barre se remplir avant de finir
           setTimeout(() => onComplete(150, safeContent, 0, score), 500); 
       } else { 
           setProg(((idx + 1) / safeContent.length) * 100); 
@@ -753,14 +762,15 @@ const LessonEngine = ({ content, onComplete, onExit, isExam }) => {
   
   const handleScore = (correct) => { if(correct) setScore(s => s + 1); };
 
-  // Audio automatique
+  // Audio automatique au changement de carte
   useEffect(() => { 
     if (card?.es && (card.type === 'swipe' || card.type === 'input')) {
         speak(card.es); 
     }
   }, [card]);
   
-  if (!card) return null; // Sécurité
+  // Si pas de carte (fin de chargement ou erreur), ne rien afficher pour éviter le crash
+  if (!card) return null;
 
   return (
     <div className="h-full w-full flex flex-col bg-slate-50">
@@ -772,7 +782,7 @@ const LessonEngine = ({ content, onComplete, onExit, isExam }) => {
             {isExam && <div className="font-black text-indigo-600">{score} / 20</div>}
         </div>
         <div className="flex-1 flex items-center justify-center p-4 overflow-hidden relative">
-            {/* Si fini, loader de fin */}
+            {/* Si fini (100%), loader de fin */}
             {prog >= 100 ? (
                 <div className="flex flex-col items-center animate-in zoom-in">
                     <Check size={48} className="text-green-600 mb-4" />
@@ -780,7 +790,7 @@ const LessonEngine = ({ content, onComplete, onExit, isExam }) => {
                 </div>
             ) : (
                 <div className="w-full max-w-md aspect-[3/4] md:aspect-auto md:h-[600px] perspective-1000">
-                    {/* 👇 LA CORRECTION EST ICI : Ajout de key={card.id} partout */}
+                    {/* IMPORTANT : Utilisation de key={card.id} pour forcer le re-rendu propre */}
                     {card.type === 'swipe' && (
                         <SwipeCard key={card.id} data={card} onNext={next} />
                     )}
@@ -838,7 +848,7 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
              // Leçon : On NE verrouille PAS (setSub reste false)
              // On donne juste le focus pour corriger direct
              inputRef.current?.focus();
-             // Le status 'error' affichera le rouge et l'indice
+             // Le status 'error' affichera le rouge et l'indice, mais on peut modifier l'input
           }
       } 
   };
