@@ -319,36 +319,49 @@ export default function EspanolSprintPro() {
   };
 
   const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0) => {
-      // 1. Sauvegarde visuelle immédiate (pour éviter l'écran blanc)
-      // On prépare le changement de vue, mais on laisse le temps au code async de se lancer
-      let moveOn = () => {
+      // 1. Définir la fonction de navigation pour être sûr de l'appeler à la fin
+      const proceedToCompleteScreen = () => {
           setTestMode(null);
           setView('complete');
       };
 
       try {
-          // MODE EXAMEN
+          // --- MODE EXAMEN ---
           if (testMode === 'levelup') {
               const passed = (typeof finalScore === 'number' ? finalScore : 0) >= 16;
               if (passed && currentUser) {
                   const levels = ["A1", "A2", "B1", "B2", "C1"];
-                  const currentIdx = levels.indexOf(userData.level);
-                  const nextLevel = levels[currentIdx + 1] || "C1";
+                  // Sécurisation du niveau actuel
+                  const currentLevel = userData?.level || "A1";
+                  const currentIdx = levels.indexOf(currentLevel);
+                  // Si niveau inconnu ou max atteint, on reste sur le niveau actuel
+                  const nextLevel = (currentIdx >= 0 && currentIdx < levels.length - 1) 
+                      ? levels[currentIdx + 1] 
+                      : currentLevel;
                   
                   const userRef = doc(db, "users", currentUser.uid);
                   await updateDoc(userRef, { xp: increment(500), level: nextLevel });
-                  setUserData(prev => ({ ...prev, level: nextLevel, xp: prev.xp + 500 }));
+                  
+                  // Mise à jour locale sécurisée
+                  setUserData(prev => ({ 
+                      ...prev, 
+                      level: nextLevel, 
+                      xp: (prev?.xp || 0) + 500 
+                  }));
               }
-              moveOn();
+              // On sort de la fonction après le traitement examen
+              proceedToCompleteScreen();
               return;
           }
 
-          // MODE STANDARD
-          // Sécurité : Vérifier que lessonContent est bien un tableau
+          // --- MODE STANDARD ---
+          
+          // Sécurité 1 : S'assurer que lessonContent est un tableau
           const safeContent = Array.isArray(lessonContent) ? lessonContent : [];
           
-          const newItems = safeContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
+          const newItems = safeContent.filter(item => item && ['swipe', 'grammar', 'structure'].includes(item.type));
           
+          // Ajout des propriétés SRS
           const newItemsWithSRS = newItems.map(item => ({ 
             ...item, 
             grade: 0, 
@@ -361,28 +374,30 @@ export default function EspanolSprintPro() {
           if (currentUser) {
             const userRef = doc(db, "users", currentUser.uid);
             
-            // Sécurité sur les données existantes
-            const currentVocab = Array.isArray(userData.vocab) ? userData.vocab : [];
-            const currentCompleted = Array.isArray(userData.completedLessons) ? userData.completedLessons : [];
+            // Sécurité 2 : Fallbacks pour éviter le crash sur .some() ou .includes()
+            const currentVocab = Array.isArray(userData?.vocab) ? userData.vocab : [];
+            const currentCompleted = Array.isArray(userData?.completedLessons) ? userData.completedLessons : [];
+            const currentDaily = userData?.dailyLimit || { date: today, count: 0 };
 
+            // Filtrage des doublons (SANS CRASH)
             const uniqueNewItems = newItemsWithSRS.filter(item => !currentVocab.some(v => v.id === item.id));
             const isNew = !currentCompleted.includes(lessonId);
             
-            // Calcul sécurisé du daily count
-            const currentCount = userData.dailyLimit?.date === today ? (userData.dailyLimit.count || 0) : 0;
+            // Calcul limite journalière
+            const currentCount = currentDaily.date === today ? currentDaily.count : 0;
             const newCount = isNew ? currentCount + 1 : currentCount;
             
-            // Mise à jour Optimiste (UI d'abord)
+            // Mise à jour Optimiste (UI)
             setUserData(prev => ({
               ...prev,
-              xp: (prev.xp || 0) + xp,
-              streak: (prev.streak || 0) + 1,
+              xp: (prev?.xp || 0) + xp,
+              streak: (prev?.streak || 0) + 1,
               vocab: [...currentVocab, ...uniqueNewItems],
               completedLessons: isNew ? [...currentCompleted, lessonId] : currentCompleted,
               dailyLimit: { date: today, count: newCount }
             }));
 
-            // Mise à jour Firebase (En arrière-plan)
+            // Mise à jour Firebase (Backend)
             await updateDoc(userRef, {
               xp: increment(xp),
               streak: increment(1),
@@ -392,12 +407,11 @@ export default function EspanolSprintPro() {
             });
           }
       } catch (error) {
-          console.error("ERREUR SAUVEGARDE LEÇON :", error);
-          // Même en cas d'erreur critique, on laisse l'utilisateur avancer !
-          alert("Erreur de sauvegarde, mais bravo pour la leçon !");
+          console.error("ERREUR CRITIQUE SAUVEGARDE :", error);
+          // On ne bloque PAS l'utilisateur, on loggue juste l'erreur
       } finally {
-          // 3. Quoi qu'il arrive, on change d'écran
-          moveOn();
+          // 3. Quoi qu'il arrive (succès ou erreur), on change d'écran
+          proceedToCompleteScreen();
       }
   };
 
