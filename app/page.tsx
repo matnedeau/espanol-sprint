@@ -693,22 +693,33 @@ const LessonEngine = ({ content, onComplete, onExit, isExam }) => {
   const [idx, setIdx] = useState(0); 
   const [prog, setProg] = useState(0); 
   const [score, setScore] = useState(0);
-  const card = content[idx]; 
+  
+  // SÉCURITÉ : On vérifie que le contenu existe
+  const safeContent = content || [];
+  const card = safeContent[idx]; 
 
   const next = () => { 
-      if (idx + 1 >= content.length) { 
+      if (idx + 1 >= safeContent.length) { 
           setProg(100); 
-          setTimeout(() => onComplete(150, [], 0, score), 500); 
+          setTimeout(() => onComplete(150, safeContent, 0, score), 500); 
       } else { 
-          setProg(((idx + 1) / content.length) * 100); 
+          setProg(((idx + 1) / safeContent.length) * 100); 
           setIdx(i => i + 1); 
       } 
   };
   
   const handleScore = (correct) => { if(correct) setScore(s => s + 1); };
 
-  useEffect(() => { if (idx === 0 && card?.es) speak(card.es); }, [idx]);
+  useEffect(() => { 
+      // SÉCURITÉ : On ne parle que si la carte existe
+      if (card && card.es) speak(card.es); 
+  }, [idx, card]); // Ajout de 'card' dans les dépendances
   
+  // SÉCURITÉ CRITIQUE : Si pas de carte (fin de liste ou erreur), on affiche un chargement au lieu de planter
+  if (!card) {
+      return <div className="h-full w-full flex items-center justify-center"><Loader2 className="animate-spin text-slate-300" /></div>;
+  }
+
   return (
     <div className="h-full w-full flex flex-col bg-slate-50">
         <div className="px-6 py-4 flex items-center gap-6 bg-white border-b z-10">
@@ -724,6 +735,13 @@ const LessonEngine = ({ content, onComplete, onExit, isExam }) => {
                 {card.type === 'input' && <InputCard data={card} onNext={next} isExam={isExam} onScore={handleScore} />}
                 {card.type === 'grammar' && <GrammarCard data={card} onNext={next} />}
                 {card.type === 'structure' && <StructureCard data={card} onNext={next} />}
+                
+                {/* SÉCURITÉ : Cas d'un type inconnu pour éviter l'écran blanc */}
+                {!['swipe', 'input', 'grammar', 'structure'].includes(card.type) && (
+                    <div className="p-8 text-center text-red-500">
+                        Erreur: Type de carte inconnu ({card.type}). <button onClick={next} className="underline font-bold">Passer</button>
+                    </div>
+                )}
             </div>
         </div>
     </div>
