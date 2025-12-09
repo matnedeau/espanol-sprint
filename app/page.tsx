@@ -37,27 +37,24 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-// --- SYSTÈME AUDIO PREMIUM (ElevenLabs + Fallback) ---
-// Ajoutez cette variable JUSTE AVANT la fonction speak (à l'extérieur)
-// Elle sert à garder une trace du lecteur audio pour pouvoir le couper
-let currentAudio: HTMLAudioElement | null = null;
+// (Nouveau code à coller à la place)
+
+// Variable pour garder en mémoire le son ElevenLabs en cours
+let currentAudio = null; 
 
 const speak = async (text) => {
   if (!text) return;
 
-  // --- ÉTAPE 1 : SILENCE OBLIGATOIRE ---
-  // On coupe le sifflet au robot du navigateur
+  // 1. On fait taire tout le monde (Robot + MP3 précédent)
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
-  
-  // On coupe aussi l'ancienne belle voix si elle parlait encore
   if (currentAudio) {
     currentAudio.pause();
     currentAudio.currentTime = 0;
   }
 
-  // --- ÉTAPE 2 : VOIX PREMIUM (ElevenLabs) ---
+  // 2. On essaie la voix Premium (ElevenLabs)
   try {
     const response = await fetch('/api/tts', {
       method: 'POST',
@@ -69,27 +66,25 @@ const speak = async (text) => {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
-      
-      // On enregistre cet audio comme étant "celui en cours"
-      currentAudio = audio;
-      
+
+      currentAudio = audio; // On le stocke pour pouvoir le couper au prochain clic
       audio.play();
-      return; // SUCCÈS : On s'arrête là, le robot ne parlera pas.
+      return; 
     }
   } catch (error) {
-    // Si l'API échoue, on continue vers le fallback silencieusement
+    console.warn("Erreur API TTS, passage au fallback");
   }
 
-  // --- ÉTAPE 3 : FALLBACK (Le Robot) ---
-  // Seulement si l'API a échoué
+  // 3. Fallback : Voix Robot (si l'API a échoué ou quota dépassé)
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     const utterance = new SpeechSynthesisUtterance(text);
+    // ... (votre logique de choix de voix existante) ...
     const voices = window.speechSynthesis.getVoices();
     const esVoice = voices.find(v => 
       (v.name.includes('Google') || v.name.includes('Microsoft')) && 
       (v.lang.includes('es-ES') || v.lang.includes('es'))
     ) || voices.find(v => v.lang.includes('es'));
-    
+
     if (esVoice) utterance.voice = esVoice;
     utterance.lang = 'es-ES'; 
     utterance.rate = 0.9;
@@ -519,16 +514,64 @@ const NotebookContent = ({ userVocab }) => {
         </div>
       )}
 
-      {/* Contenu Structures */}
+      {/* Contenu Structures (Nouveau Design) */}
       {activeTab === 'structure' && (
-        <div className="space-y-4">
+        <div className="grid gap-6">
            {structureItems.length > 0 ? structureItems.map((item, idx) => (
-             <div key={idx} className="bg-amber-50 p-6 rounded-2xl border border-amber-100">
-               <h4 className="font-bold text-amber-800 mb-2">{item.title}</h4>
-               <p className="font-mono text-amber-600 bg-white/50 p-2 rounded mb-2 text-center">{item.formula}</p>
-               <p className="text-sm text-amber-700 italic">Ex: {item.example}</p>
+             <div key={idx} className="group relative bg-white overflow-hidden rounded-3xl border-2 border-slate-100 hover:border-indigo-100 transition-all shadow-sm hover:shadow-md">
+               {/* Décoration d'arrière-plan */}
+               <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-[4rem] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+               
+               <div className="relative p-6">
+                 {/* En-tête */}
+                 <div className="flex items-center gap-4 mb-6">
+                   <div className="w-12 h-12 bg-white border-2 border-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">
+                     <Hammer size={24} />
+                   </div>
+                   <div>
+                     <h4 className="font-black text-xl text-slate-800 leading-tight">{item.title}</h4>
+                     <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Grammaire</span>
+                   </div>
+                 </div>
+
+                 {/* La Formule (Mise en avant) */}
+                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 flex flex-col items-center text-center relative overflow-hidden">
+                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-10"></div>
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 z-10">Construction</span>
+                   <code className="font-mono text-lg md:text-xl font-bold text-indigo-600 bg-white px-4 py-2 rounded-xl border-b-4 border-indigo-100 shadow-sm z-10">
+                     {item.formula}
+                   </code>
+                 </div>
+
+                 {/* L'Exemple et la Note */}
+                 <div className="space-y-3">
+                   <div className="flex gap-4 items-start pl-2">
+                     <div className="w-1 h-12 bg-green-400 rounded-full shrink-0 mt-1"></div>
+                     <div>
+                       <p className="text-xs font-bold text-slate-400 uppercase mb-1">Exemple</p>
+                       <p className="text-lg font-medium text-slate-700 italic">"{item.example}"</p>
+                     </div>
+                   </div>
+                   
+                   {/* Affichage de la note/astuce si elle existe */}
+                   {item.note && (
+                     <div className="mt-4 bg-yellow-50 p-3 rounded-xl border border-yellow-100 flex gap-3 items-start">
+                        <span className="text-lg">💡</span>
+                        <p className="text-sm text-yellow-800 font-medium leading-relaxed">{item.note}</p>
+                     </div>
+                   )}
+                 </div>
+               </div>
              </div>
-           )) : <p className="text-slate-400 text-center py-10">Aucune structure apprise.</p>}
+           )) : (
+             <div className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center">
+                <div className="p-4 bg-white rounded-full shadow-sm mb-4">
+                    <Hammer className="h-8 w-8 text-slate-300" />
+                </div>
+                <p className="text-slate-900 font-bold text-lg">Aucune structure découverte</p>
+                <p className="text-slate-500 text-sm mt-1 max-w-xs mx-auto">Avance dans les leçons pour débloquer tes premières fiches de construction de phrases !</p>
+             </div>
+           )}
         </div>
       )}
     </div>
