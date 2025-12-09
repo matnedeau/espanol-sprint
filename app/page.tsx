@@ -7,7 +7,7 @@ import {
   SENTENCE_STRUCTURES, 
   generateSmartTest,
   DATA_BANK,
-  STORIES_DATA, // [STORY-MODE] Import
+  STORIES_DATA, 
   generateExamContent,
   getDailyReading 
 } from './data/content';
@@ -40,31 +40,27 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-// Fonction Audio Améliorée (Voix plus naturelles + Fix Chrome)
+// Fonction Audio
 const speak = (text) => {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window && text) {
-    window.speechSynthesis.cancel(); // Coupe la parole précédente pour éviter le chevauchement
+    window.speechSynthesis.cancel(); 
 
     const playAudio = () => {
       const utterance = new SpeechSynthesisUtterance(text);
       const voices = window.speechSynthesis.getVoices();
-
-      // On cherche de préférence une voix Google ou Microsoft (souvent de meilleure qualité)
       const esVoice = voices.find(v => 
         (v.name.includes('Google') || v.name.includes('Microsoft')) && 
         (v.lang.includes('es-ES') || v.lang.includes('es'))
-      ) || voices.find(v => v.lang.includes('es')); // Sinon n'importe quelle voix espagnole
+      ) || voices.find(v => v.lang.includes('es')); 
 
       if (esVoice) utterance.voice = esVoice;
-      
       utterance.lang = 'es-ES'; 
-      utterance.rate = 0.9; // Vitesse un peu plus naturelle (ni trop lent, ni trop robotique)
-      utterance.pitch = 1;  // Tonalité normale
+      utterance.rate = 0.9; 
+      utterance.pitch = 1;  
       
       window.speechSynthesis.speak(utterance);
     };
 
-    // Fix pour Chrome : Si les voix ne sont pas encore chargées, on attend qu'elles le soient
     if (window.speechSynthesis.getVoices().length === 0) {
       window.speechSynthesis.onvoiceschanged = playAudio;
     } else {
@@ -72,6 +68,7 @@ const speak = (text) => {
     }
   }
 };
+
 /* --- APPLICATION --- */
 export default function EspanolSprintPro() {
   const [view, setView] = useState('landing'); 
@@ -82,7 +79,7 @@ export default function EspanolSprintPro() {
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [authError, setAuthError] = useState(""); 
   const [testMode, setTestMode] = useState(null);
-  const [activeStory, setActiveStory] = useState(null); // [STORY-MODE]
+  const [activeStory, setActiveStory] = useState(null); 
   
   const [dynamicLessonsList, setDynamicLessonsList] = useState(INITIAL_LESSONS_LIST);
   const [dynamicLessonsContent, setDynamicLessonsContent] = useState({});
@@ -169,7 +166,6 @@ export default function EspanolSprintPro() {
     setView('lesson');
   };
 
-  // [STORY-MODE] Lancer une histoire
   const startStory = (storyId) => {
      const story = STORIES_DATA.find(s => s.id === storyId);
      if (story) {
@@ -202,12 +198,10 @@ export default function EspanolSprintPro() {
       setView('quiz'); 
     }
   };
+
 const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0) => {
-    // --- CAS 1 : C'est un EXAMEN DE PASSAGE (Level Up) ---
     if (testMode === 'levelup') {
         const passed = finalScore >= 16;
-        // setLastExamResult({ score: finalScore, passed }); // Optionnel si on veut afficher un écran spécifique
-
         if (passed) {
             const levels = ["A1", "A2", "B1", "B2", "C1"];
             const currentIdx = levels.indexOf(userData.level);
@@ -264,55 +258,42 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
         return;
     }
 
-    // --- CAS 2 : Leçon normale (AVEC SRS) ---
-    // On récupère le contenu intéressant de la leçon actuelle
     const newItems = lessonContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
-    
-    // [SRS-START] Ajout des métadonnées SRS par défaut
     const enrichedItems = newItems.map(item => ({
         ...item,
-        grade: 0,        // Score de rétention initial
-        interval: 1,     // Intervalle de révision initial en jours
+        grade: 0,
+        interval: 1,
         lastReview: new Date().toISOString()
     }));
-    // [SRS-END]
 
     const today = new Date().toDateString();
     
     if (currentUser) {
       const userRef = doc(db, "users", currentUser.uid);
-      
-      // FILTRAGE INTELLIGENT
       const uniqueNewItems = enrichedItems.filter(item => {
-        // 1. Vérif par ID
         const isIdPresent = userData.vocab.some(v => v.id === item.id);
-        
-        // 2. Vérif par CONTENU
         const isContentPresent = userData.vocab.some(v => {
            if (item.type === 'swipe' && v.type === 'swipe') return v.es === item.es;
            if (item.type === 'grammar' && v.type === 'grammar') return v.title === item.title;
            if (item.type === 'structure' && v.type === 'structure') return v.title === item.title;
            return false;
         });
-        
         return !isIdPresent && !isContentPresent;
       });
 
       const isNew = !userData.completedLessons.includes(lessonId);
       const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
       
-      // Mise à jour de la base de données
       const updateData = {
         xp: increment(xp),
         streak: increment(1),
-        vocab: arrayUnion(...uniqueNewItems), // On utilise les éléments enrichis SRS
+        vocab: arrayUnion(...uniqueNewItems),
         completedLessons: arrayUnion(lessonId),
         dailyLimit: { date: today, count: newCount }
       };
       
       await updateDoc(userRef, updateData);
       
-      // Mise à jour locale
       setUserData(prev => ({
         ...prev,
         xp: prev.xp + xp,
@@ -327,7 +308,6 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
   const handlePrintPDF = async (lessonId) => {
     const content = dynamicLessonsContent[lessonId];
     if(!content) return;
-
     let html2pdf;
     try {
         html2pdf = (await import('html2pdf.js')).default;
@@ -335,13 +315,10 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
         alert("Erreur : La librairie 'html2pdf.js' n'est pas installée.");
         return;
     }
-
     const vocab = content.filter(c => c.type === 'swipe');
     const grammar = content.filter(c => c.type === 'grammar');
     const structures = content.filter(c => c.type === 'structure');
-
     const element = document.createElement('div');
-    
     element.innerHTML = `
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
@@ -360,7 +337,6 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
         .formula { font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; color: #dc2626; font-weight: bold; font-size: 13px; }
         .footer { margin-top: 40px; text-align: center; font-size: 10px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 2px; }
       </style>
-
       <div class="pdf-container">
         <div class="header"><div class="logo">Español<span>Sprint</span></div><div class="title-box"><h1>Fiche de révision</h1><div class="lesson-id">#${lessonId}</div></div></div>
         ${vocab.length > 0 ? `<h2>📚 Vocabulaire</h2><div class="grid">${vocab.map(v => `<div class="card"><div class="es">${v.es}</div><div class="fr">${v.en}</div>${v.sentence ? `<div class="context">"${v.sentence}"</div>` : ''}</div>`).join('')}</div>` : ''}
@@ -369,7 +345,6 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
         <div class="footer">Généré par EspañolSprint • Apprends vite, parle mieux.</div>
       </div>
     `;
-
     const opt = { margin: 10, filename: `Lecon-${lessonId}-EspanolSprint.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
     html2pdf().set(opt).from(element).save();
   };
@@ -401,17 +376,10 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
               {view === 'dashboard' && userData && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} onDownloadPDF={handlePrintPDF}/>}
               {view === 'notebook' && userData && <NotebookContent userVocab={userData.vocab} />}
-              {view === 'quiz' && (
-                <QuizZone 
-                  onExit={() => setView('dashboard')} 
-                  userData={userData} // on passe tout le userData ici (IMPORTANT pour SRS)
-                  lessonsContent={dynamicLessonsContent}
-                />
-              )}
+              {view === 'quiz' && <QuizZone onExit={() => setView('dashboard')} userData={userData} lessonsContent={dynamicLessonsContent} />}
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
               {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
               
-              {/* [STORY-MODE] Nouvelle vue pour la liste des histoires */}
               {view === 'reading' && (
                 <div className="p-6 pb-24 space-y-8 max-w-2xl mx-auto">
                     <h2 className="text-3xl font-black text-slate-900 mb-6">Lectures & Histoires</h2>
@@ -420,10 +388,7 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
                         {STORIES_DATA.map(story => (
                             <div key={story.id} onClick={() => startStory(story.id)} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md transition-all flex items-center gap-4 group">
                                 <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">💬</div>
-                                <div>
-                                    <h4 className="font-bold text-lg text-slate-900">{story.title}</h4>
-                                    <p className="text-sm text-slate-400">Niveau {story.level}</p>
-                                </div>
+                                <div><h4 className="font-bold text-lg text-slate-900">{story.title}</h4><p className="text-sm text-slate-400">Niveau {story.level}</p></div>
                                 <ChevronRight className="ml-auto text-slate-300" />
                             </div>
                         ))}
@@ -434,15 +399,8 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
                     </div>
                 </div>
               )}
-
-              {/* [STORY-MODE] Moteur d'histoire */}
-              {view === 'story' && activeStory && (
-                  <StoryEngine story={activeStory} onComplete={() => setView('reading')} />
-              )}
-              
-              {/* [LEADERBOARD] Vue Classement */}
+              {view === 'story' && activeStory && <StoryEngine story={activeStory} onComplete={() => setView('reading')} />}
               {view === 'leaderboard' && <LeaderboardView userData={userData} />}
-
               {view === 'profile' && userData && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} onUpload={uploadFullContentToCloud} />}
               {view === 'lesson' && dynamicLessonsContent[activeLessonId] && (
                 <LessonEngine 
@@ -462,275 +420,72 @@ const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0)
   );
 }
 
-/* --- [STORY-MODE] COMPOSANT MOTEUR D'HISTOIRE --- */
+/* --- COMPONENTS --- */
 const StoryEngine = ({ story, onComplete }) => {
     const [index, setIndex] = useState(0);
     const [visibleMessages, setVisibleMessages] = useState([story.dialogue[0]]);
     const messagesEndRef = useRef(null);
-
     const currentItem = story.dialogue[index];
     const isFinished = index >= story.dialogue.length - 1;
-
     const handleNext = () => {
-        if (isFinished) {
-            onComplete();
-            return;
-        }
+        if (isFinished) { onComplete(); return; }
         const nextIndex = index + 1;
         setIndex(nextIndex);
         setVisibleMessages(prev => [...prev, story.dialogue[nextIndex]]);
-        
-        // Jouer le son si c'est une bulle
-        if (story.dialogue[nextIndex].type === 'bubble') {
-             speak(story.dialogue[nextIndex].text_es);
-        }
+        if (story.dialogue[nextIndex].type === 'bubble') { speak(story.dialogue[nextIndex].text_es); }
     };
-
     const handleAnswer = (option) => {
-        if (option === currentItem.answer) {
-             speak("¡Correcto!");
-             handleNext();
-        } else {
-             speak("Incorrecto");
-             alert("Mauvaise réponse, essaie encore !");
-        }
+        if (option === currentItem.answer) { speak("¡Correcto!"); handleNext(); } else { speak("Incorrecto"); alert("Mauvaise réponse, essaie encore !"); }
     };
-
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        if (index === 0) speak(story.dialogue[0].text_es);
-    }, [visibleMessages]);
-
+    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); if (index === 0) speak(story.dialogue[0].text_es); }, [visibleMessages]);
     return (
         <div className="h-full flex flex-col bg-slate-50">
-            <div className="p-4 bg-white border-b border-slate-100 flex items-center justify-between sticky top-0 z-10">
-                 <button onClick={onComplete} className="text-slate-400"><X /></button>
-                 <h3 className="font-bold text-slate-800">{story.title}</h3>
-                 <div className="w-6"></div>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-4 space-y-6">
-                {visibleMessages.map((msg, i) => {
-                    if (msg.type === 'bubble') {
-                        const char = story.characters[msg.speaker];
-                        const isMe = msg.speaker === 'pablo'; 
-                        return (
-                            <div key={i} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : ''} animate-in slide-in-from-bottom-2 duration-500`}>
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm ${char.color}`}>
-                                    {char.avatar}
-                                </div>
-                                <div className={`max-w-[75%] p-4 rounded-2xl shadow-sm ${isMe ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-slate-800 rounded-tl-none border border-slate-100'}`}>
-                                    <p className="font-medium text-lg">{msg.text_es}</p>
-                                    <p className={`text-xs mt-1 ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>{msg.text_fr}</p>
-                                </div>
-                            </div>
-                        );
-                    }
-                    return null;
-                })}
-                <div ref={messagesEndRef} />
-            </div>
-
-            <div className="p-4 bg-white border-t border-slate-100">
-                {currentItem.type === 'question' ? (
-                    <div className="space-y-3 animate-in slide-in-from-bottom duration-300">
-                        <p className="text-center font-bold text-slate-900 mb-2">{currentItem.question}</p>
-                        <div className="grid gap-2">
-                            {currentItem.options.map((opt, idx) => (
-                                <button key={idx} onClick={() => handleAnswer(opt)} className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 font-bold text-slate-700 transition-all">
-                                    {opt}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    <button onClick={handleNext} className="w-full bg-green-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all">
-                        {isFinished ? "Terminer l'histoire" : "Continuer"}
-                    </button>
-                )}
-            </div>
+            <div className="p-4 bg-white border-b border-slate-100 flex items-center justify-between sticky top-0 z-10"><button onClick={onComplete} className="text-slate-400"><X /></button><h3 className="font-bold text-slate-800">{story.title}</h3><div className="w-6"></div></div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">{visibleMessages.map((msg, i) => { if (msg.type === 'bubble') { const char = story.characters[msg.speaker]; const isMe = msg.speaker === 'pablo'; return (<div key={i} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : ''} animate-in slide-in-from-bottom-2 duration-500`}><div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm ${char.color}`}>{char.avatar}</div><div className={`max-w-[75%] p-4 rounded-2xl shadow-sm ${isMe ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-slate-800 rounded-tl-none border border-slate-100'}`}><p className="font-medium text-lg">{msg.text_es}</p><p className={`text-xs mt-1 ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>{msg.text_fr}</p></div></div>); } return null; })}<div ref={messagesEndRef} /></div>
+            <div className="p-4 bg-white border-t border-slate-100">{currentItem.type === 'question' ? (<div className="space-y-3 animate-in slide-in-from-bottom duration-300"><p className="text-center font-bold text-slate-900 mb-2">{currentItem.question}</p><div className="grid gap-2">{currentItem.options.map((opt, idx) => (<button key={idx} onClick={() => handleAnswer(opt)} className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 font-bold text-slate-700 transition-all">{opt}</button>))}</div></div>) : (<button onClick={handleNext} className="w-full bg-green-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all">{isFinished ? "Terminer l'histoire" : "Continuer"}</button>)}</div>
         </div>
     );
 };
-
-/* --- [LEADERBOARD] VUE CLASSEMENT --- */
 const LeaderboardView = ({ userData }) => {
-    const rivals = [
-        { name: "Maria L.", xp: 1450, avatar: "👩" },
-        { name: "Thomas B.", xp: 1200, avatar: "👨" },
-        { name: "Sophie K.", xp: 980, avatar: "👩‍🦱" },
-        { name: userData.name + " (Toi)", xp: userData.xp, avatar: "😎", isMe: true },
-        { name: "Juan P.", xp: 850, avatar: "🧔" },
-    ].sort((a, b) => b.xp - a.xp);
-
+    const rivals = [{ name: "Maria L.", xp: 1450, avatar: "👩" }, { name: "Thomas B.", xp: 1200, avatar: "👨" }, { name: "Sophie K.", xp: 980, avatar: "👩‍🦱" }, { name: userData.name + " (Toi)", xp: userData.xp, avatar: "😎", isMe: true }, { name: "Juan P.", xp: 850, avatar: "🧔" }].sort((a, b) => b.xp - a.xp);
     return (
-        <div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-6">
-            <div className="text-center space-y-2 mb-8">
-                <div className="inline-block p-4 bg-yellow-100 rounded-full text-yellow-600 mb-2">
-                    <Trophy size={40} />
-                </div>
-                <h2 className="text-3xl font-black text-slate-900">Ligue Diamant</h2>
-                <p className="text-slate-500 font-medium">Fin dans 2j 4h</p>
-            </div>
-
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                {rivals.map((user, idx) => (
-                    <div key={idx} className={`flex items-center gap-4 p-4 border-b border-slate-50 ${user.isMe ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''}`}>
-                        <div className="font-black text-slate-300 w-6">{idx + 1}</div>
-                        <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-xl">
-                            {user.avatar}
-                        </div>
-                        <div className="flex-1 font-bold text-slate-800">{user.name}</div>
-                        <div className="font-black text-slate-900">{user.xp} XP</div>
-                    </div>
-                ))}
-            </div>
-        </div>
+        <div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-6"><div className="text-center space-y-2 mb-8"><div className="inline-block p-4 bg-yellow-100 rounded-full text-yellow-600 mb-2"><Trophy size={40} /></div><h2 className="text-3xl font-black text-slate-900">Ligue Diamant</h2><p className="text-slate-500 font-medium">Fin dans 2j 4h</p></div><div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">{rivals.map((user, idx) => (<div key={idx} className={`flex items-center gap-4 p-4 border-b border-slate-50 ${user.isMe ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''}`}><div className="font-black text-slate-300 w-6">{idx + 1}</div><div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-xl">{user.avatar}</div><div className="flex-1 font-bold text-slate-800">{user.name}</div><div className="font-black text-slate-900">{user.xp} XP</div></div>))}</div></div>
     );
 };
-
-/* --- [BLIND-LISTENING] CARTE D'ÉCOUTE --- */
 const ListeningCard = ({ data, onNext, isExam, onScore }) => {
     const [val, setVal] = useState('');
     const [status, setStatus] = useState('idle'); 
     const [revealed, setRevealed] = useState(false);
-
-    useEffect(() => {
-        speak(data.audioText);
-    }, [data]);
-
-    const checkAnswer = (e) => {
-        e.preventDefault();
-        const cleanVal = val.trim().toLowerCase().replace(/[¿¡!.,]/g, '');
-        const cleanAns = data.correctAnswer.toLowerCase().replace(/[¿¡!.,]/g, '');
-        
-        const isCorrect = cleanVal === cleanAns;
-        setStatus(isCorrect ? 'success' : 'error');
-        setRevealed(true);
-
-        if(onScore) onScore(isCorrect); 
-        
-        if (isCorrect) {
-             speak("¡Correcto!");
-             setTimeout(onNext, 1500);
-        } else {
-             speak("Incorrecto");
-        }
-    };
-
+    useEffect(() => { speak(data.audioText); }, [data]);
+    const checkAnswer = (e) => { e.preventDefault(); const cleanVal = val.trim().toLowerCase().replace(/[¿¡!.,]/g, ''); const cleanAns = data.correctAnswer.toLowerCase().replace(/[¿¡!.,]/g, ''); const isCorrect = cleanVal === cleanAns; setStatus(isCorrect ? 'success' : 'error'); setRevealed(true); if(onScore) onScore(isCorrect); if (isCorrect) { speak("¡Correcto!"); setTimeout(onNext, 1500); } else { speak("Incorrecto"); } };
     return (
         <div className="w-full h-full bg-white rounded-3xl shadow-xl flex flex-col p-8 items-center justify-center space-y-8 animate-in zoom-in">
-             <div className="text-center space-y-2">
-                <span className="bg-purple-100 text-purple-600 text-xs font-bold px-3 py-1 rounded-full uppercase">Écoute</span>
-                <h3 className="text-xl font-bold text-slate-800">{data.question}</h3>
-             </div>
-
-             <button 
-                onClick={() => speak(data.audioText)}
-                className="w-32 h-32 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 active:scale-95 transition-all animate-pulse"
-             >
-                <Ear size={48} />
-             </button>
-
-             {revealed && (
-                 <div className="text-center animate-in fade-in slide-in-from-bottom">
-                     <p className="text-slate-400 text-sm mb-1">C'était :</p>
-                     <p className="text-2xl font-black text-purple-600">{data.audioText}</p>
-                 </div>
-             )}
-
-             <form onSubmit={checkAnswer} className="w-full space-y-4">
-                 <input 
-                    type="text" 
-                    value={val} 
-                    onChange={e => setVal(e.target.value)} 
-                    placeholder="Écris ce que tu entends..."
-                    disabled={revealed && status === 'success'}
-                    className={`w-full p-4 rounded-xl border-2 text-center font-bold outline-none ${status === 'error' ? 'border-red-400 bg-red-50' : status === 'success' ? 'border-green-400 bg-green-50' : 'border-slate-200 focus:border-purple-400'}`}
-                 />
-                 <button type="submit" disabled={!val} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold">
-                     {status === 'error' ? 'Continuer' : 'Vérifier'}
-                 </button>
-                 {status === 'error' && (
-                     <button type="button" onClick={onNext} className="w-full py-2 text-slate-400 font-bold hover:text-slate-600">Passer</button>
-                 )}
-             </form>
+             <div className="text-center space-y-2"><span className="bg-purple-100 text-purple-600 text-xs font-bold px-3 py-1 rounded-full uppercase">Écoute</span><h3 className="text-xl font-bold text-slate-800">{data.question}</h3></div>
+             <button onClick={() => speak(data.audioText)} className="w-32 h-32 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 active:scale-95 transition-all animate-pulse"><Ear size={48} /></button>
+             {revealed && (<div className="text-center animate-in fade-in slide-in-from-bottom"><p className="text-slate-400 text-sm mb-1">C'était :</p><p className="text-2xl font-black text-purple-600">{data.audioText}</p></div>)}
+             <form onSubmit={checkAnswer} className="w-full space-y-4"><input type="text" value={val} onChange={e => setVal(e.target.value)} placeholder="Écris ce que tu entends..." disabled={revealed && status === 'success'} className={`w-full p-4 rounded-xl border-2 text-center font-bold outline-none ${status === 'error' ? 'border-red-400 bg-red-50' : status === 'success' ? 'border-green-400 bg-green-50' : 'border-slate-200 focus:border-purple-400'}`} /><button type="submit" disabled={!val} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold">{status === 'error' ? 'Continuer' : 'Vérifier'}</button>{status === 'error' && (<button type="button" onClick={onNext} className="w-full py-2 text-slate-400 font-bold hover:text-slate-600">Passer</button>)}</form>
         </div>
     );
 };
-
-/* --- QUIZ ZONE MODIFIÉE POUR GÉRER LES ERREURS ET L'ÉCOUTE --- */
 const QuizZone = ({ onExit, userData, lessonsContent }) => {
   const [questions, setQuestions] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [wrongAnswers, setWrongAnswers] = useState([]); // [MISTAKE-REVIEW]
+  const [wrongAnswers, setWrongAnswers] = useState([]); 
   const [isReviewing, setIsReviewing] = useState(false);
   const [finished, setFinished] = useState(false);
-
-  useEffect(() => {
-    import('./data/quizengine').then(module => {
-       const sourceContent = (lessonsContent && Object.keys(lessonsContent).length > 0) ? lessonsContent : INITIAL_LESSONS_CONTENT;
-       const generated = module.generateSuperQuiz(sourceContent, userData);
-       setQuestions(generated);
-    });
-  }, [userData, lessonsContent]);
-
+  useEffect(() => { import('./data/quizengine').then(module => { const sourceContent = (lessonsContent && Object.keys(lessonsContent).length > 0) ? lessonsContent : INITIAL_LESSONS_CONTENT; const generated = module.generateSuperQuiz(sourceContent, userData); setQuestions(generated); }); }, [userData, lessonsContent]);
   if (questions.length === 0) return <div className="p-10 text-center flex items-center justify-center h-full"><Loader2 className="animate-spin mr-2"/> Chargement...</div>;
-
   const currentQ = questions[currentIdx];
-
-  const handleNext = () => {
-    if (currentIdx + 1 < questions.length) {
-      setCurrentIdx(p => p + 1);
-    } else {
-      // Fin du quiz principal -> Vérification des erreurs
-      if (wrongAnswers.length > 0 && !isReviewing) {
-           setIsReviewing(true);
-           setQuestions(wrongAnswers); // On remplace les questions par les erreurs
-           setWrongAnswers([]); // On vide pour la prochaine passe (si encore des erreurs)
-           setCurrentIdx(0);
-           alert("🎯 Mode Correction : Révise tes erreurs pour finir !");
-      } else if (wrongAnswers.length > 0 && isReviewing) {
-           // Encore des erreurs en mode révision ? On boucle !
-           setQuestions(wrongAnswers);
-           setWrongAnswers([]);
-           setCurrentIdx(0);
-      } else {
-           setFinished(true);
-      }
-    }
-  };
-
-  const handleScore = (isCorrect) => {
-      if (!isCorrect) {
-          setWrongAnswers(prev => [...prev, currentQ]);
-      }
-  };
-
+  const handleNext = () => { if (currentIdx + 1 < questions.length) { setCurrentIdx(p => p + 1); } else { if (wrongAnswers.length > 0 && !isReviewing) { setIsReviewing(true); setQuestions(wrongAnswers); setWrongAnswers([]); setCurrentIdx(0); alert("🎯 Mode Correction : Révise tes erreurs pour finir !"); } else if (wrongAnswers.length > 0 && isReviewing) { setQuestions(wrongAnswers); setWrongAnswers([]); setCurrentIdx(0); } else { setFinished(true); } } };
+  const handleScore = (isCorrect) => { if (!isCorrect) { setWrongAnswers(prev => [...prev, currentQ]); } };
   if (finished) return <div className="h-full flex items-center justify-center bg-yellow-400"><div className="text-center bg-white p-10 rounded-3xl shadow-xl"><Trophy size={64} className="mx-auto text-yellow-500 mb-4"/><h2 className="text-4xl font-black mb-2">Quiz Terminé !</h2><p className="text-slate-500 mb-6">Toutes les erreurs corrigées.</p><button onClick={onExit} className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold">Retour</button></div></div>;
-
   return (
     <div className="h-full flex flex-col bg-slate-50">
-       <div className="px-6 py-4 bg-white border-b border-slate-100 flex items-center justify-between">
-           <button onClick={onExit}><X className="text-slate-400"/></button>
-           <div className="flex-1 mx-4 h-3 bg-slate-100 rounded-full overflow-hidden">
-               <div className="h-full bg-indigo-500 transition-all duration-500" style={{ width: `${((currentIdx) / questions.length) * 100}%` }} />
-           </div>
-           {isReviewing && <div className="text-red-500 font-bold flex items-center gap-1"><RotateCcw size={16}/> Révision</div>}
-       </div>
-       
-       <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-md mx-auto w-full">
-           {currentQ.type === 'listening' ? (
-               <ListeningCard data={currentQ} onNext={handleNext} onScore={handleScore} />
-           ) : (
-               <InputCard data={currentQ} onNext={handleNext} onScore={handleScore} isExam={false} />
-           )}
-       </div>
+       <div className="px-6 py-4 bg-white border-b border-slate-100 flex items-center justify-between"><button onClick={onExit}><X className="text-slate-400"/></button><div className="flex-1 mx-4 h-3 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-indigo-500 transition-all duration-500" style={{ width: `${((currentIdx) / questions.length) * 100}%` }} /></div>{isReviewing && <div className="text-red-500 font-bold flex items-center gap-1"><RotateCcw size={16}/> Révision</div>}</div>
+       <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-md mx-auto w-full">{currentQ.type === 'listening' ? (<ListeningCard data={currentQ} onNext={handleNext} onScore={handleScore} />) : (<InputCard data={currentQ} onNext={handleNext} onScore={handleScore} isExam={false} />)}</div>
     </div>
   );
 };
-
-/* --- NAVIGATION UPDATE --- */
 const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUpload }) => (
   <div className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200 h-full p-6">
     <div className="flex items-center gap-2 mb-8 px-2"><Image src="/logo.svg" width={32} height={32} alt="Logo"/><span className="text-xl font-black tracking-tighter">Español<span className="text-red-600">Sprint</span></span></div>
@@ -744,7 +499,6 @@ const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUploa
     </nav>
   </div>
 );
-
 const MobileBottomNav = ({ currentView, onChangeView }) => (
   <div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30">
     <NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} />
@@ -754,10 +508,6 @@ const MobileBottomNav = ({ currentView, onChangeView }) => (
     <NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
   </div>
 );
-
-// --- COMPOSANTS DE BASE (REMIS EN PLACE) ---
-// Ces composants étaient présents dans votre version originale et sont nécessaires pour le fonctionnement.
-
 const TestDashboard = ({ userData, onStartTest }) => { const levels = ["A1", "A2", "B1", "B2", "C1"]; const currentIdx = levels.indexOf(userData.level || "A1"); const nextLevel = levels[currentIdx + 1]; const lessonsDone = userData.completedLessons.length; const canTakeExam = lessonsDone >= (currentIdx + 1) * 20; return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-8"><div className="text-center"><h2 className="text-3xl font-black text-slate-900 mb-2">Zone Test 🧠</h2><p className="text-slate-500">Valide tes acquis.</p></div><div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all cursor-pointer group" onClick={() => onStartTest('training')}><div className="flex items-center gap-6"><div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform"><BrainCircuit size={32} /></div><div className="flex-1"><h3 className="text-xl font-bold text-slate-900">Entraînement Rapide</h3><p className="text-sm text-slate-500 mt-1">Révision intelligente.</p></div><ChevronRight className="text-slate-300" /></div></div><div className={`bg-white p-8 rounded-3xl shadow-sm border border-slate-200 transition-all relative overflow-hidden ${!canTakeExam ? 'opacity-60 grayscale' : 'cursor-pointer hover:shadow-md group'}`} onClick={() => canTakeExam && onStartTest('levelup')}><div className="flex items-center gap-6"><div className="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center text-yellow-600 group-hover:rotate-6 transition-transform"><Target size={32} /></div><div className="flex-1"><h3 className="text-xl font-bold text-slate-900">Examen {nextLevel}</h3><p className="text-sm text-slate-500 mt-1">Passage de niveau.</p></div>{canTakeExam ? <ChevronRight className="text-slate-300" /> : <Lock className="text-slate-300" />}</div>{!canTakeExam && <div className="absolute bottom-2 right-4 text-xs font-bold text-red-400 bg-red-50 px-2 py-1 rounded">Finis le niveau d'abord</div>}</div></div>); };
 const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }) => { 
   const levels = ["A1", "A2", "B1", "B2", "C1"]; 
@@ -791,6 +541,7 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
                 p-5 md:p-6 relative overflow-hidden transition-all shadow-sm
               `}
             >
+              
               <div className="flex justify-between items-center mb-5 shrink-0">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3>
@@ -808,12 +559,20 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
                   if (isCompleted) { 
                     return (
                       <div key={lesson.id} className="w-full flex gap-2 group">
-                         <button onClick={() => onStartLesson(lesson.id)} className="flex-1 p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-3 hover:bg-green-200 transition-colors">
+                         <button 
+                            onClick={() => onStartLesson(lesson.id)} 
+                            className="flex-1 p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-3 hover:bg-green-200 transition-colors"
+                         >
                             <CheckCircle size={18} className="shrink-0" />
                             <span className="text-sm font-bold truncate flex-1 text-left">{lesson.title}</span>
                             <span className="text-[10px] uppercase font-bold opacity-60 group-hover:opacity-100 hidden sm:inline">Réviser</span>
                          </button>
-                         <button onClick={() => onDownloadPDF(lesson.id)} className="p-4 rounded-2xl bg-white border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all" title="Télécharger PDF">
+                         
+                         <button 
+                            onClick={() => onDownloadPDF(lesson.id)} 
+                            className="p-4 rounded-2xl bg-white border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all" 
+                            title="Télécharger PDF"
+                         >
                             <Download size={20} />
                          </button>
                       </div>
@@ -833,6 +592,7 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
                   ); 
                 })}
               </div>
+
               {isLocked && (
                 <div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[2px] flex items-center justify-center z-10">
                   <div className="bg-white p-6 rounded-2xl shadow-xl text-center border border-slate-100">
@@ -964,7 +724,14 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
   }; 
   return (
     <div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-8 md:p-12 justify-center space-y-6 animate-in zoom-in duration-300">
-      <div className="text-center space-y-2"><span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">{isExam ? "Question d'Examen" : "Challenge"}</span><h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3></div>
+      <div className="text-center space-y-2">
+        {isExam && (
+          <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            Question d'Examen
+          </span>
+        )}
+        <h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3>
+      </div>
       <div className="flex gap-2 justify-center flex-wrap">{['á','é','í','ó','ú','ñ','¿','¡'].map(char => (<button key={char} type="button" onClick={() => addChar(char)} disabled={isSubmitted} className="w-10 h-10 bg-white border-2 border-slate-200 shadow-sm hover:border-indigo-400 hover:text-indigo-600 text-slate-700 font-bold rounded-xl transition-all text-lg active:scale-95 disabled:opacity-50">{char}</button>))}</div>
       <form onSubmit={checkAnswer} className="w-full space-y-6"><input ref={inputRef} type="text" value={val} onChange={(e) => { if(!isSubmitted) { setVal(e.target.value); setStatus('idle'); } }} disabled={isSubmitted} className={`w-full text-center text-2xl md:text-3xl font-bold p-6 rounded-2xl border-4 outline-none transition-all ${status === 'error' ? 'border-red-400 bg-red-50 text-red-500' : status === 'success' ? 'border-green-400 bg-green-50 text-green-600' : 'border-slate-100 focus:border-yellow-400 focus:bg-yellow-50'}`} placeholder="Ta réponse..." autoComplete="off"/><button type="submit" disabled={isSubmitted || !val.trim()} className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl transition-all transform hover:scale-[1.02] active:scale-95 ${status === 'success' ? 'bg-green-500' : status === 'error' ? 'bg-red-500' : 'bg-slate-900 disabled:bg-slate-300'}`}>{status === 'success' ? 'Validé !' : status === 'error' ? 'Suivant...' : 'Vérifier'}</button></form>
       {status === 'error' && isExam && (<div className="text-center animate-in fade-in slide-in-from-bottom-2"><p className="text-red-400 font-bold">Dommage !</p><p className="text-slate-600 text-sm">La réponse était : <span className="font-bold">{Array.isArray(data.answer) ? data.answer[0] : data.answer}</span></p></div>)}
