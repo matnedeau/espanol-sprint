@@ -38,10 +38,26 @@ const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
 // --- SYSTÈME AUDIO PREMIUM (ElevenLabs + Fallback) ---
+// Ajoutez cette variable JUSTE AVANT la fonction speak (à l'extérieur)
+// Elle sert à garder une trace du lecteur audio pour pouvoir le couper
+let currentAudio: HTMLAudioElement | null = null;
+
 const speak = async (text) => {
   if (!text) return;
 
-  // 1. Tenter l'appel API (ElevenLabs)
+  // --- ÉTAPE 1 : SILENCE OBLIGATOIRE ---
+  // On coupe le sifflet au robot du navigateur
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  
+  // On coupe aussi l'ancienne belle voix si elle parlait encore
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+  }
+
+  // --- ÉTAPE 2 : VOIX PREMIUM (ElevenLabs) ---
   try {
     const response = await fetch('/api/tts', {
       method: 'POST',
@@ -53,19 +69,22 @@ const speak = async (text) => {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
+      
+      // On enregistre cet audio comme étant "celui en cours"
+      currentAudio = audio;
+      
       audio.play();
-      return; // Si ça marche, on s'arrête là
+      return; // SUCCÈS : On s'arrête là, le robot ne parlera pas.
     }
   } catch (error) {
-    console.warn("API TTS échouée, passage au mode hors-ligne.");
+    // Si l'API échoue, on continue vers le fallback silencieusement
   }
 
-  // 2. Fallback : Voix du navigateur (Gratuit & Hors-ligne)
+  // --- ÉTAPE 3 : FALLBACK (Le Robot) ---
+  // Seulement si l'API a échoué
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
-    // Cherche une voix espagnole de qualité (Google/Microsoft)
     const esVoice = voices.find(v => 
       (v.name.includes('Google') || v.name.includes('Microsoft')) && 
       (v.lang.includes('es-ES') || v.lang.includes('es'))
