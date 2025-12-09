@@ -806,7 +806,11 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
   const [sub, setSub] = useState(false); 
   const inputRef = useRef(null);
 
-  const addChar = (c) => { if (sub) return; setVal(p => p + c); inputRef.current?.focus(); };
+  const addChar = (c) => { 
+    if (sub) return; 
+    setVal(p => p + c); 
+    inputRef.current?.focus(); 
+  };
   
   const check = (e) => { 
       e?.preventDefault(); 
@@ -817,14 +821,24 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
       const ok = ans.some(a => a.trim().toLowerCase() === clean); 
       
       setStatus(ok ? 'success' : 'error'); 
-      setSub(true);
-      if(onScore) onScore(ok); 
       
       if (ok) { 
+          // Succès : On verrouille et on passe à la suite
+          setSub(true);
+          if(onScore) onScore(true); 
           setTimeout(onNext, 1500); 
       } else { 
-          if(isExam) {
+          // Erreur
+          if (isExam) {
+             // Examen : On verrouille (pas de seconde chance) et on passe
+             setSub(true);
+             if(onScore) onScore(false);
              setTimeout(onNext, 2500);
+          } else {
+             // Leçon : On NE verrouille PAS (setSub reste false)
+             // On donne juste le focus pour corriger direct
+             inputRef.current?.focus();
+             // Le status 'error' affichera le rouge et l'indice
           }
       } 
   };
@@ -835,19 +849,61 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
             {isExam && <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase">Examen</span>}
             <h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3>
         </div>
+        
         <div className="flex gap-2 justify-center flex-wrap">
             {['á','é','í','ó','ú','ñ','¿','¡'].map(c => (
-                <button key={c} type="button" onClick={() => addChar(c)} disabled={sub} className="w-10 h-10 bg-white border-2 border-slate-200 shadow-sm font-bold rounded-xl active:scale-95">{c}</button>
+                <button key={c} type="button" onClick={() => addChar(c)} disabled={sub} className="w-10 h-10 bg-white border-2 border-slate-200 shadow-sm font-bold rounded-xl active:scale-95 transition-all hover:bg-slate-50 disabled:opacity-50">{c}</button>
             ))}
         </div>
+
         <form onSubmit={check} className="w-full space-y-6">
-            <input ref={inputRef} type="text" value={val} onChange={(e) => { if(!sub) { setVal(e.target.value); setStatus('idle'); } }} disabled={sub} className={`w-full text-center text-2xl font-bold p-6 rounded-2xl border-4 outline-none ${status === 'error' ? 'border-red-400 bg-red-50 text-red-500' : status === 'success' ? 'border-green-400 bg-green-50 text-green-600' : 'border-slate-100 focus:border-yellow-400'}`} placeholder="..." autoComplete="off"/>
-            <button type="submit" disabled={sub || !val.trim()} className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl active:scale-95 ${status === 'success' ? 'bg-green-500' : status === 'error' ? 'bg-red-500' : 'bg-slate-900'}`}>
-                {status === 'success' ? 'Validé !' : status === 'error' ? 'Suivant' : 'Vérifier'}
+            <input 
+                ref={inputRef} 
+                type="text" 
+                value={val} 
+                onChange={(e) => { 
+                    if(!sub) { 
+                        setVal(e.target.value); 
+                        // Dès qu'on modifie, on enlève l'erreur pour pouvoir revalider
+                        if (status === 'error') setStatus('idle'); 
+                    } 
+                }} 
+                disabled={sub} 
+                className={`w-full text-center text-2xl font-bold p-6 rounded-2xl border-4 outline-none transition-all ${
+                    status === 'error' ? 'border-red-400 bg-red-50 text-red-500 animate-shake' : 
+                    status === 'success' ? 'border-green-400 bg-green-50 text-green-600' : 
+                    'border-slate-100 focus:border-yellow-400 text-slate-800'
+                }`} 
+                placeholder="..." 
+                autoComplete="off"
+            />
+            
+            <button 
+                type="submit" 
+                disabled={sub || !val.trim()} 
+                className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl active:scale-95 transition-all ${
+                    status === 'success' ? 'bg-green-500' : 
+                    status === 'error' ? 'bg-red-500' : // Reste rouge tant qu'on n'a pas corrigé
+                    'bg-slate-900'
+                }`}
+            >
+                {status === 'success' ? 'Validé !' : status === 'error' ? 'Réessayer' : 'Vérifier'}
             </button>
         </form>
-        {status === 'error' && !isExam && <p className="text-center text-red-400 font-bold animate-shake">Indice : {data.hint}</p>}
-        {status === 'error' && isExam && <div className="text-center text-red-500 font-bold"><p>Réponse : {Array.isArray(data.answer) ? data.answer[0] : data.answer}</p></div>}
+
+        {/* Feedback visuel */}
+        {status === 'error' && !isExam && (
+            <div className="text-center space-y-2 animate-in slide-in-from-bottom-2 fade-in">
+                <p className="text-red-500 font-bold text-lg">Oups ! Essaie encore.</p>
+                <p className="text-slate-400 text-sm font-medium">Indice : {data.hint}</p>
+            </div>
+        )}
+        
+        {status === 'error' && isExam && (
+            <div className="text-center text-red-500 font-bold animate-in zoom-in">
+                <p>Réponse : {Array.isArray(data.answer) ? data.answer[0] : data.answer}</p>
+            </div>
+        )}
     </div>
   ); 
 };
