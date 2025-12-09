@@ -342,16 +342,62 @@ export default function EspanolSprintPro() {
               {view === 'reading' && (
                 <div className="p-6 pb-24 space-y-8 max-w-2xl mx-auto">
                     <h2 className="text-3xl font-black text-slate-900 mb-6">Lectures & Histoires</h2>
+                    
                     <div className="space-y-4">
-                        <h3 className="font-bold text-slate-500 uppercase text-sm">Histoires Interactives</h3>
-                        {STORIES_DATA.map(story => (
-                            <div key={story.id} onClick={() => startStory(story.id)} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md transition-all flex items-center gap-4 group">
-                                <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">💬</div>
-                                <div><h4 className="font-bold text-lg text-slate-900">{story.title}</h4><p className="text-sm text-slate-400">Niveau {story.level}</p></div>
-                                <ChevronRight className="ml-auto text-slate-300" />
-                            </div>
-                        ))}
+                        <h3 className="font-bold text-slate-500 uppercase text-sm flex items-center gap-2">
+                            <MessageCircle size={16}/> Histoires Interactives
+                        </h3>
+                        
+                        {/* --- DÉBUT DU FILTRAGE --- */}
+                        {(() => {
+                            // 1. Définir l'ordre des niveaux
+                            const levelsOrder = ["A1", "A2", "B1", "B2", "C1"];
+                            // 2. Trouver l'index du niveau de l'utilisateur (ex: A2 = 1)
+                            const userLevelIndex = levelsOrder.indexOf(userData?.level || "A1");
+
+                            return STORIES_DATA.map(story => {
+                                // 3. Trouver l'index du niveau de l'histoire
+                                const storyLevelIndex = levelsOrder.indexOf(story.level);
+                                // 4. Vérifier si c'est accessible (Niveau histoire <= Niveau utilisateur)
+                                const isLocked = storyLevelIndex > userLevelIndex;
+
+                                if (isLocked) return null; // On cache complètement les niveaux supérieurs
+                                // (Si vous préférez les afficher en grisé avec un cadenas, changez le code ci-dessous)
+
+                                return (
+                                    <div 
+                                        key={story.id} 
+                                        onClick={() => startStory(story.id)} 
+                                        className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md transition-all flex items-center gap-4 group"
+                                    >
+                                        <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">💬</div>
+                                        <div className="flex-1">
+                                            <h4 className="font-bold text-lg text-slate-900">{story.title}</h4>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className={`text-xs font-bold px-2 py-0.5 rounded text-white ${
+                                                    story.level === 'A1' ? 'bg-green-400' : 
+                                                    story.level === 'A2' ? 'bg-teal-400' : 
+                                                    story.level === 'B1' ? 'bg-yellow-400' : 
+                                                    story.level === 'B2' ? 'bg-orange-400' : 'bg-red-400'
+                                                }`}>
+                                                    {story.level}
+                                                </span>
+                                                <span className="text-xs text-slate-400">Jour {story.day || '?'}</span>
+                                            </div>
+                                        </div>
+                                        <ChevronRight className="ml-auto text-slate-300" />
+                                    </div>
+                                );
+                            });
+                        })()}
+                        {/* --- FIN DU FILTRAGE --- */}
+                        
+                        {/* Message si tout est fini ou pour encourager */}
+                        <div className="text-center p-4 bg-slate-100 rounded-xl border border-slate-200 text-slate-500 text-sm italic">
+                            Termine le niveau <strong>{userData?.level}</strong> pour débloquer la suite ! 🚀
+                        </div>
                     </div>
+
                     <div className="space-y-4">
                         <h3 className="font-bold text-slate-500 uppercase text-sm">Lecture du jour</h3>
                         <DailyReadingContent userLevel={userData?.level} />
