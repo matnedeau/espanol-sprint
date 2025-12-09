@@ -312,8 +312,14 @@ const StoryEngine = ({ story, onComplete }) => {
     };
 
     const handleAnswer = (option) => {
-        if (option === currentItem.answer) { speak("¡Correcto!"); handleNext(); } 
-        else { speak("Incorrecto"); alert("Mauvaise réponse !"); }
+        if (option === currentItem.answer) { 
+            // On a enlevé le speak("¡Correcto!");
+            handleNext(); 
+        } 
+        else { 
+            // On a enlevé le speak("Incorrecto");
+            alert("Mauvaise réponse !"); 
+        }
     };
 
     useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); if(index===0) speak(story.dialogue[0].text_es); }, [visibleMessages]);
@@ -425,8 +431,24 @@ const ListeningCard = ({ data, onNext, onScore }) => {
     const [status, setStatus] = useState('idle'); 
     const [revealed, setRevealed] = useState(false);
     useEffect(() => { speak(data.audioText); }, [data]);
-    const check = (e) => { e.preventDefault(); const cleanVal = val.trim().toLowerCase().replace(/[¿¡!.,]/g, ''); const cleanAns = data.correctAnswer.toLowerCase().replace(/[¿¡!.,]/g, ''); const correct = cleanVal === cleanAns; setStatus(correct ? 'success' : 'error'); setRevealed(true); if(onScore) onScore(correct); if (correct) { speak("¡Correcto!"); setTimeout(onNext, 1500); } else { speak("Incorrecto"); } };
-    return (
+    const check = (e) => { 
+        e.preventDefault(); 
+        const cleanVal = val.trim().toLowerCase().replace(/[¿¡!.,]/g, ''); 
+        const cleanAns = data.correctAnswer.toLowerCase().replace(/[¿¡!.,]/g, ''); 
+        const correct = cleanVal === cleanAns; 
+        
+        setStatus(correct ? 'success' : 'error'); 
+        setRevealed(true); 
+        if(onScore) onScore(correct); 
+        
+        if (correct) { 
+            // Silence (retrait de "¡Correcto!")
+            setTimeout(onNext, 1500); 
+        } else { 
+            // Silence (retrait de "Incorrecto")
+        } 
+    };
+        return (
         <div className="bg-white p-8 rounded-3xl shadow-xl flex flex-col items-center gap-6 w-full animate-in zoom-in">
              <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-xs font-bold uppercase">Écoute</span>
              <button onClick={() => speak(data.audioText)} className="w-24 h-24 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 active:scale-95 transition-all animate-pulse"><Ear size={40} /></button>
@@ -580,8 +602,26 @@ const NotebookContent = ({ userVocab }) => {
 const InputCard = ({ data, onNext, isExam, onScore }) => { 
   const [val, setVal] = useState(''); const [status, setStatus] = useState('idle'); const [sub, setSub] = useState(false); const inputRef = useRef(null);
   const addChar = (c) => { if (sub) return; setVal(p => p + c); inputRef.current?.focus(); };
-  const check = (e) => { e?.preventDefault(); if (sub) return; const clean = val.trim().toLowerCase(); const ans = Array.isArray(data.answer) ? data.answer : [data.answer]; const ok = ans.some(a => a.trim().toLowerCase() === clean); setStatus(ok ? 'success' : 'error'); if(onScore) onScore(ok); if (ok) { speak("¡Muy bien!"); setTimeout(onNext, 1500); } else { speak("Inténtalo de nuevo"); } };
-  return (<div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-8 md:p-12 justify-center space-y-6 animate-in zoom-in"><div className="text-center space-y-2">{isExam && <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase">Examen</span>}<h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3></div><div className="flex gap-2 justify-center flex-wrap">{['á','é','í','ó','ú','ñ','¿','¡'].map(c => (<button key={c} type="button" onClick={() => addChar(c)} disabled={sub} className="w-10 h-10 bg-white border-2 border-slate-200 shadow-sm font-bold rounded-xl active:scale-95">{c}</button>))}</div><form onSubmit={check} className="w-full space-y-6"><input ref={inputRef} type="text" value={val} onChange={(e) => { if(!sub) { setVal(e.target.value); setStatus('idle'); } }} disabled={sub} className={`w-full text-center text-2xl font-bold p-6 rounded-2xl border-4 outline-none ${status === 'error' ? 'border-red-400 bg-red-50 text-red-500' : status === 'success' ? 'border-green-400 bg-green-50 text-green-600' : 'border-slate-100 focus:border-yellow-400'}`} placeholder="..." autoComplete="off"/><button type="submit" disabled={sub || !val.trim()} className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl active:scale-95 ${status === 'success' ? 'bg-green-500' : status === 'error' ? 'bg-red-500' : 'bg-slate-900'}`}>{status === 'success' ? 'Validé !' : status === 'error' ? 'Réessayer' : 'Vérifier'}</button></form>{status === 'error' && !isExam && <p className="text-center text-red-400 font-bold animate-shake">Indice : {data.hint}</p>}</div>); 
+  const check = (e) => { 
+      e?.preventDefault(); 
+      if (sub) return; 
+      
+      const clean = val.trim().toLowerCase(); 
+      const ans = Array.isArray(data.answer) ? data.answer : [data.answer]; 
+      // Note : J'ai gardé votre logique de validation stricte/souple actuelle
+      const ok = ans.some(a => a.trim().toLowerCase() === clean); 
+      
+      setStatus(ok ? 'success' : 'error'); 
+      if(onScore) onScore(ok); 
+      
+      if (ok) { 
+          // Silence ici (on a retiré le "¡Muy bien!")
+          setTimeout(onNext, 1500); 
+      } else { 
+          // Silence ici aussi
+      } 
+  };
+    return (<div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-8 md:p-12 justify-center space-y-6 animate-in zoom-in"><div className="text-center space-y-2">{isExam && <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase">Examen</span>}<h3 className="text-2xl md:text-4xl font-black text-slate-800">{data.question}</h3></div><div className="flex gap-2 justify-center flex-wrap">{['á','é','í','ó','ú','ñ','¿','¡'].map(c => (<button key={c} type="button" onClick={() => addChar(c)} disabled={sub} className="w-10 h-10 bg-white border-2 border-slate-200 shadow-sm font-bold rounded-xl active:scale-95">{c}</button>))}</div><form onSubmit={check} className="w-full space-y-6"><input ref={inputRef} type="text" value={val} onChange={(e) => { if(!sub) { setVal(e.target.value); setStatus('idle'); } }} disabled={sub} className={`w-full text-center text-2xl font-bold p-6 rounded-2xl border-4 outline-none ${status === 'error' ? 'border-red-400 bg-red-50 text-red-500' : status === 'success' ? 'border-green-400 bg-green-50 text-green-600' : 'border-slate-100 focus:border-yellow-400'}`} placeholder="..." autoComplete="off"/><button type="submit" disabled={sub || !val.trim()} className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl active:scale-95 ${status === 'success' ? 'bg-green-500' : status === 'error' ? 'bg-red-500' : 'bg-slate-900'}`}>{status === 'success' ? 'Validé !' : status === 'error' ? 'Réessayer' : 'Vérifier'}</button></form>{status === 'error' && !isExam && <p className="text-center text-red-400 font-bold animate-shake">Indice : {data.hint}</p>}</div>); 
 };
 const SwipeCard = ({ data, onNext }) => { const [swiped, setSwiped] = useState(null); const swipe = (dir) => { setSwiped(dir); setTimeout(onNext, 250); }; useEffect(() => { const handler = (e) => { if(e.key==="ArrowRight") swipe('right'); if(e.key===" " || e.key==="Enter") { e.preventDefault(); speak(data.es); } }; window.addEventListener("keydown", handler); return () => window.removeEventListener("keydown", handler); }, [data]); return (<div className={`w-full h-full bg-white rounded-3xl shadow-xl border-b-8 border-slate-100 flex flex-col relative transition-all duration-300 ${swiped ? 'opacity-0 translate-x-full' : ''}`}><div className="absolute top-4 right-4"><button onClick={(e) => { e.stopPropagation(); speak(data.es); }} className="p-3 bg-slate-100 rounded-full text-indigo-600"><Volume2 size={24}/></button></div><div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6"><h2 className="text-5xl font-black text-slate-800">{data.es}</h2><div className="bg-indigo-50 px-6 py-3 rounded-2xl"><p className="text-xl font-bold text-indigo-600">{data.en}</p></div><p className="text-sm text-slate-400 italic">"{data.context}"</p></div><div className="p-6 flex justify-center"><button onClick={() => swipe('right')} className="w-full py-4 bg-teal-500 text-white rounded-xl font-bold text-xl shadow-lg">Compris !</button></div></div>); };
 const GrammarCard = ({ data, onNext }) => { const [rev, setRev] = useState(false); return (<div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"><div className="bg-indigo-600 p-8 text-white text-center relative"><button onClick={() => speak(data.title)} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full"><Volume2 size={20}/></button><h3 className="text-3xl font-black">{data.title}</h3><p className="text-indigo-200 mt-2">{data.description}</p></div><div className="flex-1 p-6 flex flex-col justify-between bg-slate-50">{rev ? (<div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">{data.conjugation.map((row, i) => (<div key={i} className="flex justify-between p-4 border-b last:border-0"><span className="text-slate-400 font-medium w-1/3">{row.pronoun}</span><span className="text-indigo-600 font-black text-xl w-1/3 text-center">{row.verb}</span><span className="text-slate-300 text-sm w-1/3 text-right italic">{row.fr}</span></div>))}</div>) : (<div className="flex-1 flex items-center justify-center"><p className="text-slate-400 italic">Clique pour révéler</p></div>)}<button onClick={rev ? onNext : () => setRev(true)} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg">{rev ? 'Continuer' : 'Voir Conjugaison'}</button></div></div>); };
