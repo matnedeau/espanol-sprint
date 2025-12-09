@@ -319,60 +319,86 @@ export default function EspanolSprintPro() {
   };
 
   const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0) => {
-      // MODE EXAMEN
-      if (testMode === 'levelup') {
-          const passed = finalScore >= 16;
-          if (passed) {
-              const levels = ["A1", "A2", "B1", "B2", "C1"];
-              const currentIdx = levels.indexOf(userData.level);
-              const nextLevel = levels[currentIdx + 1] || "C1";
-              if (currentUser) {
+      // 1. Sauvegarde visuelle immédiate (pour éviter l'écran blanc)
+      // On prépare le changement de vue, mais on laisse le temps au code async de se lancer
+      let moveOn = () => {
+          setTestMode(null);
+          setView('complete');
+      };
+
+      try {
+          // MODE EXAMEN
+          if (testMode === 'levelup') {
+              const passed = (typeof finalScore === 'number' ? finalScore : 0) >= 16;
+              if (passed && currentUser) {
+                  const levels = ["A1", "A2", "B1", "B2", "C1"];
+                  const currentIdx = levels.indexOf(userData.level);
+                  const nextLevel = levels[currentIdx + 1] || "C1";
+                  
                   const userRef = doc(db, "users", currentUser.uid);
                   await updateDoc(userRef, { xp: increment(500), level: nextLevel });
                   setUserData(prev => ({ ...prev, level: nextLevel, xp: prev.xp + 500 }));
               }
-          } 
-          setTestMode(null);
-          setView('complete');
-          return;
-      }
+              moveOn();
+              return;
+          }
 
-      // MODE STANDARD
-      const newItems = lessonContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
-      // Ajout des propriétés SRS
-      const newItemsWithSRS = newItems.map(item => ({ 
-        ...item, 
-        grade: 0, 
-        interval: 1, 
-        lastReview: new Date().toISOString() 
-      }));
+          // MODE STANDARD
+          // Sécurité : Vérifier que lessonContent est bien un tableau
+          const safeContent = Array.isArray(lessonContent) ? lessonContent : [];
+          
+          const newItems = safeContent.filter(item => ['swipe', 'grammar', 'structure'].includes(item.type));
+          
+          const newItemsWithSRS = newItems.map(item => ({ 
+            ...item, 
+            grade: 0, 
+            interval: 1, 
+            lastReview: new Date().toISOString() 
+          }));
 
-      const today = new Date().toDateString();
-      
-      if (currentUser) {
-        const userRef = doc(db, "users", currentUser.uid);
-        const uniqueNewItems = newItemsWithSRS.filter(item => !userData.vocab.some(v => v.id === item.id));
-        const isNew = !userData.completedLessons.includes(lessonId);
-        const newCount = isNew ? (userData.dailyLimit?.date === today ? userData.dailyLimit.count + 1 : 1) : (userData.dailyLimit?.count || 0);
-        
-        await updateDoc(userRef, {
-          xp: increment(xp),
-          streak: increment(1),
-          vocab: arrayUnion(...uniqueNewItems),
-          completedLessons: arrayUnion(lessonId),
-          dailyLimit: { date: today, count: newCount }
-        });
-        
-        setUserData(prev => ({
-          ...prev,
-          xp: prev.xp + xp,
-          streak: prev.streak + 1,
-          vocab: [...prev.vocab, ...uniqueNewItems],
-          completedLessons: isNew ? [...prev.completedLessons, lessonId] : prev.completedLessons,
-          dailyLimit: { date: today, count: newCount }
-        }));
+          const today = new Date().toDateString();
+          
+          if (currentUser) {
+            const userRef = doc(db, "users", currentUser.uid);
+            
+            // Sécurité sur les données existantes
+            const currentVocab = Array.isArray(userData.vocab) ? userData.vocab : [];
+            const currentCompleted = Array.isArray(userData.completedLessons) ? userData.completedLessons : [];
+
+            const uniqueNewItems = newItemsWithSRS.filter(item => !currentVocab.some(v => v.id === item.id));
+            const isNew = !currentCompleted.includes(lessonId);
+            
+            // Calcul sécurisé du daily count
+            const currentCount = userData.dailyLimit?.date === today ? (userData.dailyLimit.count || 0) : 0;
+            const newCount = isNew ? currentCount + 1 : currentCount;
+            
+            // Mise à jour Optimiste (UI d'abord)
+            setUserData(prev => ({
+              ...prev,
+              xp: (prev.xp || 0) + xp,
+              streak: (prev.streak || 0) + 1,
+              vocab: [...currentVocab, ...uniqueNewItems],
+              completedLessons: isNew ? [...currentCompleted, lessonId] : currentCompleted,
+              dailyLimit: { date: today, count: newCount }
+            }));
+
+            // Mise à jour Firebase (En arrière-plan)
+            await updateDoc(userRef, {
+              xp: increment(xp),
+              streak: increment(1),
+              vocab: arrayUnion(...uniqueNewItems),
+              completedLessons: arrayUnion(lessonId),
+              dailyLimit: { date: today, count: newCount }
+            });
+          }
+      } catch (error) {
+          console.error("ERREUR SAUVEGARDE LEÇON :", error);
+          // Même en cas d'erreur critique, on laisse l'utilisateur avancer !
+          alert("Erreur de sauvegarde, mais bravo pour la leçon !");
+      } finally {
+          // 3. Quoi qu'il arrive, on change d'écran
+          moveOn();
       }
-      setView('complete');
   };
 
   const handlePrintPDF = async (lessonId) => {
