@@ -37,24 +37,29 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-// (Nouveau code à coller à la place)
+// --- SYSTÈME AUDIO PREMIUM (ElevenLabs + Fallback) ---
 
-// Variable pour garder en mémoire le son ElevenLabs en cours
-let currentAudio = null; 
+// 1. Variable GLOBALE (très important qu'elle soit ici, en dehors de la fonction)
+let currentAudio = null;
 
 const speak = async (text) => {
   if (!text) return;
 
-  // 1. On fait taire tout le monde (Robot + MP3 précédent)
+  // 2. LE GRAND SILENCE (On coupe tout avant de commencer)
+  
+  // A. On fait taire le robot du navigateur
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
+
+  // B. On fait taire la voix ElevenLabs précédente (C'est ça qui manquait !)
   if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
+    currentAudio.pause();       // Stop
+    currentAudio.currentTime = 0; // Rembobine
+    currentAudio = null;        // Oublie
   }
 
-  // 2. On essaie la voix Premium (ElevenLabs)
+  // 3. TENTATIVE API ELEVENLABS
   try {
     const response = await fetch('/api/tts', {
       method: 'POST',
@@ -66,28 +71,32 @@ const speak = async (text) => {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
-
-      currentAudio = audio; // On le stocke pour pouvoir le couper au prochain clic
+      
+      // C. On enregistre ce nouvel audio comme étant "celui qui parle"
+      currentAudio = audio;
+      
       audio.play();
-      return; 
+      return; // Succès, on s'arrête là
     }
   } catch (error) {
-    console.warn("Erreur API TTS, passage au fallback");
+    console.warn("API TTS échouée, passage au mode hors-ligne.");
   }
 
-  // 3. Fallback : Voix Robot (si l'API a échoué ou quota dépassé)
+  // 4. FALLBACK : Voix du navigateur (si l'API a échoué)
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     const utterance = new SpeechSynthesisUtterance(text);
-    // ... (votre logique de choix de voix existante) ...
     const voices = window.speechSynthesis.getVoices();
+    
+    // Recherche de la meilleure voix possible
     const esVoice = voices.find(v => 
       (v.name.includes('Google') || v.name.includes('Microsoft')) && 
       (v.lang.includes('es-ES') || v.lang.includes('es'))
     ) || voices.find(v => v.lang.includes('es'));
-
+    
     if (esVoice) utterance.voice = esVoice;
     utterance.lang = 'es-ES'; 
     utterance.rate = 0.9;
+    
     window.speechSynthesis.speak(utterance);
   }
 };
