@@ -2,8 +2,42 @@
 // @ts-nocheck
 
 /* 📚 CONTENT EXPANSION PACK 
-   Généré pour EspañolSprint - Vocabulaire Enrichi & Lectures Longues & Conjugaisons Complètes
+   Généré pour EspañolSprint - Vocabulaire Enrichi & Lectures Longues & Conjugaisons Complètes & Mode Histoire
 */
+
+// [STORY-MODE] STRUCTURE POUR LES HISTOIRES INTERACTIVES
+export const STORIES_DATA = [
+  {
+    id: "story-1",
+    title: "La Rencontre (El Encuentro)",
+    level: "A1",
+    characters: {
+      pablo: { name: "Pablo", avatar: "👨‍🦱", color: "bg-blue-100 text-blue-900" },
+      sofia: { name: "Sofía", avatar: "👩‍🦰", color: "bg-pink-100 text-pink-900" }
+    },
+    dialogue: [
+      { type: "bubble", speaker: "pablo", text_es: "¡Hola! ¿Eres nueva aquí?", text_fr: "Salut ! Tu es nouvelle ici ?" },
+      { type: "bubble", speaker: "sofia", text_es: "Sí, soy Sofía. Acabo de llegar de Madrid.", text_fr: "Oui, je suis Sofía. Je viens d'arriver de Madrid." },
+      { 
+        type: "question", 
+        question: "D'où vient Sofía ?", 
+        options: ["Barcelone", "Madrid", "Valence"], 
+        answer: "Madrid" 
+      },
+      { type: "bubble", speaker: "pablo", text_es: "¡Qué bien! Yo me llamo Pablo.", text_fr: "Super ! Je m'appelle Pablo." },
+      { type: "bubble", speaker: "sofia", text_es: "¿Trabajas o estudias?", text_fr: "Tu travailles ou tu étudies ?" },
+      { type: "bubble", speaker: "pablo", text_es: "Estudio arquitectura. ¿Y tú?", text_fr: "J'étudie l'architecture. Et toi ?" },
+      { 
+        type: "question", 
+        question: "Que fait Pablo ?", 
+        options: ["Il travaille", "Il est étudiant", "Il est touriste"], 
+        answer: "Il est étudiant" 
+      },
+      { type: "bubble", speaker: "sofia", text_es: "Yo busco trabajo. ¿Sabes dónde hay una buena cafetería?", text_fr: "Moi je cherche du travail. Tu sais où il y a un bon café ?" },
+      { type: "bubble", speaker: "pablo", text_es: "¡Claro! Vamos, te invito.", text_fr: "Bien sûr ! Viens, je t'invite." }
+    ]
+  }
+];
 
 // --- 1. LECTURES QUOTIDIENNES ---
 export const DAILY_READINGS = [
