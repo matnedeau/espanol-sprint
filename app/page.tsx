@@ -385,6 +385,10 @@ const StoryEngine = ({ story, onComplete }) => {
     const [index, setIndex] = useState(0);
     const [visibleMessages, setVisibleMessages] = useState([story.dialogue[0]]);
     const messagesEndRef = useRef(null);
+    
+    // --- CORRECTIF : Variable pour empêcher le double démarrage ---
+    const hasPlayedStart = useRef(false);
+
     const currentItem = story.dialogue[index];
     const isFinished = index >= story.dialogue.length - 1;
 
@@ -397,31 +401,32 @@ const StoryEngine = ({ story, onComplete }) => {
         if (story.dialogue[nextIndex].type === 'bubble') {
             const speakerKey = story.dialogue[nextIndex].speaker;
             const character = story.characters[speakerKey];
-            // On passe l'ID de voix du personnage !
             speak(story.dialogue[nextIndex].text_es, character?.voiceId);
         }
     };
 
     const handleAnswer = (option) => {
         if (option === currentItem.answer) { 
-            // SILENCE : On ne dit plus "Correcto"
             handleNext(); 
         } 
         else { 
-            // SILENCE : On ne dit plus "Incorrecto"
             alert("Mauvaise réponse !"); 
         }
     };
 
     useEffect(() => { 
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
-        // Speak du premier message au chargement
-        if(index===0 && story.dialogue[0].type === 'bubble') {
+        
+        // --- CORRECTIF : On vérifie si on a DÉJÀ parlé ---
+        // On ne lance l'audio que si c'est le début (index 0) ET que 'hasPlayedStart' est faux
+        if(index === 0 && story.dialogue[0].type === 'bubble' && !hasPlayedStart.current) {
+            hasPlayedStart.current = true; // On verrouille immédiatement : "C'est bon, j'ai parlé !"
+            
             const speakerKey = story.dialogue[0].speaker;
             const character = story.characters[speakerKey];
             speak(story.dialogue[0].text_es, character?.voiceId);
         }
-    }, [visibleMessages]);
+    }, [visibleMessages]); // On garde la dépendance, mais la condition if() nous protège
 
     return (
         <div className="h-full flex flex-col bg-slate-50">

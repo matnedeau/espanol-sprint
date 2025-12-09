@@ -5,49 +5,420 @@
    Généré pour EspañolSprint - Vocabulaire Enrichi & Lectures Longues & Conjugaisons Complètes & Mode Histoire
 */
 
-// [STORY-MODE] STRUCTURE POUR LES HISTOIRES INTERACTIVES
 export const STORIES_DATA = [
+  // --- NIVEAU A1 ---
   {
     id: "story-1",
-    title: "La Rencontre (El Encuentro)",
+    title: "Commander au Café (Pedir un café)",
     level: "A1",
     characters: {
-      pablo: { 
-        name: "Pablo", 
-        avatar: "👨‍🦱", 
+      carlos: {
+        name: "Carlos",
+        avatar: "🤵",
         color: "bg-blue-100 text-blue-900",
-        // 👇 AJOUTEZ L'ID DE LA VOIX HOMME ICI
-        voiceId: "ErXwobaYiN019PkySvjV" 
+        voiceId: "ErXwobaYiN019PkySvjV"
       },
-      sofia: { 
-        name: "Sofía", 
-        avatar: "👩‍🦰", 
+      elena: {
+        name: "Elena",
+        avatar: "👩",
         color: "bg-pink-100 text-pink-900",
-        // 👇 AJOUTEZ L'ID DE LA VOIX FEMME ICI
-        voiceId: "21m00Tcm4TlvDq8ikWAM" 
+        voiceId: "21m00Tcm4TlvDq8ikWAM"
       }
     },
-    //
     dialogue: [
-      { type: "bubble", speaker: "pablo", text_es: "¡Hola! ¿Eres nueva aquí?", text_fr: "Salut ! Tu es nouvelle ici ?" },
-      { type: "bubble", speaker: "sofia", text_es: "Sí, soy Sofía. Acabo de llegar de Madrid.", text_fr: "Oui, je suis Sofía. Je viens d'arriver de Madrid." },
-      { 
-        type: "question", 
-        question: "D'où vient Sofía ?", 
-        options: ["Barcelone", "Madrid", "Valence"], 
-        answer: "Madrid" 
+      { type: "bubble", speaker: "carlos", text_es: "¡Hola! ¿Qué desea tomar?", text_fr: "Bonjour ! Que désirez-vous prendre ?" },
+      { type: "bubble", speaker: "elena", text_es: "Hola. Quiero un café con leche, por favor.", text_fr: "Bonjour. Je veux un café au lait, s'il vous plaît." },
+      { type: "bubble", speaker: "carlos", text_es: "¿Quiere algo para comer?", text_fr: "Voulez-vous quelque chose à manger ?" },
+      {
+        type: "question",
+        question: "Que commande Elena ?",
+        options: ["Un thé", "Un café au lait", "Un jus d'orange"],
+        answer: "Un café au lait"
       },
-      { type: "bubble", speaker: "pablo", text_es: "¡Qué bien! Yo me llamo Pablo.", text_fr: "Super ! Je m'appelle Pablo." },
-      { type: "bubble", speaker: "sofia", text_es: "¿Trabajas o estudias?", text_fr: "Tu travailles ou tu étudies ?" },
-      { type: "bubble", speaker: "pablo", text_es: "Estudio arquitectura. ¿Y tú?", text_fr: "J'étudie l'architecture. Et toi ?" },
-      { 
-        type: "question", 
-        question: "Que fait Pablo ?", 
-        options: ["Il travaille", "Il est étudiant", "Il est touriste"], 
-        answer: "Il est étudiant" 
+      { type: "bubble", speaker: "elena", text_es: "Sí, una tostada con tomate.", text_fr: "Oui, une tartine à la tomate." },
+      { type: "bubble", speaker: "carlos", text_es: "Muy bien. ¿Algo más?", text_fr: "Très bien. Autre chose ?" },
+      { type: "bubble", speaker: "elena", text_es: "No, gracias. ¿Cuánto es?", text_fr: "Non, merci. C'est combien ?" },
+      {
+        type: "question",
+        question: "Que mange-t-elle avec son café ?",
+        options: ["Un croissant", "Une tartine", "Un gâteau"],
+        answer: "Une tartine"
       },
-      { type: "bubble", speaker: "sofia", text_es: "Yo busco trabajo. ¿Sabes dónde hay una buena cafetería?", text_fr: "Moi je cherche du travail. Tu sais où il y a un bon café ?" },
-      { type: "bubble", speaker: "pablo", text_es: "¡Claro! Vamos, te invito.", text_fr: "Bien sûr ! Viens, je t'invite." }
+      { type: "bubble", speaker: "carlos", text_es: "Son tres euros cincuenta.", text_fr: "Cela fait trois euros cinquante." },
+      { type: "bubble", speaker: "elena", text_es: "Aquí tiene. Gracias.", text_fr: "Voilà. Merci." }
+    ]
+  },
+  {
+    id: "story-2",
+    title: "Perdu dans la ville (Perdido en la ciudad)",
+    level: "A1",
+    characters: {
+      marc: {
+        name: "Marc",
+        avatar: "🧔",
+        color: "bg-green-100 text-green-900",
+        voiceId: "ErXwobaYiN019PkySvjV"
+      },
+      ana: {
+        name: "Ana",
+        avatar: "👩‍🦱",
+        color: "bg-orange-100 text-orange-900",
+        voiceId: "21m00Tcm4TlvDq8ikWAM"
+      }
+    },
+    dialogue: [
+      { type: "bubble", speaker: "marc", text_es: "Perdone, señora. Estoy perdido.", text_fr: "Excusez-moi, madame. Je suis perdu." },
+      { type: "bubble", speaker: "ana", text_es: "Hola. ¿Qué busca usted?", text_fr: "Bonjour. Que cherchez-vous ?" },
+      { type: "bubble", speaker: "marc", text_es: "Busco el Museo del Prado.", text_fr: "Je cherche le Musée du Prado." },
+      {
+        type: "question",
+        question: "Que cherche Marc ?",
+        options: ["La gare", "L'hôtel", "Le musée"],
+        answer: "Le musée"
+      },
+      { type: "bubble", speaker: "ana", text_es: "Está cerca. Siga todo recto.", text_fr: "C'est proche. Continuez tout droit." },
+      { type: "bubble", speaker: "marc", text_es: "¿Y después?", text_fr: "Et après ?" },
+      { type: "bubble", speaker: "ana", text_es: "Gire a la derecha en la plaza.", text_fr: "Tournez à droite sur la place." },
+      {
+        type: "question",
+        question: "Quelle direction doit-il prendre après ?",
+        options: ["À gauche", "Tout droit", "À droite"],
+        answer: "À droite"
+      },
+      { type: "bubble", speaker: "marc", text_es: "Muchas gracias por su ayuda.", text_fr: "Merci beaucoup pour votre aide." },
+      { type: "bubble", speaker: "ana", text_es: "De nada. ¡Buen día!", text_fr: "De rien. Bonne journée !" }
+    ]
+  },
+  {
+    id: "story-3",
+    title: "Au marché (En el mercado)",
+    level: "A1",
+    characters: {
+      luis: {
+        name: "Luis",
+        avatar: "👨‍🌾",
+        color: "bg-yellow-100 text-yellow-900",
+        voiceId: "ErXwobaYiN019PkySvjV"
+      },
+      marta: {
+        name: "Marta",
+        avatar: "👩",
+        color: "bg-purple-100 text-purple-900",
+        voiceId: "21m00Tcm4TlvDq8ikWAM"
+      }
+    },
+    dialogue: [
+      { type: "bubble", speaker: "luis", text_es: "¡Buenos días! Fruta fresca hoy.", text_fr: "Bonjour ! Fruits frais aujourd'hui." },
+      { type: "bubble", speaker: "marta", text_es: "Hola. ¿A cuánto están las manzanas?", text_fr: "Bonjour. À combien sont les pommes ?" },
+      { type: "bubble", speaker: "luis", text_es: "A dos euros el kilo.", text_fr: "À deux euros le kilo." },
+      {
+        type: "question",
+        question: "Quel est le prix des pommes ?",
+        options: ["1€ / kg", "2€ / kg", "3€ / kg"],
+        answer: "2€ / kg"
+      },
+      { type: "bubble", speaker: "marta", text_es: "Deme un kilo, por favor.", text_fr: "Donnez-m'en un kilo, s'il vous plaît." },
+      { type: "bubble", speaker: "luis", text_es: "¿Quiere naranjas también?", text_fr: "Voulez-vous des oranges aussi ?" },
+      { type: "bubble", speaker: "marta", text_es: "No, solo manzanas hoy.", text_fr: "Non, seulement des pommes aujourd'hui." },
+      {
+        type: "question",
+        question: "Marta achète-t-elle des oranges ?",
+        options: ["Oui", "Non", "Elle hésite"],
+        answer: "Non"
+      },
+      { type: "bubble", speaker: "luis", text_es: "Aquí tiene. Son dos euros.", text_fr: "Voici. Cela fait deux euros." },
+      { type: "bubble", speaker: "marta", text_es: "Gracias, adiós.", text_fr: "Merci, au revoir." }
+    ]
+  },
+  {
+    id: "story-4",
+    title: "Les Présentations (Las Presentaciones)",
+    level: "A1",
+    characters: {
+      pedro: {
+        name: "Pedro",
+        avatar: "👨",
+        color: "bg-teal-100 text-teal-900",
+        voiceId: "ErXwobaYiN019PkySvjV"
+      },
+      julia: {
+        name: "Julia",
+        avatar: "👩",
+        color: "bg-red-100 text-red-900",
+        voiceId: "21m00Tcm4TlvDq8ikWAM"
+      }
+    },
+    dialogue: [
+      { type: "bubble", speaker: "julia", text_es: "¡Hola! Eres el nuevo vecino, ¿verdad?", text_fr: "Salut ! Tu es le nouveau voisin, c'est ça ?" },
+      { type: "bubble", speaker: "pedro", text_es: "Sí, me llamo Pedro. Mucho gusto.", text_fr: "Oui, je m'appelle Pedro. Enchanté." },
+      { type: "bubble", speaker: "julia", text_es: "Yo soy Julia. ¿De dónde eres?", text_fr: "Moi c'est Julia. D'où viens-tu ?" },
+      {
+        type: "question",
+        question: "Qui est le nouveau voisin ?",
+        options: ["Julia", "Pedro", "Carlos"],
+        answer: "Pedro"
+      },
+      { type: "bubble", speaker: "pedro", text_es: "Soy de México. ¿Y tú?", text_fr: "Je suis du Mexique. Et toi ?" },
+      { type: "bubble", speaker: "julia", text_es: "Soy española, de Madrid.", text_fr: "Je suis espagnole, de Madrid." },
+      { type: "bubble", speaker: "pedro", text_es: "¿A qué te dedicas, Julia?", text_fr: "Que fais-tu dans la vie, Julia ?" },
+      {
+        type: "question",
+        question: "D'où vient Julia ?",
+        options: ["Du Mexique", "De Madrid", "De Barcelone"],
+        answer: "De Madrid"
+      },
+      { type: "bubble", speaker: "julia", text_es: "Soy enfermera en el hospital.", text_fr: "Je suis infirmière à l'hôpital." },
+      { type: "bubble", speaker: "pedro", text_es: "¡Qué interesante! Nos vemos pronto.", text_fr: "C'est intéressant ! À bientôt." }
+    ]
+  },
+
+  // --- NIVEAU A2 ---
+  {
+    id: "story-5",
+    title: "Entretien d'embauche (Entrevista de trabajo)",
+    level: "A2",
+    characters: {
+      director: {
+        name: "Sr. Garcia",
+        avatar: "👴",
+        color: "bg-gray-100 text-gray-900",
+        voiceId: "ErXwobaYiN019PkySvjV"
+      },
+      laura: {
+        name: "Laura",
+        avatar: "👩‍💼",
+        color: "bg-indigo-100 text-indigo-900",
+        voiceId: "21m00Tcm4TlvDq8ikWAM"
+      }
+    },
+    dialogue: [
+      { type: "bubble", speaker: "director", text_es: "Bienvenida, Laura. Siéntese, por favor.", text_fr: "Bienvenue, Laura. Asseyez-vous, s'il vous plaît." },
+      { type: "bubble", speaker: "laura", text_es: "Gracias, Señor Garcia.", text_fr: "Merci, Monsieur Garcia." },
+      { type: "bubble", speaker: "director", text_es: "Hábleme de su experiencia laboral.", text_fr: "Parlez-moi de votre expérience professionnelle." },
+      {
+        type: "question",
+        question: "De quoi doivent-ils parler ?",
+        options: ["Des vacances", "De l'expérience pro", "De la famille"],
+        answer: "De l'expérience pro"
+      },
+      { type: "bubble", speaker: "laura", text_es: "Trabajé tres años en marketing digital.", text_fr: "J'ai travaillé trois ans en marketing digital." },
+      { type: "bubble", speaker: "director", text_es: "Interesante. ¿Habla usted inglés?", text_fr: "Intéressant. Parlez-vous anglais ?" },
+      { type: "bubble", speaker: "laura", text_es: "Sí, tengo un nivel avanzado.", text_fr: "Oui, j'ai un niveau avancé." },
+      {
+        type: "question",
+        question: "Quel est le niveau d'anglais de Laura ?",
+        options: ["Débutant", "Intermédiaire", "Avancé"],
+        answer: "Avancé"
+      },
+      { type: "bubble", speaker: "director", text_es: "¿Puede empezar el lunes?", text_fr: "Pouvez-vous commencer lundi ?" },
+      { type: "bubble", speaker: "laura", text_es: "¡Por supuesto! Muchas gracias.", text_fr: "Bien sûr ! Merci beaucoup." }
+    ]
+  },
+  {
+    id: "story-6",
+    title: "Rendez-vous romantique (Cita romántica)",
+    level: "A2",
+    characters: {
+      diego: {
+        name: "Diego",
+        avatar: "🧔",
+        color: "bg-cyan-100 text-cyan-900",
+        voiceId: "ErXwobaYiN019PkySvjV"
+      },
+      clara: {
+        name: "Clara",
+        avatar: "👩‍🦰",
+        color: "bg-rose-100 text-rose-900",
+        voiceId: "21m00Tcm4TlvDq8ikWAM"
+      }
+    },
+    dialogue: [
+      { type: "bubble", speaker: "diego", text_es: "Estás muy guapa esta noche, Clara.", text_fr: "Tu es très belle ce soir, Clara." },
+      { type: "bubble", speaker: "clara", text_es: "Gracias, Diego. Tú también.", text_fr: "Merci, Diego. Toi aussi." },
+      { type: "bubble", speaker: "diego", text_es: "¿Te gusta la comida italiana?", text_fr: "Tu aimes la cuisine italienne ?" },
+      {
+        type: "question",
+        question: "De quel type de cuisine parlent-ils ?",
+        options: ["Française", "Italienne", "Japonaise"],
+        answer: "Italienne"
+      },
+      { type: "bubble", speaker: "clara", text_es: "Me encanta. La pasta es mi favorita.", text_fr: "J'adore. Les pâtes sont mes préférées." },
+      { type: "bubble", speaker: "diego", text_es: "Dime, ¿qué haces en tu tiempo libre?", text_fr: "Dis-moi, que fais-tu de ton temps libre ?" },
+      { type: "bubble", speaker: "clara", text_es: "Me gusta mucho ir al cine y leer.", text_fr: "J'aime beaucoup aller au cinéma et lire." },
+      {
+        type: "question",
+        question: "Quel est le passe-temps de Clara ?",
+        options: ["Le sport", "La lecture", "La danse"],
+        answer: "La lecture"
+      },
+      { type: "bubble", speaker: "diego", text_es: "A mí también. Deberíamos ir juntos.", text_fr: "Moi aussi. Nous devrions y aller ensemble." },
+      { type: "bubble", speaker: "clara", text_es: "¡Me parece una buena idea!", text_fr: "Ça me semble être une bonne idée !" }
+    ]
+  },
+  {
+    id: "story-7",
+    title: "Chez le médecin (En el médico)",
+    level: "A2",
+    characters: {
+      doctor: {
+        name: "Dr. Lopez",
+        avatar: "👨‍⚕️",
+        color: "bg-emerald-100 text-emerald-900",
+        voiceId: "ErXwobaYiN019PkySvjV"
+      },
+      sofia: {
+        name: "Sofía",
+        avatar: "🤒",
+        color: "bg-red-50 text-red-900",
+        voiceId: "21m00Tcm4TlvDq8ikWAM"
+      }
+    },
+    dialogue: [
+      { type: "bubble", speaker: "doctor", text_es: "Buenos días. ¿Qué le pasa?", text_fr: "Bonjour. Qu'est-ce qui ne va pas ?" },
+      { type: "bubble", speaker: "sofia", text_es: "Me duele mucho la cabeza y tengo frío.", text_fr: "J'ai très mal à la tête et j'ai froid." },
+      { type: "bubble", speaker: "doctor", text_es: "Vamos a ver... ¿Tiene fiebre?", text_fr: "Voyons voir... Avez-vous de la fièvre ?" },
+      {
+        type: "question",
+        question: "Où Sofía a-t-elle mal ?",
+        options: ["Au ventre", "À la tête", "Au pied"],
+        answer: "À la tête"
+      },
+      { type: "bubble", speaker: "sofia", text_es: "Sí, tengo treinta y nueve grados.", text_fr: "Oui, j'ai trente-neuf degrés." },
+      { type: "bubble", speaker: "doctor", text_es: "Es una gripe fuerte.", text_fr: "C'est une forte grippe." },
+      { type: "bubble", speaker: "doctor", text_es: "Debe tomar estas pastillas y descansar.", text_fr: "Vous devez prendre ces comprimés et vous reposer." },
+      {
+        type: "question",
+        question: "Que doit faire Sofía ?",
+        options: ["Courir", "Se reposer", "Travailler"],
+        answer: "Se reposer"
+      },
+      { type: "bubble", speaker: "sofia", text_es: "Gracias doctor. ¿Cuántos días?", text_fr: "Merci docteur. Combien de jours ?" },
+      { type: "bubble", speaker: "doctor", text_es: "Al menos tres días en cama.", text_fr: "Au moins trois jours au lit." }
+    ]
+  },
+
+  // --- NIVEAU B1 ---
+  {
+    id: "story-8",
+    title: "Une dispute (Una discusión)",
+    level: "B1",
+    characters: {
+      javier: {
+        name: "Javier",
+        avatar: "🙎‍♂️",
+        color: "bg-slate-100 text-slate-900",
+        voiceId: "ErXwobaYiN019PkySvjV"
+      },
+      lucia: {
+        name: "Lucía",
+        avatar: "🙎‍♀️",
+        color: "bg-red-100 text-red-900",
+        voiceId: "21m00Tcm4TlvDq8ikWAM"
+      }
+    },
+    dialogue: [
+      { type: "bubble", speaker: "lucia", text_es: "Javier, ¡llegas tarde otra vez!", text_fr: "Javier, tu es encore en retard !" },
+      { type: "bubble", speaker: "javier", text_es: "Lo siento, Lucía. Había mucho tráfico.", text_fr: "Désolé, Lucía. Il y avait beaucoup de circulation." },
+      { type: "bubble", speaker: "lucia", text_es: "Siempre tienes una excusa.", text_fr: "Tu as toujours une excuse." },
+      {
+        type: "question",
+        question: "Pourquoi Lucía est-elle fâchée ?",
+        options: ["Javier est parti", "Javier est en retard", "Javier a oublié"],
+        answer: "Javier est en retard"
+      },
+      { type: "bubble", speaker: "lucia", text_es: "Estoy cansada de esperarte en la calle.", text_fr: "Je suis fatiguée de t'attendre dans la rue." },
+      { type: "bubble", speaker: "javier", text_es: "No volverá a pasar, te lo prometo.", text_fr: "Ça ne se reproduira plus, je te le promets." },
+      { type: "bubble", speaker: "lucia", text_es: "Eso dijiste la última vez.", text_fr: "C'est ce que tu as dit la dernière fois." },
+      {
+        type: "question",
+        question: "Est-ce la première fois que Javier est en retard ?",
+        options: ["Oui", "Non", "On ne sait pas"],
+        answer: "Non"
+      },
+      { type: "bubble", speaker: "javier", text_es: "Venga, te invito a cenar para compensar.", text_fr: "Allez, je t'invite à dîner pour compenser." },
+      { type: "bubble", speaker: "lucia", text_es: "Está bien... pero que no se repita.", text_fr: "D'accord... mais que ça ne se répète pas." }
+    ]
+  },
+  {
+    id: "story-9",
+    title: "Négociation de salaire (Negociación salarial)",
+    level: "B1",
+    characters: {
+      ruiz: {
+        name: "Sr. Ruiz",
+        avatar: "👔",
+        color: "bg-blue-50 text-blue-900",
+        voiceId: "ErXwobaYiN019PkySvjV"
+      },
+      carmen: {
+        name: "Carmen",
+        avatar: "👩‍💻",
+        color: "bg-violet-100 text-violet-900",
+        voiceId: "21m00Tcm4TlvDq8ikWAM"
+      }
+    },
+    dialogue: [
+      { type: "bubble", speaker: "carmen", text_es: "Señor Ruiz, ¿tiene un momento?", text_fr: "Monsieur Ruiz, avez-vous un moment ?" },
+      { type: "bubble", speaker: "ruiz", text_es: "Sí, Carmen. Pase y siéntese.", text_fr: "Oui, Carmen. Entrez et asseyez-vous." },
+      { type: "bubble", speaker: "carmen", text_es: "Quería hablar sobre mi salario actual.", text_fr: "Je voulais parler de mon salaire actuel." },
+      {
+        type: "question",
+        question: "De quoi veut parler Carmen ?",
+        options: ["De ses vacances", "De son salaire", "D'un projet"],
+        answer: "De son salaire"
+      },
+      { type: "bubble", speaker: "carmen", text_es: "He superado los objetivos de ventas este año.", text_fr: "J'ai dépassé les objectifs de vente cette année." },
+      { type: "bubble", speaker: "ruiz", text_es: "Es cierto, ha hecho un gran trabajo.", text_fr: "C'est vrai, vous avez fait un excellent travail." },
+      { type: "bubble", speaker: "carmen", text_es: "Por eso creo que merezco un aumento.", text_fr: "C'est pourquoi je crois que je mérite une augmentation." },
+      {
+        type: "question",
+        question: "Quel argument utilise Carmen ?",
+        options: ["Son ancienneté", "Ses résultats", "Ses diplômes"],
+        answer: "Ses résultats"
+      },
+      { type: "bubble", speaker: "ruiz", text_es: "Lo entiendo. Podemos ofrecerle un 10% más.", text_fr: "Je comprends. Nous pouvons vous offrir 10% de plus." },
+      { type: "bubble", speaker: "carmen", text_es: "Me parece justo. Muchas gracias.", text_fr: "Cela me semble juste. Merci beaucoup." }
+    ]
+  },
+  {
+    id: "story-10",
+    title: "Raconter un voyage (Contar un viaje)",
+    level: "B1",
+    characters: {
+      hugo: {
+        name: "Hugo",
+        avatar: "🎒",
+        color: "bg-amber-100 text-amber-900",
+        voiceId: "ErXwobaYiN019PkySvjV"
+      },
+      valeria: {
+        name: "Valeria",
+        avatar: "👩",
+        color: "bg-fuchsia-100 text-fuchsia-900",
+        voiceId: "21m00Tcm4TlvDq8ikWAM"
+      }
+    },
+    dialogue: [
+      { type: "bubble", speaker: "valeria", text_es: "¡Hugo! ¡Cuánto tiempo! ¿Qué tal Perú?", text_fr: "Hugo ! Ça fait longtemps ! Comment c'était le Pérou ?" },
+      { type: "bubble", speaker: "hugo", text_es: "¡Increíble, Valeria! Machu Picchu es mágico.", text_fr: "Incroyable, Valeria ! Le Machu Picchu est magique." },
+      { type: "bubble", speaker: "valeria", text_es: "¿Tuviste problemas con la altura?", text_fr: "Tu as eu des problèmes avec l'altitude ?" },
+      {
+        type: "question",
+        question: "De quel pays revient Hugo ?",
+        options: ["Du Mexique", "Du Chili", "Du Pérou"],
+        answer: "Du Pérou"
+      },
+      { type: "bubble", speaker: "hugo", text_es: "Un poco al principio, me dolía la cabeza.", text_fr: "Un peu au début, j'avais mal à la tête." },
+      { type: "bubble", speaker: "valeria", text_es: "¿Y qué tal la comida?", text_fr: "Et la nourriture ?" },
+      { type: "bubble", speaker: "hugo", text_es: "Deliciosa. Comí ceviche todos los días.", text_fr: "Délicieuse. J'ai mangé du ceviche tous les jours." },
+      {
+        type: "question",
+        question: "Qu'a mangé Hugo ?",
+        options: ["Des tacos", "Du ceviche", "De la paella"],
+        answer: "Du ceviche"
+      },
+      { type: "bubble", speaker: "valeria", text_es: "¡Qué envidia! Tienes que enseñarme las fotos.", text_fr: "Quelle chance (jalousie) ! Tu dois me montrer les photos." },
+      { type: "bubble", speaker: "hugo", text_es: "Claro, ven a casa este fin de semana.", text_fr: "Bien sûr, viens à la maison ce week-end." }
     ]
   }
 ];
