@@ -688,64 +688,96 @@ const LeaderboardView = ({ userData }) => {
     const rivals = [{ name: "Maria L.", xp: 1450, avatar: "👩" }, { name: "Thomas B.", xp: 1200, avatar: "👨" }, { name: userData?.name + " (Toi)", xp: userData?.xp || 0, avatar: "😎", isMe: true }, { name: "Juan P.", xp: 850, avatar: "🧔" }].sort((a, b) => b.xp - a.xp);
     return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-6"><div className="text-center space-y-2 mb-8"><div className="inline-block p-4 bg-yellow-100 rounded-full text-yellow-600 mb-2"><Trophy size={40} /></div><h2 className="text-3xl font-black text-slate-900">Ligue Diamant</h2><p className="text-slate-500 font-medium">Fin dans 2j 4h</p></div><div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">{rivals.map((user, idx) => (<div key={idx} className={`flex items-center gap-4 p-4 border-b border-slate-50 ${user.isMe ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''}`}><div className="font-black text-slate-300 w-6">{idx + 1}</div><div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-xl">{user.avatar}</div><div className="flex-1 font-bold text-slate-800">{user.name}</div><div className="font-black text-slate-900">{user.xp} XP</div></div>))}</div></div>);
 };
+const LessonEngine = ({ content, onComplete, onExit, isExam }) => {
+  // 1. SÉCURITÉ : Nettoyage des données
+  // On s'assure que 'content' est un tableau et on retire les éléments vides/undefined
+  const safeContent = React.useMemo(() => {
+    if (!Array.isArray(content)) return [];
+    return content.filter(item => item && item.type);
+  }, [content]);
 
-const LessonEngine = ({ content, onComplete, onExit, isExam }) => { 
-  const [idx, setIdx] = useState(0); 
-  const [prog, setProg] = useState(0); 
+  const [idx, setIdx] = useState(0);
+  const [prog, setProg] = useState(0);
   const [score, setScore] = useState(0);
-  
-  // SÉCURITÉ : On vérifie que le contenu existe
-  const safeContent = content || [];
-  const card = safeContent[idx]; 
 
-  const next = () => { 
-      if (idx + 1 >= safeContent.length) { 
-          setProg(100); 
-          setTimeout(() => onComplete(150, safeContent, 0, score), 500); 
-      } else { 
-          setProg(((idx + 1) / safeContent.length) * 100); 
-          setIdx(i => i + 1); 
-      } 
+  // 2. ACCÈS SÉCURISÉ
+  const card = safeContent[idx];
+
+  const next = () => {
+      // On utilise safeContent.length pour la logique de fin
+      if (idx + 1 >= safeContent.length) {
+          setProg(100);
+          // Petit délai pour l'animation avant de terminer
+          setTimeout(() => onComplete(150, safeContent, 0, score), 500);
+      } else {
+          setProg(((idx + 1) / safeContent.length) * 100);
+          setIdx(i => i + 1);
+      }
   };
-  
+
   const handleScore = (correct) => { if(correct) setScore(s => s + 1); };
 
-  useEffect(() => { 
-      // SÉCURITÉ : On ne parle que si la carte existe
-      if (card && card.es) speak(card.es); 
-  }, [idx, card]); // Ajout de 'card' dans les dépendances
-  
-  // SÉCURITÉ CRITIQUE : Si pas de carte (fin de liste ou erreur), on affiche un chargement au lieu de planter
+  // Audio automatique au changement de carte
+  useEffect(() => {
+    if (card?.es && (card.type === 'swipe' || card.type === 'input')) {
+        speak(card.es);
+    }
+  }, [card]); // Dépendance sur 'card' (qui est maintenant sûr grâce au useMemo)
+
+  // 3. GUARD CLAUSE (ANTI-CRASH)
+  // Si malgré le nettoyage, on n'a pas de carte (tableau vide ou index hors limites)
   if (!card) {
-      return <div className="h-full w-full flex items-center justify-center"><Loader2 className="animate-spin text-slate-300" /></div>;
+      return (
+          <div className="h-full w-full flex flex-col items-center justify-center bg-slate-50 p-8 text-center">
+              <div className="bg-red-100 p-4 rounded-full mb-4">
+                  <AlertCircle className="text-red-500" size={40} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Petite erreur technique</h3>
+              <p className="text-slate-500 mb-6">Cette carte semble manquer à l'appel.</p>
+              <button
+                  onClick={() => onComplete(50, [], 0, score)} // On termine proprement
+                  className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold"
+              >
+                  Terminer la leçon
+              </button>
+          </div>
+      );
   }
 
   return (
     <div className="h-full w-full flex flex-col bg-slate-50">
-        <div className="px-6 py-4 flex items-center gap-6 bg-white border-b z-10">
+        {/* Header */}
+        <div className="px-6 py-4 flex items-center gap-6 bg-white border-b z-10 shrink-0">
             <button onClick={onExit}><X className="text-slate-400" /></button>
             <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-teal-500 transition-all duration-500" style={{ width: `${prog}%` }}></div>
+                <div
+                    className="h-full bg-teal-500 transition-all duration-500 ease-out"
+                    style={{ width: `${prog}%` }}
+                ></div>
             </div>
             {isExam && <div className="font-black text-indigo-600">{score} / 20</div>}
         </div>
-        <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-            <div className="w-full max-w-md aspect-[3/4] md:aspect-auto md:h-[600px] perspective-1000">
+
+        {/* Zone de Contenu */}
+        <div className="flex-1 flex items-center justify-center p-4 overflow-hidden relative">
+            <div className="w-full max-w-md aspect-[3/4] md:aspect-auto md:h-[600px] perspective-1000 transition-all">
+                {/* Rendu Conditionnel Sécurisé */}
                 {card.type === 'swipe' && <SwipeCard data={card} onNext={next} />}
                 {card.type === 'input' && <InputCard data={card} onNext={next} isExam={isExam} onScore={handleScore} />}
                 {card.type === 'grammar' && <GrammarCard data={card} onNext={next} />}
                 {card.type === 'structure' && <StructureCard data={card} onNext={next} />}
-                
-                {/* SÉCURITÉ : Cas d'un type inconnu pour éviter l'écran blanc */}
+
+                {/* Gestion d'un type inconnu pour éviter un rendu vide silencieux */}
                 {!['swipe', 'input', 'grammar', 'structure'].includes(card.type) && (
-                    <div className="p-8 text-center text-red-500">
-                        Erreur: Type de carte inconnu ({card.type}). <button onClick={next} className="underline font-bold">Passer</button>
+                    <div className="flex flex-col items-center justify-center h-full bg-white rounded-3xl p-6 border-2 border-dashed border-slate-300">
+                        <p className="text-slate-400 font-bold">Type de carte inconnu: {card.type}</p>
+                        <button onClick={next} className="mt-4 text-indigo-600 font-bold hover:underline">Passer</button>
                     </div>
                 )}
             </div>
         </div>
     </div>
-  ); 
+  );
 };
 
 const InputCard = ({ data, onNext, isExam, onScore }) => { 
