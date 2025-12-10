@@ -61,7 +61,7 @@ export const DAILY_READINGS = [
   { id: 201, level: "A2", title_es: "Un Viaje a México", title_fr: "Un Voyage au Mexique", text_es: "El verano pasado viajé a México con mi hermana. Fue un viaje increíble. Visitamos las antiguas pirámides de Teotihuacán y nadamos en los cenotes azules de Yucatán. La comida era picante pero deliciosa; probamos tacos auténticos y guacamole. La gente fue muy acogedora con nosotras. Fue una experiencia inolvidable conocer otra cultura tan rica y colorida.", text_fr: "L'été dernier, j'ai voyagé au Mexique avec ma sœur. C'était un voyage incroyable. Nous avons visité les anciennes pyramides de Teotihuacán et nagé dans les cénotes bleus du Yucatán. La nourriture était épicée mais délicieuse ; nous avons goûté des tacos authentiques et du guacamole. Les gens ont été très accueillants avec nous. C'était une expérience inoubliable de connaître une autre culture si riche et colorée.", difficulty: "Élémentaire (A2)" },
 ];
 
-// --- 2. BANQUE DE DONNÉES XXL ---
+// --- 2. BANQUE DE DONNÉES XXL (ENRICHIE) ---
 export const DATA_BANK = {
   verbs: [
     { levels: ["A1"], es: "Ser", en: "Être (Identité)", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él", verb: "es", fr: "Il est" }, { pronoun: "Nosotros", verb: "somos", fr: "Nous sommes" }, { pronoun: "Vosotros", verb: "sois", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "son", fr: "Ils sont" }] },
@@ -73,36 +73,61 @@ export const DATA_BANK = {
 
   nouns: {
     business: [
-      { levels: ["A2"], es: "La empresa", en: "L'entreprise", sentence: "Trabajo en una empresa internacional.", sentence_trans: "Je travaille dans une entreprise internationale." },
-      { levels: ["B1"], es: "El negocio", en: "L'affaire/Business", sentence: "Es un buen negocio para nosotros.", sentence_trans: "C'est une bonne affaire pour nous." }
+      { levels: ["A2"], es: "La empresa", en: "L'entreprise", sentence: "Trabajo en una empresa.", sentence_trans: "Je travaille dans une entreprise." },
+      { levels: ["B1"], es: "El negocio", en: "L'affaire/Business", sentence: "Es un buen negocio.", sentence_trans: "C'est une bonne affaire." },
+      { levels: ["A2"], es: "La oficina", en: "Le bureau", sentence: "Voy a la oficina.", sentence_trans: "Je vais au bureau." }
     ],
     technology: [
-      { levels: ["A1"], es: "El ordenador", en: "L'ordinateur", sentence: "Mi ordenador es muy lento.", sentence_trans: "Mon ordinateur est très lent." }
+      { levels: ["A1"], es: "El ordenador", en: "L'ordinateur", sentence: "Mi ordenador es lento.", sentence_trans: "Mon ordinateur est lent." },
+      { levels: ["A1"], es: "El teléfono", en: "Le téléphone", sentence: "Uso mi teléfono mucho.", sentence_trans: "J'utilise beaucoup mon téléphone." },
+      { levels: ["A2"], es: "La pantalla", en: "L'écran", sentence: "La pantalla está rota.", sentence_trans: "L'écran est cassé." }
     ],
     places: [
       { levels: ["A1"], es: "La casa", en: "La maison", sentence: "Mi casa es pequeña.", sentence_trans: "Ma maison est petite." },
-      { levels: ["A1"], es: "La playa", en: "La plage", sentence: "Vamos a la playa mañana.", sentence_trans: "Nous allons à la plage demain." }
+      { levels: ["A1"], es: "La playa", en: "La plage", sentence: "Vamos a la playa mañana.", sentence_trans: "Nous allons à la plage demain." },
+      { levels: ["A1"], es: "El parque", en: "Le parc", sentence: "Camino por el parque.", sentence_trans: "Je marche dans le parc." },
+      { levels: ["A1"], es: "La ciudad", en: "La ville", sentence: "Vivo en la ciudad.", sentence_trans: "J'habite en ville." },
+      { levels: ["A1"], es: "El cine", en: "Le cinéma", sentence: "Me gusta ir al cine.", sentence_trans: "J'aime aller au cinéma." },
+      { levels: ["A2"], es: "El hospital", en: "L'hôpital", sentence: "El médico está en el hospital.", sentence_trans: "Le médecin est à l'hôpital." },
+      { levels: ["A2"], es: "La montaña", en: "La montagne", sentence: "La montaña es alta.", sentence_trans: "La montagne est haute." }
     ],
     objects: [
-      { levels: ["A1"], es: "El libro", en: "Le livre", sentence: "El libro es muy interesante.", sentence_trans: "Le livre est très intéressant." } // CORRECTION ICI
+      { levels: ["A1"], es: "El libro", en: "Le livre", sentence: "Este libro es bueno.", sentence_trans: "Ce livre est bon." },
+      { levels: ["A1"], es: "La silla", en: "La chaise", sentence: "La silla es cómoda.", sentence_trans: "La chaise est confortable." },
+      { levels: ["A1"], es: "La mesa", en: "La table", sentence: "Ponlo en la mesa.", sentence_trans: "Mets-le sur la table." },
+      { levels: ["A1"], es: "El coche", en: "La voiture", sentence: "Mi coche es rojo.", sentence_trans: "Ma voiture est rouge." }
     ],
     food: [
-      { levels: ["A1"], es: "La comida", en: "La nourriture", sentence: "La comida está lista.", sentence_trans: "La nourriture est prête." }
+      { levels: ["A1"], es: "La comida", en: "La nourriture", sentence: "La comida está lista.", sentence_trans: "La nourriture est prête." },
+      { levels: ["A1"], es: "El pan", en: "Le pain", sentence: "Como pan cada día.", sentence_trans: "Je mange du pain chaque jour." },
+      { levels: ["A1"], es: "El agua", en: "L'eau", sentence: "Bebo mucha agua.", sentence_trans: "Je bois beaucoup d'eau." },
+      { levels: ["A1"], es: "La fruta", en: "Le fruit", sentence: "La fruta es sana.", sentence_trans: "Le fruit est sain." },
+      { levels: ["A2"], es: "El queso", en: "Le fromage", sentence: "Me gusta el queso.", sentence_trans: "J'aime le fromage." }
     ],
     people: [
-      { levels: ["A1"], es: "El amigo", en: "L'ami", sentence: "Es mi mejor amigo.", sentence_trans: "C'est mon meilleur ami." }
+      { levels: ["A1"], es: "El amigo", en: "L'ami", sentence: "Es mi mejor amigo.", sentence_trans: "C'est mon meilleur ami." },
+      { levels: ["A1"], es: "El hermano", en: "Le frère", sentence: "Tengo un hermano.", sentence_trans: "J'ai un frère." },
+      { levels: ["A1"], es: "La hermana", en: "La soeur", sentence: "Mi hermana es alta.", sentence_trans: "Ma soeur est grande." },
+      { levels: ["A1"], es: "El profesor", en: "Le professeur", sentence: "El profesor habla.", sentence_trans: "Le professeur parle." }
     ],
     abstract: [
-      { levels: ["A1"], es: "El tiempo", en: "Le temps", sentence: "No tengo tiempo.", sentence_trans: "Je n'ai pas le temps." }
+      { levels: ["A1"], es: "El tiempo", en: "Le temps", sentence: "No tengo tiempo.", sentence_trans: "Je n'ai pas le temps." },
+      { levels: ["A2"], es: "La idea", en: "L'idée", sentence: "Es una buena idea.", sentence_trans: "C'est une bonne idée." }
     ]
   },
 
   adjectives: [
-    { levels: ["A1"], es: "Grande", en: "Grand", sentence: "Una casa grande." }
+    { levels: ["A1"], es: "Grande", en: "Grand", sentence: "Una casa grande." },
+    { levels: ["A1"], es: "Pequeño", en: "Petit", sentence: "Un perro pequeño." },
+    { levels: ["A1"], es: "Bueno", en: "Bon", sentence: "Un libro bueno." },
+    { levels: ["A1"], es: "Nuevo", en: "Nouveau", sentence: "Un coche nuevo." }
   ],
 
   connectors: [
-    { es: "Y", en: "Et" }
+    { es: "Y", en: "Et" },
+    { es: "Pero", en: "Mais" },
+    { es: "O", en: "Ou" },
+    { es: "Porque", en: "Parce que" }
   ],
 
   tips: [
@@ -110,7 +135,9 @@ export const DATA_BANK = {
     "Ser = Identité permanente / Estar = État temporaire.",
     "Hay (Il y a) est invariable.",
     "L'accent tonique est essentiel : hablo (je parle) vs habló (il parla).",
-    "En espagnol, on utilise 'usted' pour la politesse formelle."
+    "En espagnol, on utilise 'usted' pour la politesse formelle.",
+    "Les adjectifs s'accordent en genre et en nombre.",
+    "Le sujet est souvent omis en espagnol."
   ]
 };
 
@@ -203,7 +230,7 @@ export const CONTENT_PART_1 = {
     { id: 304, type: "input", question: "Je parle", answer: ["hablo"], hint: "Terminaison -o" },
     { id: 305, type: "structure", title: "Négation", formula: "No + Verbe", example: "No hablo", note: "No se place avant" }
   ],
-  // LEÇON 4 (CORRIGÉE MANUELLEMENT)
+  // LEÇON 4 (CORRIGÉE & FIXÉE)
   4: [
     { id: 401, type: "structure", title: "Leçon 4 : Mes Goûts", formula: "Verbe Gustar", example: "Me gusta...", note: "Pour exprimer ce qu'on aime" },
     { id: 402, type: "swipe", es: "Me gusta", en: "J'aime / Ça me plaît", context: "Goût", sentence: "Me gusta el chocolate.", sentence_trans: "J'aime le chocolat." },
