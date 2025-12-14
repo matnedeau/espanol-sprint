@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react"; // <-- IMPORT AJOUTÉ
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -8,13 +9,13 @@ const inter = Inter({ subsets: ["latin"] });
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#facc15", // Jaune EspañolSprint
-  maximumScale: 1, // Empêche le zoom intempestif sur mobile (app feel)
+  themeColor: "#facc15",
+  maximumScale: 1,
 };
 
 // 2. METADONNÉES SEO & OPENGRAPH
 export const metadata: Metadata = {
-  metadataBase: new URL("https://espanol-sprint.vercel.app"), // URL de production
+  metadataBase: new URL("https://espanol-sprint.vercel.app"),
   title: {
     default: "EspañolSprint - Apprenez l'espagnol rapidement",
     template: "%s | EspañolSprint",
@@ -78,6 +79,7 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`${inter.className} bg-slate-50 text-slate-900 antialiased`}>
         {children}
+        <Analytics /> {/* <-- COMPOSANT AJOUTÉ ICI */}
       </body>
     </html>
   );
