@@ -512,9 +512,7 @@ export const STORIES_DATA = [
       { "type": "bubble", "speaker": "sofia", "text_es": "A las seis en la plaza.", "text_fr": "À six heures sur la place." },
       { "type": "bubble", "speaker": "pablo", "text_es": "Perfecto. Hasta el viernes.", "text_fr": "Parfait. À vendredi." }
     ]
-  }
-]
-[
+  },
   {
     "id": "story-A2-01",
     "title": "Les Vacances (Las Vacaciones)",
@@ -1023,9 +1021,7 @@ export const STORIES_DATA = [
       { "type": "bubble", "speaker": "pablo", "text_es": "No, solo es un golpe, nada grave.", "text_fr": "Non, c'est juste un coup, rien de grave." },
       { "type": "bubble", "speaker": "sofia", "text_es": "Ten más cuidado la próxima vez.", "text_fr": "Fais plus attention la prochaine fois." }
     ]
-  }
-]
-[
+  },
   {
     "id": "story-B1-01",
     "title": "L'Écologie (La Ecología)",
@@ -1520,9 +1516,7 @@ export const STORIES_DATA = [
       { "type": "bubble", "speaker": "pablo", "text_es": "Se fue hacia el parque. ¡Date prisa!", "text_fr": "Il est parti vers le parc. Dépêche-toi !" },
       { "type": "bubble", "speaker": "sofia", "text_es": "Ya vienen, no te muevas.", "text_fr": "Ils arrivent, ne bouge pas." }
     ]
-  }
-]
-[
+  },
   {
     "id": "story-B2-01",
     "title": "Débat Politique (Debate Político)",
@@ -2017,9 +2011,7 @@ export const STORIES_DATA = [
       { "type": "bubble", "speaker": "sofia", "text_es": "Este reconocimiento me impulsa a seguir mejorando.", "text_fr": "Cette reconnaissance me pousse à continuer de m'améliorer." },
       { "type": "bubble", "speaker": "pablo", "text_es": "¡Enhorabuena, Sofía!", "text_fr": "Félicitations, Sofía !" }
     ]
-  }
-]
-[
+  },
   {
     "id": "story-C1-01",
     "title": "Argot de Rue (Jerga Callejera)",
