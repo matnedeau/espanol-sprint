@@ -1,18 +1,37 @@
 import { MetadataRoute } from 'next';
+import { INITIAL_LESSONS_CONTENT, STORIES_DATA } from '@/app/data/content';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  // URL de production (à configurer dans tes variables d'environnement si besoin)
-  const baseUrl = 'https://espanol-sprint.vercel.app'; 
+  const baseUrl = 'https://espanol-sprint.vercel.app';
 
-  return [
+  // 1. Page d'accueil (Statique)
+  const homeRoute: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
       changeFrequency: 'daily',
-      priority: 1,
+      priority: 1.0,
     },
-    // Note : Comme ton application gère la navigation (Leçons, Histoires) via l'état React (useState)
-    // et non via des routes Next.js (/lesson/1, /story/1), nous n'indexons que la racine.
-    // Si tu passes plus tard à un routing Next.js complet, nous ajouterons les autres pages ici.
   ];
+
+  // 2. Pages Leçons (Dynamique : /lecon/{id})
+  // On récupère les clés (IDs) de l'objet INITIAL_LESSONS_CONTENT
+  const lessonRoutes: MetadataRoute.Sitemap = Object.keys(INITIAL_LESSONS_CONTENT).map((id) => ({
+    url: `${baseUrl}/lecon/${id}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  }));
+
+  // 3. Pages Histoires (Dynamique : /histoire/{id})
+  // On itère sur le tableau STORIES_DATA
+  const storyRoutes: MetadataRoute.Sitemap = STORIES_DATA.map((story) => ({
+    url: `${baseUrl}/histoire/${story.id}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  }));
+
+  // Fusion de toutes les routes
+  return [...homeRoute, ...lessonRoutes, ...storyRoutes];
 }
