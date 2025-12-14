@@ -7,7 +7,6 @@
 
 // [STORY-MODE] STRUCTURE POUR LES HISTOIRES INTERACTIVES
 export const STORIES_DATA = [
-  [
   {
     "id": "story-A1-01",
     "title": "Les Présentations (Las Presentaciones)",
@@ -2507,7 +2506,6 @@ export const STORIES_DATA = [
       { "type": "bubble", "speaker": "sofia", "text_es": "Sea pues, la palabra será nuestro único escudo.", "text_fr": "Soit, la parole sera notre seul bouclier." }
     ]
   }
-]
 ];
 
 // --- 1. LECTURES QUOTIDIENNES ---
