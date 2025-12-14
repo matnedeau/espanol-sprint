@@ -1,37 +1,51 @@
 import { MetadataRoute } from 'next';
 import { INITIAL_LESSONS_CONTENT, STORIES_DATA } from '@/app/data/content';
+import { BLOG_POSTS } from '@/app/data/blog-content';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://espanol-sprint.vercel.app';
+  // Votre URL de production
+  const baseUrl = 'https://espanol-sprint.vercel.app'; 
 
-  // 1. Page d'accueil (Statique)
-  const homeRoute: MetadataRoute.Sitemap = [
+  // 1. La Page d'Accueil (Priorité Maximale)
+  const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
       changeFrequency: 'daily',
-      priority: 1.0,
+      priority: 1,
+    },
+    {
+      url: `${baseUrl}/blog`, // La page liste des articles
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
     },
   ];
 
-  // 2. Pages Leçons (Dynamique : /lecon/{id})
-  // On récupère les clés (IDs) de l'objet INITIAL_LESSONS_CONTENT
-  const lessonRoutes: MetadataRoute.Sitemap = Object.keys(INITIAL_LESSONS_CONTENT).map((id) => ({
+  // 2. Génération des URLs pour les Leçons (/lecon/1, /lecon/2...)
+  const lessonPages: MetadataRoute.Sitemap = Object.keys(INITIAL_LESSONS_CONTENT).map((id) => ({
     url: `${baseUrl}/lecon/${id}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
   }));
 
-  // 3. Pages Histoires (Dynamique : /histoire/{id})
-  // On itère sur le tableau STORIES_DATA
-  const storyRoutes: MetadataRoute.Sitemap = STORIES_DATA.map((story) => ({
+  // 3. Génération des URLs pour les Histoires (/histoire/story-A1-01...)
+  const storyPages: MetadataRoute.Sitemap = STORIES_DATA.map((story) => ({
     url: `${baseUrl}/histoire/${story.id}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
   }));
 
-  // Fusion de toutes les routes
-  return [...homeRoute, ...lessonRoutes, ...storyRoutes];
+  // 4. Génération des URLs pour les Articles de Blog (/blog/slug...)
+  const blogPages: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: new Date(post.date), // On utilise la vraie date de l'article
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }));
+
+  // 5. On fusionne tout pour Google
+  return [...staticPages, ...lessonPages, ...storyPages, ...blogPages];
 }
