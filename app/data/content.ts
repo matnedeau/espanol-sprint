@@ -2618,64 +2618,114 @@ export const DATA_BANK = {
 // --- 4. PROGRAMME PÉDAGOGIQUE (CURRICULUM) ---
 export const CURRICULUM_LOGIC = {
   A1: [
-    { topic: "Bases & Salutations", grammar: "Présent (Ser)" }, { topic: "La Famille", grammar: "Possession" },
-    { topic: "Ma Routine", grammar: "Verbes -AR" }, { topic: "Mes Goûts", grammar: "Gustar" },
-    { topic: "Projets de Voyage", grammar: "Futur Proche" }, { topic: "Ma Ville", grammar: "Hay (Il y a)" },
-    { topic: "Shopping & Vêtements", grammar: "Adjectifs" }, { topic: "La Maison", grammar: "Estar (Lieu)" },
-    { topic: "Le Corps Humain", grammar: "Avoir mal" }, { topic: "La Nourriture", grammar: "Impératif (Tu)" },
-    { topic: "Les Animaux", grammar: "Genre & Nombre" }, { topic: "La Météo", grammar: "Verbe Hacer" },
-    { topic: "L'École", grammar: "Fournitures" }, { topic: "Les Loisirs", grammar: "Jugar (Jouer)" },
-    { topic: "Les Amis", grammar: "Ser vs Estar" }, { topic: "Les Émotions", grammar: "Estar + Adj" },
-    { topic: "Les Saisons", grammar: "Comparatifs" }, { topic: "La Nature", grammar: "Démonstratifs" },
-    { topic: "Poser des Questions", grammar: "Interrogatifs" }, { topic: "Bilan A1", grammar: "Révision Globale" }
+    { topic: "Bases & Salutations", grammar: "Présent (Ser)", category: "people" },
+    { topic: "La Famille", grammar: "Possession", category: "people" },
+    { topic: "Ma Routine", grammar: "Verbes -AR", category: "abstract" },
+    { topic: "Mes Goûts", grammar: "Gustar", category: "food" }, // Souvent utilisé avec la nourriture
+    { topic: "Projets de Voyage", grammar: "Futur Proche", category: "places" },
+    { topic: "Ma Ville", grammar: "Hay (Il y a)", category: "places" },
+    { topic: "Shopping & Vêtements", grammar: "Adjectifs", category: "objects" },
+    { topic: "La Maison", grammar: "Estar (Lieu)", category: "objects" },
+    { topic: "Le Corps Humain", grammar: "Avoir mal", category: "people" },
+    { topic: "La Nourriture", grammar: "Impératif (Tu)", category: "food" },
+    { topic: "Les Animaux", grammar: "Genre & Nombre", category: "nature" }, // Fallback sur nature/objects
+    { topic: "La Météo", grammar: "Verbe Hacer", category: "places" },
+    { topic: "L'École", grammar: "Fournitures", category: "objects" },
+    { topic: "Les Loisirs", grammar: "Jugar (Jouer)", category: "abstract" },
+    { topic: "Les Amis", grammar: "Ser vs Estar", category: "people" },
+    { topic: "Les Émotions", grammar: "Estar + Adj", category: "abstract" },
+    { topic: "Les Saisons", grammar: "Comparatifs", category: "nature" },
+    { topic: "La Nature", grammar: "Démonstratifs", category: "nature" },
+    { topic: "Poser des Questions", grammar: "Interrogatifs", category: "abstract" },
+    { topic: "Bilan A1", grammar: "Révision Globale", category: "random" }
   ],
   A2: [
-    { topic: "Raconter le Passé", grammar: "Passé Composé" }, { topic: "Souvenirs d'Enfance", grammar: "Imparfait" },
-    { topic: "Futur & Avenir", grammar: "Futur Simple" }, { topic: "Comparaisons", grammar: "Superlatifs" },
-    { topic: "Obligations", grammar: "Deber / Tener que" }, { topic: "Santé & Médecin", grammar: "Impératif (Vous)" },
-    { topic: "Au Restaurant", grammar: "Politesse" }, { topic: "Réservation Hôtel", grammar: "Conditionnel (Je)" },
-    { topic: "La Banque", grammar: "Chiffres élevés" }, { topic: "La Poste", grammar: "COD (Lo/La)" },
-    { topic: "Urgences", grammar: "Impératif Négatif" }, { topic: "Fêtes & Traditions", grammar: "Passé Simple" },
-    { topic: "La Sieste", grammar: "Habitudes" }, { topic: "Orientation", grammar: "Prépositions" },
-    { topic: "Action en cours", grammar: "Gérondif" }, { topic: "Sentiments", grammar: "Subjonctif (Intro)" },
-    { topic: "Musique & Cinéma", grammar: "Opinion" }, { topic: "Internet", grammar: "Verbes Techno" },
-    { topic: "Voyage (Avion)", grammar: "Vocabulaire" }, { topic: "Bilan A2", grammar: "Validation" }
+    { topic: "Raconter le Passé", grammar: "Passé Composé", category: "abstract" },
+    { topic: "Souvenirs d'Enfance", grammar: "Imparfait", category: "people" },
+    { topic: "Futur & Avenir", grammar: "Futur Simple", category: "business" },
+    { topic: "Comparaisons", grammar: "Superlatifs", category: "objects" },
+    { topic: "Obligations", grammar: "Deber / Tener que", category: "business" },
+    { topic: "Santé & Médecin", grammar: "Impératif (Vous)", category: "people" },
+    { topic: "Au Restaurant", grammar: "Politesse", category: "food" },
+    { topic: "Réservation Hôtel", grammar: "Conditionnel (Je)", category: "places" },
+    { topic: "La Banque", grammar: "Chiffres élevés", category: "business" },
+    { topic: "La Poste", grammar: "COD (Lo/La)", category: "places" },
+    { topic: "Urgences", grammar: "Impératif Négatif", category: "people" },
+    { topic: "Fêtes & Traditions", grammar: "Passé Simple", category: "abstract" },
+    { topic: "La Sieste", grammar: "Habitudes", category: "abstract" },
+    { topic: "Orientation", grammar: "Prépositions", category: "places" },
+    { topic: "Action en cours", grammar: "Gérondif", category: "people" },
+    { topic: "Sentiments", grammar: "Subjonctif (Intro)", category: "abstract" },
+    { topic: "Musique & Cinéma", grammar: "Opinion", category: "abstract" },
+    { topic: "Internet", grammar: "Verbes Techno", category: "technology" },
+    { topic: "Voyage (Avion)", grammar: "Vocabulaire", category: "places" },
+    { topic: "Bilan A2", grammar: "Validation", category: "random" }
   ],
   B1: [
-    { topic: "Exprimer l'Opinion", grammar: "Subjonctif Présent" }, { topic: "Hypothèses", grammar: "Conditionnel" },
-    { topic: "Rapporter un Discours", grammar: "Style Indirect" }, { topic: "Relations Sociales", grammar: "Por vs Para" },
-    { topic: "L'Environnement", grammar: "Futur Antérieur" }, { topic: "La Technologie", grammar: "Avantages/Inconvénients" },
-    { topic: "Le Monde du Travail", grammar: "CV & Lettre" }, { topic: "La Politique", grammar: "Débat" },
-    { topic: "La Justice", grammar: "Vocabulaire Juridique" }, { topic: "L'Économie", grammar: "Chiffres & Trends" },
-    { topic: "L'Art & Culture", grammar: "Description" }, { topic: "La Littérature", grammar: "Passé Simple (Avancé)" },
-    { topic: "L'Histoire", grammar: "Concordance temps" }, { topic: "La Géographie", grammar: "Régions" },
-    { topic: "La Société", grammar: "Égalité/Droits" }, { topic: "La Science", grammar: "Futur Proche" },
-    { topic: "Les Médias", grammar: "Connecteurs Logiques" }, { topic: "Psychologie", grammar: "Verbes de changement" },
-    { topic: "Philosophie", grammar: "Abstrait" }, { topic: "Bilan B1", grammar: "Maîtrise" }
+    { topic: "Exprimer l'Opinion", grammar: "Subjonctif Présent", category: "abstract" },
+    { topic: "Hypothèses", grammar: "Conditionnel", category: "abstract" },
+    { topic: "Rapporter un Discours", grammar: "Style Indirect", category: "people" },
+    { topic: "Relations Sociales", grammar: "Por vs Para", category: "people" },
+    { topic: "L'Environnement", grammar: "Futur Antérieur", category: "nature" },
+    { topic: "La Technologie", grammar: "Avantages/Inconvénients", category: "technology" },
+    { topic: "Le Monde du Travail", grammar: "CV & Lettre", category: "business" },
+    { topic: "La Politique", grammar: "Débat", category: "abstract" },
+    { topic: "La Justice", grammar: "Vocabulaire Juridique", category: "abstract" },
+    { topic: "L'Économie", grammar: "Chiffres & Trends", category: "business" },
+    { topic: "L'Art & Culture", grammar: "Description", category: "abstract" },
+    { topic: "La Littérature", grammar: "Passé Simple (Avancé)", category: "objects" },
+    { topic: "L'Histoire", grammar: "Concordance temps", category: "places" },
+    { topic: "La Géographie", grammar: "Régions", category: "places" },
+    { topic: "La Société", grammar: "Égalité/Droits", category: "people" },
+    { topic: "La Science", grammar: "Futur Proche", category: "technology" },
+    { topic: "Les Médias", grammar: "Connecteurs Logiques", category: "technology" },
+    { topic: "Psychologie", grammar: "Verbes de changement", category: "abstract" },
+    { topic: "Philosophie", grammar: "Abstrait", category: "abstract" },
+    { topic: "Bilan B1", grammar: "Maîtrise", category: "random" }
   ],
   B2: [
-    { topic: "Si j'étais...", grammar: "Subjonctif Imparfait" }, { topic: "Regrets", grammar: "Conditionnel Passé" },
-    { topic: "Faits Divers", grammar: "Voix Passive" }, { topic: "Rumeurs", grammar: "Discours Rapporté (Passé)" },
-    { topic: "Santé Avancée", grammar: "Expressions Corps" }, { topic: "Changements d'État", grammar: "Ponerse / Quedarse" },
-    { topic: "Nuances", grammar: "Por vs Para (Subtil)" }, { topic: "Précision", grammar: "Pronoms Relatifs (Cuyo)" },
-    { topic: "Projets Futurs", grammar: "Futur Antérieur" }, { topic: "Récit Complexe", grammar: "Plus-que-parfait" },
-    { topic: "Sentiments", grammar: "Verbes Prépositionnels" }, { topic: "Argumentation", grammar: "Concession (Bien que)" },
-    { topic: "Doute & Probabilité", grammar: "Deber de / Quizás" }, { topic: "Habitudes Passées", grammar: "Soler + Infinitif" },
-    { topic: "Généralités", grammar: "Le Neutre (Lo)" }, { topic: "Nuances de Taille", grammar: "Diminutifs (-ito)" },
-    { topic: "Business", grammar: "Négociation" }, { topic: "Écologie", grammar: "Débat & Solutions" },
-    { topic: "Humour & Ironie", grammar: "Double Sens" }, { topic: "Bilan B2", grammar: "Fluidité Totale" }
+    { topic: "Si j'étais...", grammar: "Subjonctif Imparfait", category: "abstract" },
+    { topic: "Regrets", grammar: "Conditionnel Passé", category: "abstract" },
+    { topic: "Faits Divers", grammar: "Voix Passive", category: "people" },
+    { topic: "Rumeurs", grammar: "Discours Rapporté (Passé)", category: "people" },
+    { topic: "Santé Avancée", grammar: "Expressions Corps", category: "people" },
+    { topic: "Changements d'État", grammar: "Ponerse / Quedarse", category: "abstract" },
+    { topic: "Nuances", grammar: "Por vs Para (Subtil)", category: "abstract" },
+    { topic: "Précision", grammar: "Pronoms Relatifs (Cuyo)", category: "abstract" },
+    { topic: "Projets Futurs", grammar: "Futur Antérieur", category: "business" },
+    { topic: "Récit Complexe", grammar: "Plus-que-parfait", category: "places" },
+    { topic: "Sentiments", grammar: "Verbes Prépositionnels", category: "abstract" },
+    { topic: "Argumentation", grammar: "Concession (Bien que)", category: "business" },
+    { topic: "Doute & Probabilité", grammar: "Deber de / Quizás", category: "abstract" },
+    { topic: "Habitudes Passées", grammar: "Soler + Infinitif", category: "people" },
+    { topic: "Généralités", grammar: "Le Neutre (Lo)", category: "abstract" },
+    { topic: "Nuances de Taille", grammar: "Diminutifs (-ito)", category: "objects" },
+    { topic: "Business", grammar: "Négociation", category: "business" },
+    { topic: "Écologie", grammar: "Débat & Solutions", category: "nature" },
+    { topic: "Humour & Ironie", grammar: "Double Sens", category: "abstract" },
+    { topic: "Bilan B2", grammar: "Fluidité Totale", category: "random" }
   ],
   C1: [
-    { topic: "Subtilités", grammar: "Subjonctif (Nuances)" }, { topic: "Langage Soutenu", grammar: "Registres de langue" },
-    { topic: "Expressions Idiomatiques", grammar: "Sens Figuré" }, { topic: "Argot & Rue", grammar: "Langage Familier" },
-    { topic: "Accents & Régions", grammar: "Esp vs Latam" }, { topic: "Littérature", grammar: "Style Romanesque" },
-    { topic: "Philosophie", grammar: "Concepts Abstraits" }, { topic: "Médecine", grammar: "Termes Techniques" },
-    { topic: "Juridique", grammar: "Langage de Loi" }, { topic: "Histoire d'Espagne", grammar: "Civilisation" },
-    { topic: "Amérique Latine", grammar: "Culture Spécifique" }, { topic: "Rhétorique", grammar: "Connecteurs Complexes" },
-    { topic: "Emphase", grammar: "Double Négation" }, { topic: "Transformation", grammar: "Verbes Complexes" },
-    { topic: "Faux Amis", grammar: "Pièges Courants" }, { topic: "Sagesse Populaire", grammar: "Proverbes" },
-    { topic: "Presse & Média", grammar: "Analyse" }, { topic: "Rédaction", grammar: "Style Académique" },
-    { topic: "Bilinguisme", grammar: "Perfectionnement" }, { topic: "BILAN FINAL C1", grammar: "Expertise" }
+    { topic: "Subtilités", grammar: "Subjonctif (Nuances)", category: "abstract" },
+    { topic: "Langage Soutenu", grammar: "Registres de langue", category: "abstract" },
+    { topic: "Expressions Idiomatiques", grammar: "Sens Figuré", category: "people" },
+    { topic: "Argot & Rue", grammar: "Langage Familier", category: "people" },
+    { topic: "Accents & Régions", grammar: "Esp vs Latam", category: "places" },
+    { topic: "Littérature", grammar: "Style Romanesque", category: "objects" },
+    { topic: "Philosophie", grammar: "Concepts Abstraits", category: "abstract" },
+    { topic: "Médecine", grammar: "Termes Techniques", category: "technology" },
+    { topic: "Juridique", grammar: "Langage de Loi", category: "business" },
+    { topic: "Histoire d'Espagne", grammar: "Civilisation", category: "places" },
+    { topic: "Amérique Latine", grammar: "Culture Spécifique", category: "places" },
+    { topic: "Rhétorique", grammar: "Connecteurs Complexes", category: "business" },
+    { topic: "Emphase", grammar: "Double Négation", category: "abstract" },
+    { topic: "Transformation", grammar: "Verbes Complexes", category: "abstract" },
+    { topic: "Faux Amis", grammar: "Pièges Courants", category: "abstract" },
+    { topic: "Sagesse Populaire", grammar: "Proverbes", category: "people" },
+    { topic: "Presse & Média", grammar: "Analyse", category: "technology" },
+    { topic: "Rédaction", grammar: "Style Académique", category: "business" },
+    { topic: "Bilinguisme", grammar: "Perfectionnement", category: "abstract" },
+    { topic: "BILAN FINAL C1", grammar: "Expertise", category: "random" }
   ]
 };
 
@@ -2710,6 +2760,7 @@ export const CONTENT_PART_1 = {
 };
 
 // --- 6. GÉNÉRATEUR INTELLIGENT DE LEÇONS (LOGIQUE CORRIGÉE) ---
+// --- 6. GÉNÉRATEUR INTELLIGENT DE LEÇONS (VERSION CORRIGÉE PREMIUM) ---
 export const generateStructuredLesson = (id) => {
   // 1. Déterminer le niveau et la config de la leçon
   let level = "A1";
@@ -2719,43 +2770,39 @@ export const generateStructuredLesson = (id) => {
   if (id > 80) level = "C1";
 
   const levelConfig = CURRICULUM_LOGIC[level] || [];
-  const config = levelConfig[(id - 1) % levelConfig.length] || { topic: `Leçon ${id}`, grammar: "Général" };
+  const config = levelConfig[(id - 1) % levelConfig.length] || { topic: `Leçon ${id}`, grammar: "Général", category: "random" };
   const topicLower = config.topic.toLowerCase();
   const grammarLower = config.grammar.toLowerCase();
 
-  // 2. Sélection Intelligente du Vocabulaire (Noms)
-  let targetCategory = 'random';
-  if (topicLower.includes('cuisine') || topicLower.includes('nourriture') || topicLower.includes('restaurant')) targetCategory = 'food';
-  else if (topicLower.includes('voyage') || topicLower.includes('ville') || topicLower.includes('transport') || topicLower.includes('geographie')) targetCategory = 'places';
-  else if (topicLower.includes('objet') || topicLower.includes('technologie') || topicLower.includes('maison')) targetCategory = 'objects'; // ou technology
-  else if (topicLower.includes('famille') || topicLower.includes('ami') || topicLower.includes('social')) targetCategory = 'people';
-  else if (topicLower.includes('business') || topicLower.includes('travail') || topicLower.includes('economie')) targetCategory = 'business';
-  else if (topicLower.includes('abstrait') || topicLower.includes('philosophie') || topicLower.includes('sentiment')) targetCategory = 'abstract';
+  // 2. Sélection Intelligente du Vocabulaire (Basée sur la catégorie forcée)
+  const forcedCategory = config.category || 'random';
 
-  // Helper pour récupérer un nom
-  const getSmartNoun = (fallbackCategory) => {
-      const cat = targetCategory !== 'random' ? targetCategory : fallbackCategory;
-      // On cherche d'abord dans la catégorie spécifique (ex: technology)
-      let pool = DATA_BANK.nouns[cat] ? DATA_BANK.nouns[cat] : null;
-      // Si pas trouvé, ou si catégorie 'objects' par défaut
-      if (!pool && DATA_BANK.nouns['objects']) pool = DATA_BANK.nouns['objects'];
-      // Fallback ultime : premier tableau dispo
-      if (!pool) pool = Object.values(DATA_BANK.nouns)[0];
+  // Helper robuste pour récupérer un nom
+  const getSmartNoun = () => {
+      // 1. Déterminer la source
+      let sourcePool = null;
+      if (forcedCategory !== 'random' && DATA_BANK.nouns[forcedCategory]) {
+          sourcePool = DATA_BANK.nouns[forcedCategory];
+      } else {
+          // Si 'random' ou catégorie introuvable, on tape dans 'objects' par défaut
+          sourcePool = DATA_BANK.nouns['objects']; 
+      }
 
-      // Filtrage par niveau (si possible)
-      const levelPool = pool.filter(n => n.levels.includes(level));
-      const finalPool = levelPool.length > 0 ? levelPool : pool;
+      // 2. Filtrer par niveau (ne pas donner du C1 à un A1)
+      const levelPool = sourcePool.filter(n => n.levels.includes(level));
       
-      // Sélection pseudo-aléatoire basée sur l'ID pour que ce soit déterministe mais varié
-      return finalPool[(id + Math.floor(Math.random() * 10)) % finalPool.length];
+      // 3. Fallback : Si pas de mots du niveau, on prend tout le pool pour éviter le vide
+      const finalPool = levelPool.length > 0 ? levelPool : sourcePool;
+
+      // 4. Sélection
+      return finalPool[(id + Math.floor(Math.random() * finalPool.length)) % finalPool.length];
   };
 
-  // 3. Sélection Intelligente du Verbe (CŒUR DU CORRECTIF)
-  // Mapping des sujets grammaticaux vers des verbes spécifiques
+  // 3. Sélection Intelligente du Verbe
   const topicToVerbMap = {
     "obligation": ["Deber", "Tener"],
-    "futur": ["Ir", "Haber", "Pensar"], // Ir a..., Haber (futur), Pensar (projeter)
-    "passé": ["Haber", "Tener", "Ser"], // Haber (auxiliaire), Tener (avoir eu), Ser (avoir été)
+    "futur": ["Ir", "Haber", "Pensar"],
+    "passé": ["Haber", "Tener", "Ser"],
     "opinion": ["Creer", "Pensar", "Sentir"],
     "subjonctif": ["Querer", "Pedir", "Dudar"],
     "mouvement": ["Ir", "Salir", "Venir"],
@@ -2764,16 +2811,13 @@ export const generateStructuredLesson = (id) => {
 
   let targetVerbName = null;
 
-  // Recherche d'un verbe clé dans la config
   for (const [key, verbs] of Object.entries(topicToVerbMap)) {
     if (grammarLower.includes(key) || topicLower.includes(key)) {
-      // On prend un verbe au hasard parmi les candidats
       targetVerbName = verbs[Math.floor(Math.random() * verbs.length)];
       break;
     }
   }
 
-  // Fallback intelligent par niveau si aucun mapping trouvé
   if (!targetVerbName) {
     const levelFallbacks = {
       "A1": ["Ser", "Tener", "Hacer"],
@@ -2786,13 +2830,12 @@ export const generateStructuredLesson = (id) => {
     targetVerbName = candidates[id % candidates.length];
   }
 
-  // Récupération de l'objet verbe complet
-  const randVerb = DATA_BANK.verbs.find(v => v.es === targetVerbName) || DATA_BANK.verbs[0]; // Sécurité
+  const randVerb = DATA_BANK.verbs.find(v => v.es === targetVerbName) || DATA_BANK.verbs[0];
 
   // 4. Construction de la Leçon
-  const card1Noun = getSmartNoun('objects');
-  const card2Noun = getSmartNoun('places');
-  const card3Noun = getSmartNoun('people'); // Variété
+  const card1Noun = getSmartNoun();
+  const card2Noun = getSmartNoun(); // On peut rappeler la fonction pour varier
+  const card3Noun = getSmartNoun();
   
   const adj = DATA_BANK.adjectives[(id + 2) % DATA_BANK.adjectives.length];
   const conn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
@@ -2801,11 +2844,9 @@ export const generateStructuredLesson = (id) => {
   let cardId = id * 1000;
   const isPlural = id % 2 === 0;
   
-  // Question de grammaire adaptée
   const grammarQuestionText = isPlural ? `Conjugue : Nosotros (${randVerb.es})` : `Conjugue : Tú (${randVerb.es})`;
   const targetPronoun = isPlural ? "Nos" : "Tú";
   const conjFn = randVerb.conjugation.find(c => c.pronoun.includes(targetPronoun) || (targetPronoun === "Nos" && c.pronoun.includes("Nosotros")));
-  // Fallback conjugaison
   const grammarAnswer = conjFn ? [conjFn.verb] : [randVerb.conjugation[0].verb];
 
   const card1 = { ...card1Noun, context: "Mot clé", sentence: card1Noun.sentence || `Necesito ${card1Noun.es.toLowerCase()}.`, sentence_trans: card1Noun.sentence_trans || `J'ai besoin de ${card1Noun.en.toLowerCase()}.` };

@@ -374,7 +374,20 @@ export default function EspanolSprintPro() {
             const currentCompleted = Array.isArray(userData?.completedLessons) ? userData.completedLessons : [];
             const currentDaily = userData?.dailyLimit || { date: today, count: 0 };
 
-            const uniqueNewItems = newItemsWithSRS.filter(item => !currentVocab.some(v => v.id === item.id));
+            const uniqueNewItems = newItemsWithSRS.filter(newItem => {
+            // 1. On vérifie si l'ID existe déjà (sécurité de base)
+            const idExists = currentVocab.some(existing => existing.id === newItem.id);
+            
+            // 2. CRITIQUE : On vérifie si le MOT espagnol existe déjà (ex: "gato" === "Gato")
+            // On nettoie la chaîne (minuscule, trim) pour être sûr de la comparaison
+            const wordExists = currentVocab.some(existing => 
+                existing.es && newItem.es && 
+                existing.es.trim().toLowerCase() === newItem.es.trim().toLowerCase()
+            );
+
+            // On garde l'item SEULEMENT s'il n'existe pas déjà
+            return !idExists && !wordExists;
+          });
             const isNew = !currentCompleted.includes(lessonId);
             
             const currentCount = currentDaily.date === today ? currentDaily.count : 0;
