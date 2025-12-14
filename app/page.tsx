@@ -815,17 +815,50 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
     setVal(p => p + c); 
     inputRef.current?.focus(); 
   };
-  
+
   const check = (e) => { 
       e?.preventDefault(); 
       if (sub) return; 
       
-      const clean = val.trim().toLowerCase(); 
-      const ans = Array.isArray(data.answer) ? data.answer : [data.answer]; 
-      const ok = ans.some(a => a.trim().toLowerCase() === clean); 
+      // 1. Fonction de nettoyage "agressive"
+      const normalize = (text) => {
+          return text
+            .toLowerCase()
+            .trim()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Enlève les accents (optionnel, sinon garde-les)
+            .replace(/[¿¡!.,;?]/g, '') // Enlève la ponctuation
+            .replace(/\s+/g, ' '); // Enlève les doubles espaces
+      };
+
+      const cleanVal = normalize(val); 
+      const ansArray = Array.isArray(data.answer) ? data.answer : [data.answer]; 
+      
+      // 2. Vérification Intelligente
+      const ok = ansArray.some(originalAns => {
+          const cleanAns = normalize(originalAns);
+          
+          // A. Correspondance Exacte (une fois nettoyé)
+          if (cleanVal === cleanAns) return true;
+
+          // B. Tolérance des Articles (El/La/Un/Una)
+          // Si la réponse attendue est "el gato" et l'user écrit "gato", on accepte
+          const ansWithoutArticle = cleanAns.replace(/^(el|la|los|las|un|una|unos|unas)\s+/, '');
+          const valWithoutArticle = cleanVal.replace(/^(el|la|los|las|un|una|unos|unas)\s+/, '');
+          if (ansWithoutArticle === valWithoutArticle) return true;
+
+          // C. Tolérance des Pronoms Sujets (Yo/Tú...)
+          // Si la réponse attendue est "como" et l'user écrit "yo como", on accepte
+          const pronouns = /^(yo|tu|el|ella|nosotros|nosotras|vosotros|vosotras|ellos|ellas)\s+/;
+          const ansNoPronoun = cleanAns.replace(pronouns, '');
+          const valNoPronoun = cleanVal.replace(pronouns, '');
+          if (ansNoPronoun === valNoPronoun) return true;
+
+          return false;
+      });
       
       setStatus(ok ? 'success' : 'error'); 
       
+      // ... reste du code (animation, score, next)
       if (ok) { 
           setSub(true);
           if(onScore) onScore(true); 
