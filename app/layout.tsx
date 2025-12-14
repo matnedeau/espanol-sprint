@@ -14,7 +14,7 @@ export const viewport: Viewport = {
 
 // 2. METADONNÉES SEO & OPENGRAPH
 export const metadata: Metadata = {
-  metadataBase: new URL("https://espanol-sprint.vercel.app"), // Remplace par ton URL finale Vercel
+  metadataBase: new URL("https://espanol-sprint.vercel.app"), // URL de production
   title: {
     default: "EspañolSprint - Apprenez l'espagnol rapidement",
     template: "%s | EspañolSprint",
@@ -23,8 +23,15 @@ export const metadata: Metadata = {
   keywords: ["espagnol", "apprendre", "leçons", "rapide", "sprint", "débutant", "vocabulaire", "grammaire"],
   authors: [{ name: "EspañolSprint Team" }],
   creator: "EspañolSprint",
+  
+  // --- VALIDATION GOOGLE SEARCH CONSOLE ---
+  verification: {
+    google: "Is2zL8Pb8bMlvw09iqAH8fdoNhAemk6g-F90svyI9qs",
+  },
+  // ----------------------------------------
+
   icons: {
-    icon: "/flavicon.png", // Assure-toi que ce fichier existe dans public/
+    icon: "/flavicon.png",
     apple: "/flavicon.png",
   },
   openGraph: {
@@ -36,7 +43,7 @@ export const metadata: Metadata = {
     siteName: "EspañolSprint",
     images: [
       {
-        url: "/og-image.jpg", // Idéalement, ajoute une image de partage dans public/
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "EspañolSprint Preview",
