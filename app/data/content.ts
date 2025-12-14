@@ -2522,77 +2522,174 @@ export const DAILY_READINGS = [
 
 export const DATA_BANK = {
   verbs: [
-    // --- NIVEAU A1 ---
     { levels: ["A1"], es: "Ser", en: "Être (Identité)", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }, { pronoun: "Él", verb: "es", fr: "Il est" }, { pronoun: "Nosotros", verb: "somos", fr: "Nous sommes" }, { pronoun: "Vosotros", verb: "sois", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "son", fr: "Ils sont" }] },
-    { levels: ["A1"], es: "Estar", en: "Être (État/Lieu)", conjugation: [{ pronoun: "Yo", verb: "estoy", fr: "Je suis" }, { pronoun: "Tú", verb: "estás", fr: "Tu es" }, { pronoun: "Él", verb: "está", fr: "Il est" }, { pronoun: "Nosotros", verb: "estamos", fr: "Nous sommes" }, { pronoun: "Vosotros", verb: "estáis", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "están", fr: "Ils sont" }] },
+    { levels: ["A1"], es: "Estar", en: "Être (État)", conjugation: [{ pronoun: "Yo", verb: "estoy", fr: "Je suis" }, { pronoun: "Tú", verb: "estás", fr: "Tu es" }, { pronoun: "Él", verb: "está", fr: "Il est" }, { pronoun: "Nosotros", verb: "estamos", fr: "Nous sommes" }, { pronoun: "Vosotros", verb: "estáis", fr: "Vous êtes" }, { pronoun: "Ellos", verb: "están", fr: "Ils sont" }] },
     { levels: ["A1", "A2"], es: "Tener", en: "Avoir", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }, { pronoun: "Él", verb: "tiene", fr: "Il a" }, { pronoun: "Nosotros", verb: "tenemos", fr: "Nous avons" }, { pronoun: "Vosotros", verb: "tenéis", fr: "Vous avez" }, { pronoun: "Ellos", verb: "tienen", fr: "Ils ont" }] },
-    { levels: ["A1"], es: "Hacer", en: "Faire", conjugation: [{ pronoun: "Yo", verb: "hago", fr: "Je fais" }, { pronoun: "Tú", verb: "haces", fr: "Tu fais" }, { pronoun: "Él", verb: "hace", fr: "Il fait" }, { pronoun: "Nosotros", verb: "hacemos", fr: "Nous faisons" }, { pronoun: "Vosotros", verb: "hacéis", fr: "Vous faites" }, { pronoun: "Ellos", verb: "hacen", fr: "Ils font" }] },
+    { levels: ["A1", "A2"], es: "Hacer", en: "Faire", conjugation: [{ pronoun: "Yo", verb: "hago", fr: "Je fais" }, { pronoun: "Tú", verb: "haces", fr: "Tu fais" }, { pronoun: "Él", verb: "hace", fr: "Il fait" }, { pronoun: "Nosotros", verb: "hacemos", fr: "Nous faisons" }, { pronoun: "Vosotros", verb: "hacéis", fr: "Vous faites" }, { pronoun: "Ellos", verb: "hacen", fr: "Ils font" }] },
     { levels: ["A1", "A2"], es: "Ir", en: "Aller", conjugation: [{ pronoun: "Yo", verb: "voy", fr: "Je vais" }, { pronoun: "Tú", verb: "vas", fr: "Tu vas" }, { pronoun: "Él", verb: "va", fr: "Il va" }, { pronoun: "Nosotros", verb: "vamos", fr: "Nous allons" }, { pronoun: "Vosotros", verb: "vais", fr: "Vous allez" }, { pronoun: "Ellos", verb: "van", fr: "Ils vont" }] },
-    
-    // --- NIVEAU A2 (Obligation, Pouvoir, Vouloir, Passé) ---
-    { levels: ["A2"], es: "Deber", en: "Devoir (Obligation)", conjugation: [{ pronoun: "Yo", verb: "debo", fr: "Je dois" }, { pronoun: "Tú", verb: "debes", fr: "Tu dois" }, { pronoun: "Él", verb: "debe", fr: "Il doit" }, { pronoun: "Nosotros", verb: "debemos", fr: "Nous devons" }, { pronoun: "Vosotros", verb: "debéis", fr: "Vous devez" }, { pronoun: "Ellos", verb: "deben", fr: "Ils doivent" }] },
+    { levels: ["A2"], es: "Deber", en: "Devoir", conjugation: [{ pronoun: "Yo", verb: "debo", fr: "Je dois" }, { pronoun: "Tú", verb: "debes", fr: "Tu dois" }, { pronoun: "Él", verb: "debe", fr: "Il doit" }, { pronoun: "Nosotros", verb: "debemos", fr: "Nous devons" }, { pronoun: "Vosotros", verb: "debéis", fr: "Vous devez" }, { pronoun: "Ellos", verb: "deben", fr: "Ils doivent" }] },
     { levels: ["A2"], es: "Poder", en: "Pouvoir", conjugation: [{ pronoun: "Yo", verb: "puedo", fr: "Je peux" }, { pronoun: "Tú", verb: "puedes", fr: "Tu peux" }, { pronoun: "Él", verb: "puede", fr: "Il peut" }, { pronoun: "Nosotros", verb: "podemos", fr: "Nous pouvons" }, { pronoun: "Vosotros", verb: "podéis", fr: "Vous pouvez" }, { pronoun: "Ellos", verb: "pueden", fr: "Ils peuvent" }] },
-    { levels: ["A2"], es: "Querer", en: "Vouloir/Aimer", conjugation: [{ pronoun: "Yo", verb: "quiero", fr: "Je veux" }, { pronoun: "Tú", verb: "quieres", fr: "Tu veux" }, { pronoun: "Él", verb: "quiere", fr: "Il veut" }, { pronoun: "Nosotros", verb: "queremos", fr: "Nous voulons" }, { pronoun: "Vosotros", verb: "queréis", fr: "Vous voulez" }, { pronoun: "Ellos", verb: "quieren", fr: "Ils veulent" }] },
-    { levels: ["A2", "B1"], es: "Haber", en: "Avoir (Auxiliaire)", conjugation: [{ pronoun: "Yo", verb: "he", fr: "J'ai" }, { pronoun: "Tú", verb: "has", fr: "Tu as" }, { pronoun: "Él", verb: "ha", fr: "Il a" }, { pronoun: "Nosotros", verb: "hemos", fr: "Nous avons" }, { pronoun: "Vosotros", verb: "habéis", fr: "Vous avez" }, { pronoun: "Ellos", verb: "han", fr: "Ils ont" }] },
-    { levels: ["A2"], es: "Salir", en: "Sortir/Partir", conjugation: [{ pronoun: "Yo", verb: "salgo", fr: "Je sors" }, { pronoun: "Tú", verb: "sales", fr: "Tu sors" }, { pronoun: "Él", verb: "sale", fr: "Il sort" }, { pronoun: "Nosotros", verb: "salimos", fr: "Nous sortons" }, { pronoun: "Vosotros", verb: "salís", fr: "Vous sortez" }, { pronoun: "Ellos", verb: "salen", fr: "Ils sortent" }] },
-
-    // --- NIVEAU B1 (Opinion, Pensée, Sentiment) ---
-    { levels: ["B1", "B2"], es: "Creer", en: "Croire", conjugation: [{ pronoun: "Yo", verb: "creo", fr: "Je crois" }, { pronoun: "Tú", verb: "crees", fr: "Tu crois" }, { pronoun: "Él", verb: "cree", fr: "Il croit" }, { pronoun: "Nosotros", verb: "creemos", fr: "Nous croyons" }, { pronoun: "Vosotros", verb: "creéis", fr: "Vous croyez" }, { pronoun: "Ellos", verb: "creen", fr: "Ils croient" }] },
-    { levels: ["B1", "B2"], es: "Pensar", en: "Penser", conjugation: [{ pronoun: "Yo", verb: "pienso", fr: "Je pense" }, { pronoun: "Tú", verb: "piensas", fr: "Tu penses" }, { pronoun: "Él", verb: "piensa", fr: "Il pense" }, { pronoun: "Nosotros", verb: "pensamos", fr: "Nous pensons" }, { pronoun: "Vosotros", verb: "pensáis", fr: "Vous pensez" }, { pronoun: "Ellos", verb: "piensan", fr: "Ils pensent" }] },
-    { levels: ["B1"], es: "Sentir", en: "Sentir/Regretter", conjugation: [{ pronoun: "Yo", verb: "siento", fr: "Je sens" }, { pronoun: "Tú", verb: "sientes", fr: "Tu sens" }, { pronoun: "Él", verb: "siente", fr: "Il sent" }, { pronoun: "Nosotros", verb: "sentimos", fr: "Nous sentons" }, { pronoun: "Vosotros", verb: "sentís", fr: "Vous sentez" }, { pronoun: "Ellos", verb: "sienten", fr: "Ils sentent" }] },
-    { levels: ["B1"], es: "Pedir", en: "Demander", conjugation: [{ pronoun: "Yo", verb: "pido", fr: "Je demande" }, { pronoun: "Tú", verb: "pides", fr: "Tu demandes" }, { pronoun: "Él", verb: "pide", fr: "Il demande" }, { pronoun: "Nosotros", verb: "pedimos", fr: "Nous demandons" }, { pronoun: "Vosotros", verb: "pedís", fr: "Vous demandez" }, { pronoun: "Ellos", verb: "piden", fr: "Ils demandent" }] }
+    { levels: ["A2"], es: "Querer", en: "Vouloir", conjugation: [{ pronoun: "Yo", verb: "quiero", fr: "Je veux" }, { pronoun: "Tú", verb: "quieres", fr: "Tu veux" }, { pronoun: "Él", verb: "quiere", fr: "Il veut" }, { pronoun: "Nosotros", verb: "queremos", fr: "Nous voulons" }, { pronoun: "Vosotros", verb: "queréis", fr: "Vous voulez" }, { pronoun: "Ellos", verb: "quieren", fr: "Ils veulent" }] },
+    { levels: ["B1"], es: "Creer", en: "Croire", conjugation: [{ pronoun: "Yo", verb: "creo", fr: "Je crois" }, { pronoun: "Tú", verb: "crees", fr: "Tu crois" }, { pronoun: "Él", verb: "cree", fr: "Il croit" }, { pronoun: "Nosotros", verb: "creemos", fr: "Nous croyons" }, { pronoun: "Vosotros", verb: "creéis", fr: "Vous croyez" }, { pronoun: "Ellos", verb: "creen", fr: "Ils croient" }] },
+    { levels: ["B1"], es: "Pensar", en: "Penser", conjugation: [{ pronoun: "Yo", verb: "pienso", fr: "Je pense" }, { pronoun: "Tú", verb: "piensas", fr: "Tu penses" }, { pronoun: "Él", verb: "piensa", fr: "Il pense" }, { pronoun: "Nosotros", verb: "pensamos", fr: "Nous pensons" }, { pronoun: "Vosotros", verb: "pensáis", fr: "Vous pensez" }, { pronoun: "Ellos", verb: "piensan", fr: "Ils pensent" }] },
   ],
 
   nouns: {
-    business: [
-      { levels: ["A2"], es: "La empresa", en: "L'entreprise", sentence: "Trabajo en una empresa internacional.", sentence_trans: "Je travaille dans une entreprise internationale." },
-      { levels: ["B1"], es: "El negocio", en: "L'affaire/Business", sentence: "Es un buen negocio para todos.", sentence_trans: "C'est une bonne affaire pour tout le monde." },
-      { levels: ["A2"], es: "La oficina", en: "Le bureau", sentence: "Llego a la oficina a las nueve.", sentence_trans: "J'arrive au bureau à neuf heures." }
+    // 🏠 MAISON & MEUBLES
+    home: [
+      { levels: ["A1"], es: "La mesa", en: "La table", sentence: "La cena está en la mesa.", sentence_trans: "Le dîner est sur la table." },
+      { levels: ["A1"], es: "La silla", en: "La chaise", sentence: "Esta silla es cómoda.", sentence_trans: "Cette chaise est confortable." },
+      { levels: ["A1"], es: "La cama", en: "Le lit", sentence: "Hago mi cama cada mañana.", sentence_trans: "Je fais mon lit chaque matin." },
+      { levels: ["A1"], es: "La puerta", en: "La porte", sentence: "Cierra la puerta, por favor.", sentence_trans: "Ferme la porte, s'il te plaît." },
+      { levels: ["A1"], es: "La ventana", en: "La fenêtre", sentence: "Abre la ventana.", sentence_trans: "Ouvre la fenêtre." },
+      { levels: ["A2"], es: "El sofá", en: "Le canapé", sentence: "El sofá es nuevo.", sentence_trans: "Le canapé est neuf." },
+      { levels: ["A2"], es: "La lámpara", en: "La lampe", sentence: "Enciende la lámpara.", sentence_trans: "Allume la lampe." },
+      { levels: ["A2"], es: "El espejo", en: "Le miroir", sentence: "El espejo está roto.", sentence_trans: "Le miroir est cassé." },
+      { levels: ["A2"], es: "La cocina", en: "La cuisine", sentence: "Mi cocina es pequeña.", sentence_trans: "Ma cuisine est petite." },
+      { levels: ["B1"], es: "El techo", en: "Le plafond", sentence: "El techo es alto.", sentence_trans: "Le plafond est haut." }
     ],
-    technology: [
-      { levels: ["A1"], es: "El ordenador", en: "L'ordinateur", sentence: "Mi ordenador es muy rápido.", sentence_trans: "Mon ordinateur est très rapide." },
-      { levels: ["A1"], es: "El móvil", en: "Le portable", sentence: "Uso mi móvil para todo.", sentence_trans: "J'utilise mon portable pour tout." },
-      { levels: ["A2"], es: "La pantalla", en: "L'écran", sentence: "La pantalla está rota.", sentence_trans: "L'écran est cassé." }
+
+    // 🏙️ VILLE & LIEUX
+    city: [
+      { levels: ["A1"], es: "La calle", en: "La rue", sentence: "Vivo en esta calle.", sentence_trans: "J'habite dans cette rue." },
+      { levels: ["A1"], es: "La plaza", en: "La place", sentence: "Nos vemos en la plaza.", sentence_trans: "On se voit sur la place." },
+      { levels: ["A1"], es: "El parque", en: "Le parc", sentence: "Corro en el parque.", sentence_trans: "Je cours dans le parc." },
+      { levels: ["A1"], es: "La escuela", en: "L'école", sentence: "Los niños van a la escuela.", sentence_trans: "Les enfants vont à l'école." },
+      { levels: ["A2"], es: "El mercado", en: "Le marché", sentence: "Compro fruta en el mercado.", sentence_trans: "J'achète des fruits au marché." },
+      { levels: ["A2"], es: "El hospital", en: "L'hôpital", sentence: "El hospital está cerca.", sentence_trans: "L'hôpital est proche." },
+      { levels: ["A2"], es: "La estación", en: "La gare", sentence: "El tren llega a la estación.", sentence_trans: "Le train arrive à la gare." },
+      { levels: ["B1"], es: "El puente", en: "Le pont", sentence: "Cruzamos el puente.", sentence_trans: "Nous traversons le pont." },
+      { levels: ["B1"], es: "El edificio", en: "Le bâtiment", sentence: "Es un edificio moderno.", sentence_trans: "C'est un bâtiment moderne." }
     ],
-    places: [
-      { levels: ["A1"], es: "La casa", en: "La maison", sentence: "Mi casa es pequeña pero acogedora.", sentence_trans: "Ma maison est petite mais accueillante." },
-      { levels: ["A1"], es: "La playa", en: "La plage", sentence: "Vamos a la playa este fin de semana.", sentence_trans: "Nous allons à la plage ce week-end." },
-      { levels: ["A1"], es: "El parque", en: "Le parc", sentence: "Me gusta caminar por el parque.", sentence_trans: "J'aime marcher dans le parc." },
-      { levels: ["A1"], es: "La ciudad", en: "La ville", sentence: "Vivo en una ciudad grande.", sentence_trans: "J'habite dans une grande ville." },
-      { levels: ["A2"], es: "El hospital", en: "L'hôpital", sentence: "El médico trabaja en el hospital.", sentence_trans: "Le médecin travaille à l'hôpital." }
+
+    // ✈️ VOYAGE & TRANSPORT
+    travel: [
+      { levels: ["A1"], es: "El coche", en: "La voiture", sentence: "Tengo un coche rojo.", sentence_trans: "J'ai une voiture rouge." },
+      { levels: ["A1"], es: "El autobús", en: "Le bus", sentence: "El autobús llega tarde.", sentence_trans: "Le bus arrive en retard." },
+      { levels: ["A2"], es: "El tren", en: "Le train", sentence: "Viajo en tren.", sentence_trans: "Je voyage en train." },
+      { levels: ["A2"], es: "El avión", en: "L'avion", sentence: "El avión despega.", sentence_trans: "L'avion décolle." },
+      { levels: ["A2"], es: "El billete", en: "Le billet", sentence: "Compré el billete online.", sentence_trans: "J'ai acheté le billet en ligne." },
+      { levels: ["A2"], es: "La maleta", en: "La valise", sentence: "Hago mi maleta.", sentence_trans: "Je fais ma valise." },
+      { levels: ["B1"], es: "El pasaporte", en: "Le passeport", sentence: "Olvidé mi pasaporte.", sentence_trans: "J'ai oublié mon passeport." },
+      { levels: ["B1"], es: "El viaje", en: "Le voyage", sentence: "Fue un viaje largo.", sentence_trans: "C'était un long voyage." }
     ],
-    objects: [
-      { levels: ["A1"], es: "El libro", en: "Le livre", sentence: "Este libro es muy interesante.", sentence_trans: "Ce livre est très intéressant." },
-      { levels: ["A1"], es: "La silla", en: "La chaise", sentence: "La silla es cómoda.", sentence_trans: "La chaise est confortable." },
-      { levels: ["A1"], es: "La mesa", en: "La table", sentence: "Pon los platos en la mesa.", sentence_trans: "Mets les plats sur la table." },
-      { levels: ["A1"], es: "El coche", en: "La voiture", sentence: "Mi coche es rojo.", sentence_trans: "Ma voiture est rouge." }
+
+    // 💻 TECHNOLOGIE & GEEK
+    tech: [
+      { levels: ["A1"], es: "El móvil", en: "Le portable", sentence: "Mi móvil no tiene batería.", sentence_trans: "Mon portable n'a plus de batterie." },
+      { levels: ["A1"], es: "La foto", en: "La photo", sentence: "Saco una foto.", sentence_trans: "Je prends une photo." },
+      { levels: ["A2"], es: "El ordenador", en: "L'ordinateur", sentence: "Trabajo con el ordenador.", sentence_trans: "Je travaille avec l'ordinateur." },
+      { levels: ["A2"], es: "La pantalla", en: "L'écran", sentence: "La pantalla es táctil.", sentence_trans: "L'écran est tactile." },
+      { levels: ["A2"], es: "El mensaje", en: "Le message", sentence: "Te envié un mensaje.", sentence_trans: "Je t'ai envoyé un message." },
+      { levels: ["B1"], es: "La red", en: "Le réseau/Internet", sentence: "La red está lenta.", sentence_trans: "Le réseau est lent." },
+      { levels: ["B1"], es: "El archivo", en: "Le fichier", sentence: "Guarda el archivo.", sentence_trans: "Sauvegarde le fichier." }
     ],
-    food: [
-      { levels: ["A1"], es: "La comida", en: "La nourriture", sentence: "La comida española es deliciosa.", sentence_trans: "La nourriture espagnole est délicieuse." },
-      { levels: ["A1"], es: "El pan", en: "Le pain", sentence: "Compro pan fresco cada mañana.", sentence_trans: "J'achète du pain frais chaque matin." },
-      { levels: ["A1"], es: "El agua", en: "L'eau", sentence: "Bebo mucha agua durante el día.", sentence_trans: "Je bois beaucoup d'eau pendant la journée." },
-      { levels: ["A2"], es: "El queso", en: "Le fromage", sentence: "Me gusta el queso curado.", sentence_trans: "J'aime le fromage affiné." }
+
+    // 🍎 NOURRITURE (FRUITS & LÉGUMES)
+    food_fruit: [
+      { levels: ["A1"], es: "La manzana", en: "La pomme", sentence: "Como una manzana roja.", sentence_trans: "Je mange une pomme rouge." },
+      { levels: ["A1"], es: "El plátano", en: "La banane", sentence: "El plátano es dulce.", sentence_trans: "La banane est sucrée." },
+      { levels: ["A1"], es: "La naranja", en: "L'orange", sentence: "Bebo jugo de naranja.", sentence_trans: "Je bois du jus d'orange." },
+      { levels: ["A2"], es: "La fresa", en: "La fraise", sentence: "Me gustan las fresas.", sentence_trans: "J'aime les fraises." },
+      { levels: ["A2"], es: "El tomate", en: "La tomate", sentence: "El tomate es para la ensalada.", sentence_trans: "La tomate est pour la salade." },
+      { levels: ["A2"], es: "La patata", en: "La pomme de terre", sentence: "Patatas fritas.", sentence_trans: "Pommes frites." }
     ],
-    people: [
-      { levels: ["A1"], es: "El amigo", en: "L'ami", sentence: "Pedro es mi mejor amigo.", sentence_trans: "Pedro est mon meilleur ami." },
-      { levels: ["A1"], es: "El hermano", en: "Le frère", sentence: "Tengo un hermano mayor.", sentence_trans: "J'ai un frère aîné." },
-      { levels: ["A1"], es: "La hermana", en: "La soeur", sentence: "Mi hermana vive en Madrid.", sentence_trans: "Ma soeur habite à Madrid." },
-      { levels: ["A1"], es: "El profesor", en: "Le professeur", sentence: "El profesor explica la lección.", sentence_trans: "Le professeur explique la leçon." }
+
+    // 🍽️ NOURRITURE (REPAS & PLATS)
+    food_meal: [
+      { levels: ["A1"], es: "El pan", en: "Le pain", sentence: "Pan con queso.", sentence_trans: "Pain au fromage." },
+      { levels: ["A1"], es: "El agua", en: "L'eau", sentence: "Un vaso de agua.", sentence_trans: "Un verre d'eau." },
+      { levels: ["A1"], es: "El café", en: "Le café", sentence: "Café con leche.", sentence_trans: "Café au lait." },
+      { levels: ["A2"], es: "El queso", en: "Le fromage", sentence: "Queso manchego.", sentence_trans: "Fromage manchego." },
+      { levels: ["A2"], es: "El pollo", en: "Le poulet", sentence: "Pollo asado.", sentence_trans: "Poulet rôti." },
+      { levels: ["A2"], es: "El pescado", en: "Le poisson", sentence: "Pescado fresco.", sentence_trans: "Poisson frais." },
+      { levels: ["B1"], es: "La cena", en: "Le dîner", sentence: "La cena está lista.", sentence_trans: "Le dîner est prêt." },
+      { levels: ["B1"], es: "El desayuno", en: "Le petit-déjeuner", sentence: "Desayuno fuerte.", sentence_trans: "Petit-déjeuner copieux." }
     ],
+
+    // 👔 VÊTEMENTS
+    clothing: [
+      { levels: ["A1"], es: "La ropa", en: "Les vêtements", sentence: "Compro ropa nueva.", sentence_trans: "J'achète des vêtements neufs." },
+      { levels: ["A1"], es: "El zapato", en: "La chaussure", sentence: "Mis zapatos son negros.", sentence_trans: "Mes chaussures sont noires." },
+      { levels: ["A2"], es: "La camisa", en: "La chemise", sentence: "Una camisa blanca.", sentence_trans: "Une chemise blanche." },
+      { levels: ["A2"], es: "El pantalón", en: "Le pantalon", sentence: "El pantalón es largo.", sentence_trans: "Le pantalon est long." },
+      { levels: ["A2"], es: "El abrigo", en: "Le manteau", sentence: "Hace frío, ponte el abrigo.", sentence_trans: "Il fait froid, mets ton manteau." },
+      { levels: ["B1"], es: "El vestido", en: "La robe", sentence: "Un vestido elegante.", sentence_trans: "Une robe élégante." },
+      { levels: ["B1"], es: "Las gafas", en: "Les lunettes", sentence: "Gafas de sol.", sentence_trans: "Lunettes de soleil." }
+    ],
+
+    // 🌳 NATURE & ANIMAUX
+    nature: [
+      { levels: ["A1"], es: "El sol", en: "Le soleil", sentence: "Hace sol.", sentence_trans: "Il fait soleil." },
+      { levels: ["A1"], es: "El gato", en: "Le chat", sentence: "El gato maúlla.", sentence_trans: "Le chat miaule." },
+      { levels: ["A1"], es: "El perro", en: "Le chien", sentence: "Mi perro corre.", sentence_trans: "Mon chien court." },
+      { levels: ["A2"], es: "El árbol", en: "L'arbre", sentence: "El árbol es alto.", sentence_trans: "L'arbre est haut." },
+      { levels: ["A2"], es: "La flor", en: "La fleur", sentence: "Una flor bonita.", sentence_trans: "Une jolie fleur." },
+      { levels: ["A2"], es: "La playa", en: "La plage", sentence: "Arena de playa.", sentence_trans: "Sable de plage." },
+      { levels: ["B1"], es: "El mar", en: "La mer", sentence: "Nado en el mar.", sentence_trans: "Je nage dans la mer." },
+      { levels: ["B1"], es: "La montaña", en: "La montagne", sentence: "Aire de montaña.", sentence_trans: "Air de montagne." }
+    ],
+
+    // 💼 TRAVAIL & BUSINESS
+    job: [
+      { levels: ["A2"], es: "El trabajo", en: "Le travail", sentence: "Busco trabajo.", sentence_trans: "Je cherche du travail." },
+      { levels: ["A2"], es: "El jefe", en: "Le patron", sentence: "Mi jefe es bueno.", sentence_trans: "Mon patron est bon." },
+      { levels: ["A2"], es: "La oficina", en: "Le bureau (lieu)", sentence: "Voy a la oficina.", sentence_trans: "Je vais au bureau." },
+      { levels: ["B1"], es: "La empresa", en: "L'entreprise", sentence: "Una empresa grande.", sentence_trans: "Une grande entreprise." },
+      { levels: ["B1"], es: "El cliente", en: "Le client", sentence: "Llamo al cliente.", sentence_trans: "J'appelle le client." },
+      { levels: ["B1"], es: "El proyecto", en: "Le projet", sentence: "Nuevo proyecto.", sentence_trans: "Nouveau projet." },
+      { levels: ["B2"], es: "La reunión", en: "La réunion", sentence: "Estamos en una reunión.", sentence_trans: "Nous sommes en réunion." }
+    ],
+
+    // 👪 FAMILLE & GENS
+    family: [
+      { levels: ["A1"], es: "La madre", en: "La mère", sentence: "Amo a mi madre.", sentence_trans: "J'aime ma mère." },
+      { levels: ["A1"], es: "El padre", en: "Le père", sentence: "Mi padre es fuerte.", sentence_trans: "Mon père est fort." },
+      { levels: ["A1"], es: "El hermano", en: "Le frère", sentence: "Tengo un hermano.", sentence_trans: "J'ai un frère." },
+      { levels: ["A1"], es: "La hermana", en: "La soeur", sentence: "Mi hermana lee.", sentence_trans: "Ma soeur lit." },
+      { levels: ["A2"], es: "El abuelo", en: "Le grand-père", sentence: "Visito a mi abuelo.", sentence_trans: "Je rends visite à mon grand-père." },
+      { levels: ["A2"], es: "El amigo", en: "L'ami", sentence: "Salgo con mi amigo.", sentence_trans: "Je sors avec mon ami." },
+      { levels: ["B1"], es: "El vecino", en: "Le voisin", sentence: "Mi vecino saluda.", sentence_trans: "Mon voisin salue." }
+    ],
+
+    // ❤️ ÉMOTIONS & ABSTRAIT
     abstract: [
-      { levels: ["A1", "A2"], es: "El tiempo", en: "Le temps", sentence: "No tengo mucho tiempo hoy.", sentence_trans: "Je n'ai pas beaucoup de temps aujourd'hui." },
-      { levels: ["A2"], es: "La idea", en: "L'idée", sentence: "Es una buena idea.", sentence_trans: "C'est une bonne idée." },
-      { levels: ["B1"], es: "La verdad", en: "La vérité", sentence: "Siempre digo la verdad.", sentence_trans: "Je dis toujours la vérité." }
+      { levels: ["A1"], es: "El nombre", en: "Le nom", sentence: "Mi nombre es Juan.", sentence_trans: "Mon nom est Juan." },
+      { levels: ["A2"], es: "El tiempo", en: "Le temps", sentence: "Pasa el tiempo.", sentence_trans: "Le temps passe." },
+      { levels: ["A2"], es: "La vida", en: "La vie", sentence: "La vida es bella.", sentence_trans: "La vie est belle." },
+      { levels: ["B1"], es: "La verdad", en: "La vérité", sentence: "Dime la verdad.", sentence_trans: "Dis-moi la vérité." },
+      { levels: ["B1"], es: "El miedo", en: "La peur", sentence: "No tengo miedo.", sentence_trans: "Je n'ai pas peur." },
+      { levels: ["B1"], es: "La suerte", en: "La chance", sentence: "Buena suerte.", sentence_trans: "Bonne chance." }
+    ],
+
+    // 🏥 SANTÉ
+    health: [
+      { levels: ["A2"], es: "El cuerpo", en: "Le corps", sentence: "Mueve el cuerpo.", sentence_trans: "Bouge ton corps." },
+      { levels: ["A2"], es: "La mano", en: "La main", sentence: "Dame la mano.", sentence_trans: "Donne-moi la main." },
+      { levels: ["A2"], es: "El dolor", en: "La douleur", sentence: "Siento dolor.", sentence_trans: "Je ressens de la douleur." },
+      { levels: ["B1"], es: "El médico", en: "Le médecin", sentence: "Cita con el médico.", sentence_trans: "Rendez-vous avec le médecin." },
+      { levels: ["B1"], es: "La salud", en: "La santé", sentence: "Salud y amor.", sentence_trans: "Santé et amour." }
+    ],
+
+    // 🎓 ÉCOLE & APPRENTISSAGE
+    school: [
+      { levels: ["A1"], es: "El libro", en: "Le livre", sentence: "Leo un libro.", sentence_trans: "Je lis un livre." },
+      { levels: ["A2"], es: "El papel", en: "Le papier", sentence: "Escribe en el papel.", sentence_trans: "Écris sur le papier." },
+      { levels: ["A2"], es: "La palabra", en: "Le mot", sentence: "Una palabra nueva.", sentence_trans: "Un mot nouveau." },
+      { levels: ["B1"], es: "El examen", en: "L'examen", sentence: "Tengo un examen.", sentence_trans: "J'ai un examen." },
+      { levels: ["B1"], es: "La clase", en: "Le cours/classe", sentence: "Empieza la clase.", sentence_trans: "Le cours commence." }
     ]
   },
 
   adjectives: [
-    { levels: ["A1"], es: "Grande", en: "Grand", sentence: "Es una casa muy grande." },
-    { levels: ["A1"], es: "Pequeño", en: "Petit", sentence: "Tengo un perro pequeño." },
-    { levels: ["A1"], es: "Bueno", en: "Bon", sentence: "Es un buen amigo." },
-    { levels: ["A1"], es: "Nuevo", en: "Nouveau", sentence: "Quiero un coche nuevo." },
-    { levels: ["A2"], es: "Difícil", en: "Difficile", sentence: "El examen fue difícil." },
-    { levels: ["A2"], es: "Fácil", en: "Facile", sentence: "Aprender español es fácil." }
+    { levels: ["A1"], es: "Grande", en: "Grand", sentence: "Es muy grande." },
+    { levels: ["A1"], es: "Pequeño", en: "Petit", sentence: "Es demasiado pequeño." },
+    { levels: ["A1"], es: "Bueno", en: "Bon", sentence: "Es un buen día." },
+    { levels: ["A1"], es: "Nuevo", en: "Nouveau", sentence: "Es totalmente nuevo." },
+    { levels: ["A2"], es: "Importante", en: "Important", sentence: "Es un tema importante." },
+    { levels: ["A2"], es: "Feliz", en: "Heureux", sentence: "Soy muy feliz." },
+    { levels: ["B1"], es: "Posible", en: "Possible", sentence: "Todo es posible." },
+    { levels: ["B1"], es: "Rápido", en: "Rapide", sentence: "El coche es rápido." }
   ],
 
   connectors: [
@@ -2600,136 +2697,134 @@ export const DATA_BANK = {
     { es: "Pero", en: "Mais" },
     { es: "O", en: "Ou" },
     { es: "Porque", en: "Parce que" },
-    { es: "Aunque", en: "Bien que" },
-    { es: "Sin embargo", en: "Cependant" }
+    { es: "Si", en: "Si" },
+    { es: "Cuando", en: "Quand" }
   ],
 
   tips: [
-    "En espagnol, le 'H' est toujours muet.",
-    "Ser = Identité permanente / Estar = État temporaire.",
-    "Hay (Il y a) est invariable au présent.",
-    "L'accent tonique est essentiel : hablo (je parle) vs habló (il parla).",
-    "En espagnol, on utilise 'usted' pour la politesse formelle.",
-    "Les adjectifs s'accordent en genre et en nombre avec le nom.",
-    "Le sujet est souvent omis car la terminaison du verbe suffit."
+    "Astuce : 'H' est toujours muet en espagnol.",
+    "Astuce : Ser = permanent, Estar = temporaire.",
+    "Astuce : Les adjectifs s'accordent en genre/nombre.",
+    "Astuce : 'Hay' (il y a) est invariable.",
+    "Astuce : On tutoie plus facilement en Espagne."
   ]
 };
 
-// --- 4. PROGRAMME PÉDAGOGIQUE (CURRICULUM) ---
+// --- 4. CURRICULUM (MAPPING PRÉCIS) ---
 export const CURRICULUM_LOGIC = {
   A1: [
-    { topic: "Bases & Salutations", grammar: "Présent (Ser)", category: "people" },
-    { topic: "La Famille", grammar: "Possession", category: "people" },
-    { topic: "Ma Routine", grammar: "Verbes -AR", category: "abstract" },
-    { topic: "Mes Goûts", grammar: "Gustar", category: "food" }, // Souvent utilisé avec la nourriture
-    { topic: "Projets de Voyage", grammar: "Futur Proche", category: "places" },
-    { topic: "Ma Ville", grammar: "Hay (Il y a)", category: "places" },
-    { topic: "Shopping & Vêtements", grammar: "Adjectifs", category: "objects" },
-    { topic: "La Maison", grammar: "Estar (Lieu)", category: "objects" },
-    { topic: "Le Corps Humain", grammar: "Avoir mal", category: "people" },
-    { topic: "La Nourriture", grammar: "Impératif (Tu)", category: "food" },
-    { topic: "Les Animaux", grammar: "Genre & Nombre", category: "nature" }, // Fallback sur nature/objects
-    { topic: "La Météo", grammar: "Verbe Hacer", category: "places" },
-    { topic: "L'École", grammar: "Fournitures", category: "objects" },
-    { topic: "Les Loisirs", grammar: "Jugar (Jouer)", category: "abstract" },
-    { topic: "Les Amis", grammar: "Ser vs Estar", category: "people" },
-    { topic: "Les Émotions", grammar: "Estar + Adj", category: "abstract" },
-    { topic: "Les Saisons", grammar: "Comparatifs", category: "nature" },
-    { topic: "La Nature", grammar: "Démonstratifs", category: "nature" },
-    { topic: "Poser des Questions", grammar: "Interrogatifs", category: "abstract" },
-    { topic: "Bilan A1", grammar: "Révision Globale", category: "random" }
+    { topic: "Salutations", grammar: "Présent (Ser)", category: "abstract" },
+    { topic: "La Famille", grammar: "Possession", category: "family" },
+    { topic: "La Maison", grammar: "Hay (Il y a)", category: "home" },
+    { topic: "Nourriture", grammar: "Gustar", category: "food_fruit" },
+    { topic: "Au Café", grammar: "Querer", category: "food_meal" },
+    { topic: "Vêtements", grammar: "Couleurs", category: "clothing" },
+    { topic: "La Ville", grammar: "Estar (Lieu)", category: "city" },
+    { topic: "Transport", grammar: "Verbe Ir", category: "travel" },
+    { topic: "Animaux", grammar: "Genre", category: "nature" },
+    { topic: "Le Corps", grammar: "Tener", category: "health" },
+    { topic: "Techno", grammar: "Objets", category: "tech" },
+    { topic: "École", grammar: "Fournitures", category: "school" },
+    { topic: "Météo", grammar: "Hacer", category: "nature" },
+    { topic: "Routine", grammar: "Réflexifs", category: "home" },
+    { topic: "Amis", grammar: "Ser vs Estar", category: "family" }, // amis inclus
+    { topic: "Achats", grammar: "Combien ça coûte", category: "food_fruit" },
+    { topic: "Loisirs", grammar: "Jugar", category: "tech" },
+    { topic: "Voyage", grammar: "Futur Proche", category: "travel" },
+    { topic: "Identité", grammar: "Nationalités", category: "abstract" },
+    { topic: "Bilan A1", grammar: "Révision", category: "city" }
   ],
   A2: [
-    { topic: "Raconter le Passé", grammar: "Passé Composé", category: "abstract" },
-    { topic: "Souvenirs d'Enfance", grammar: "Imparfait", category: "people" },
-    { topic: "Futur & Avenir", grammar: "Futur Simple", category: "business" },
-    { topic: "Comparaisons", grammar: "Superlatifs", category: "objects" },
-    { topic: "Obligations", grammar: "Deber / Tener que", category: "business" },
-    { topic: "Santé & Médecin", grammar: "Impératif (Vous)", category: "people" },
-    { topic: "Au Restaurant", grammar: "Politesse", category: "food" },
-    { topic: "Réservation Hôtel", grammar: "Conditionnel (Je)", category: "places" },
-    { topic: "La Banque", grammar: "Chiffres élevés", category: "business" },
-    { topic: "La Poste", grammar: "COD (Lo/La)", category: "places" },
-    { topic: "Urgences", grammar: "Impératif Négatif", category: "people" },
-    { topic: "Fêtes & Traditions", grammar: "Passé Simple", category: "abstract" },
-    { topic: "La Sieste", grammar: "Habitudes", category: "abstract" },
-    { topic: "Orientation", grammar: "Prépositions", category: "places" },
-    { topic: "Action en cours", grammar: "Gérondif", category: "people" },
-    { topic: "Sentiments", grammar: "Subjonctif (Intro)", category: "abstract" },
-    { topic: "Musique & Cinéma", grammar: "Opinion", category: "abstract" },
-    { topic: "Internet", grammar: "Verbes Techno", category: "technology" },
-    { topic: "Voyage (Avion)", grammar: "Vocabulaire", category: "places" },
-    { topic: "Bilan A2", grammar: "Validation", category: "random" }
+    { topic: "Passé (Hier)", grammar: "Passé Composé", category: "home" },
+    { topic: "Souvenirs", grammar: "Imparfait", category: "family" },
+    { topic: "Projets", grammar: "Futur Simple", category: "job" },
+    { topic: "Restaurant", grammar: "Politesse", category: "food_meal" },
+    { topic: "Santé", grammar: "Dolor (Douleur)", category: "health" },
+    { topic: "Shopping", grammar: "Comparatifs", category: "clothing" },
+    { topic: "Maison de Rêve", grammar: "Conditionnel", category: "home" },
+    { topic: "Nature", grammar: "Superlatifs", category: "nature" },
+    { topic: "Travail", grammar: "Obligation", category: "job" },
+    { topic: "Internet", grammar: "Vocabulaire", category: "tech" },
+    { topic: "Hôtel", grammar: "Réservation", category: "travel" },
+    { topic: "Ville", grammar: "Orientation", category: "city" },
+    { topic: "Cuisine", grammar: "Impératif", category: "food_fruit" },
+    { topic: "Sentiments", grammar: "Estar + Adj", category: "abstract" },
+    { topic: "Musique", grammar: "Opinion", category: "abstract" }, // loisirs
+    { topic: "Sport", grammar: "Verbes", category: "health" },
+    { topic: "Fêtes", grammar: "Traditions", category: "family" },
+    { topic: "Argent", grammar: "Banque", category: "city" },
+    { topic: "Urgences", grammar: "Impératif Négatif", category: "health" },
+    { topic: "Bilan A2", grammar: "Validation", category: "travel" }
   ],
   B1: [
-    { topic: "Exprimer l'Opinion", grammar: "Subjonctif Présent", category: "abstract" },
-    { topic: "Hypothèses", grammar: "Conditionnel", category: "abstract" },
-    { topic: "Rapporter un Discours", grammar: "Style Indirect", category: "people" },
-    { topic: "Relations Sociales", grammar: "Por vs Para", category: "people" },
-    { topic: "L'Environnement", grammar: "Futur Antérieur", category: "nature" },
-    { topic: "La Technologie", grammar: "Avantages/Inconvénients", category: "technology" },
-    { topic: "Le Monde du Travail", grammar: "CV & Lettre", category: "business" },
-    { topic: "La Politique", grammar: "Débat", category: "abstract" },
-    { topic: "La Justice", grammar: "Vocabulaire Juridique", category: "abstract" },
-    { topic: "L'Économie", grammar: "Chiffres & Trends", category: "business" },
-    { topic: "L'Art & Culture", grammar: "Description", category: "abstract" },
-    { topic: "La Littérature", grammar: "Passé Simple (Avancé)", category: "objects" },
-    { topic: "L'Histoire", grammar: "Concordance temps", category: "places" },
-    { topic: "La Géographie", grammar: "Régions", category: "places" },
-    { topic: "La Société", grammar: "Égalité/Droits", category: "people" },
-    { topic: "La Science", grammar: "Futur Proche", category: "technology" },
-    { topic: "Les Médias", grammar: "Connecteurs Logiques", category: "technology" },
-    { topic: "Psychologie", grammar: "Verbes de changement", category: "abstract" },
-    { topic: "Philosophie", grammar: "Abstrait", category: "abstract" },
-    { topic: "Bilan B1", grammar: "Maîtrise", category: "random" }
+    { topic: "Opinions", grammar: "Subjonctif Présent", category: "abstract" },
+    { topic: "Technologie", grammar: "Avantages", category: "tech" },
+    { topic: "Environnement", grammar: "Futur Antérieur", category: "nature" },
+    { topic: "Monde Pro", grammar: "Entretien", category: "job" },
+    { topic: "Culture", grammar: "Art", category: "city" },
+    { topic: "Relations", grammar: "Réciproque", category: "family" },
+    { topic: "Santé Mentale", grammar: "Conseils", category: "health" },
+    { topic: "Voyage Aventure", grammar: "Récit", category: "travel" },
+    { topic: "Gastronomie", grammar: "Description", category: "food_meal" },
+    { topic: "Mode", grammar: "Tendances", category: "clothing" },
+    { topic: "Éducation", grammar: "Système", category: "school" },
+    { topic: "Architecture", grammar: "Passif", category: "home" },
+    { topic: "Politique", grammar: "Débat", category: "abstract" },
+    { topic: "Histoire", grammar: "Concordance", category: "city" },
+    { topic: "Science", grammar: "Hypothèses", category: "tech" },
+    { topic: "Cinéma", grammar: "Critique", category: "abstract" },
+    { topic: "Justice", grammar: "Loi", category: "job" },
+    { topic: "Médias", grammar: "Journalisme", category: "tech" },
+    { topic: "Philosophie", grammar: "Concepts", category: "abstract" },
+    { topic: "Bilan B1", grammar: "Expertise", category: "job" }
   ],
   B2: [
-    { topic: "Si j'étais...", grammar: "Subjonctif Imparfait", category: "abstract" },
-    { topic: "Regrets", grammar: "Conditionnel Passé", category: "abstract" },
-    { topic: "Faits Divers", grammar: "Voix Passive", category: "people" },
-    { topic: "Rumeurs", grammar: "Discours Rapporté (Passé)", category: "people" },
-    { topic: "Santé Avancée", grammar: "Expressions Corps", category: "people" },
-    { topic: "Changements d'État", grammar: "Ponerse / Quedarse", category: "abstract" },
-    { topic: "Nuances", grammar: "Por vs Para (Subtil)", category: "abstract" },
-    { topic: "Précision", grammar: "Pronoms Relatifs (Cuyo)", category: "abstract" },
-    { topic: "Projets Futurs", grammar: "Futur Antérieur", category: "business" },
-    { topic: "Récit Complexe", grammar: "Plus-que-parfait", category: "places" },
-    { topic: "Sentiments", grammar: "Verbes Prépositionnels", category: "abstract" },
-    { topic: "Argumentation", grammar: "Concession (Bien que)", category: "business" },
-    { topic: "Doute & Probabilité", grammar: "Deber de / Quizás", category: "abstract" },
-    { topic: "Habitudes Passées", grammar: "Soler + Infinitif", category: "people" },
-    { topic: "Généralités", grammar: "Le Neutre (Lo)", category: "abstract" },
-    { topic: "Nuances de Taille", grammar: "Diminutifs (-ito)", category: "objects" },
-    { topic: "Business", grammar: "Négociation", category: "business" },
-    { topic: "Écologie", grammar: "Débat & Solutions", category: "nature" },
-    { topic: "Humour & Ironie", grammar: "Double Sens", category: "abstract" },
-    { topic: "Bilan B2", grammar: "Fluidité Totale", category: "random" }
+    { topic: "Business", grammar: "Négociation", category: "job" },
+    { topic: "Écologie", grammar: "Solutions", category: "nature" },
+    { topic: "Littérature", grammar: "Style", category: "school" },
+    { topic: "Psychologie", grammar: "Nuances", category: "abstract" },
+    { topic: "Urbanisme", grammar: "Futur", category: "city" },
+    { topic: "Médecine", grammar: "Technique", category: "health" },
+    { topic: "Droit", grammar: "Vocabulaire", category: "job" },
+    { topic: "Art", grammar: "Analyse", category: "abstract" },
+    { topic: "Conflits", grammar: "Résolution", category: "family" },
+    { topic: "Innovation", grammar: "Tech", category: "tech" },
+    { topic: "Tourisme", grammar: "Impact", category: "travel" },
+    { topic: "Nutrition", grammar: "Diète", category: "food_fruit" },
+    { topic: "Cinéma", grammar: "Réalisation", category: "abstract" },
+    { topic: "Histoire", grammar: "Mémoire", category: "city" },
+    { topic: "Société", grammar: "Débat", category: "school" },
+    { topic: "Finance", grammar: "Marchés", category: "job" },
+    { topic: "Astronomie", grammar: "Espace", category: "nature" },
+    { topic: "Langues", grammar: "Linguistique", category: "school" },
+    { topic: "Bénévolat", grammar: "Social", category: "family" },
+    { topic: "Bilan B2", grammar: "Maîtrise", category: "abstract" }
   ],
   C1: [
-    { topic: "Subtilités", grammar: "Subjonctif (Nuances)", category: "abstract" },
-    { topic: "Langage Soutenu", grammar: "Registres de langue", category: "abstract" },
-    { topic: "Expressions Idiomatiques", grammar: "Sens Figuré", category: "people" },
-    { topic: "Argot & Rue", grammar: "Langage Familier", category: "people" },
-    { topic: "Accents & Régions", grammar: "Esp vs Latam", category: "places" },
-    { topic: "Littérature", grammar: "Style Romanesque", category: "objects" },
-    { topic: "Philosophie", grammar: "Concepts Abstraits", category: "abstract" },
-    { topic: "Médecine", grammar: "Termes Techniques", category: "technology" },
-    { topic: "Juridique", grammar: "Langage de Loi", category: "business" },
-    { topic: "Histoire d'Espagne", grammar: "Civilisation", category: "places" },
-    { topic: "Amérique Latine", grammar: "Culture Spécifique", category: "places" },
-    { topic: "Rhétorique", grammar: "Connecteurs Complexes", category: "business" },
-    { topic: "Emphase", grammar: "Double Négation", category: "abstract" },
-    { topic: "Transformation", grammar: "Verbes Complexes", category: "abstract" },
-    { topic: "Faux Amis", grammar: "Pièges Courants", category: "abstract" },
-    { topic: "Sagesse Populaire", grammar: "Proverbes", category: "people" },
-    { topic: "Presse & Média", grammar: "Analyse", category: "technology" },
-    { topic: "Rédaction", grammar: "Style Académique", category: "business" },
-    { topic: "Bilinguisme", grammar: "Perfectionnement", category: "abstract" },
-    { topic: "BILAN FINAL C1", grammar: "Expertise", category: "random" }
+    { topic: "Rhétorique", grammar: "Discours", category: "abstract" },
+    { topic: "Géopolitique", grammar: "Relations", category: "city" },
+    { topic: "Bioéthique", grammar: "Débat", category: "health" },
+    { topic: "Métaphysique", grammar: "Concepts", category: "abstract" },
+    { topic: "Finance", grammar: "Bourse", category: "job" },
+    { topic: "Luxe", grammar: "Marché", category: "clothing" },
+    { topic: "Gastronomie", grammar: "Haute Cuisine", category: "food_meal" },
+    { topic: "Architecture", grammar: "Patrimoine", category: "city" },
+    { topic: "Cinéma", grammar: "Essai", category: "abstract" },
+    { topic: "Littérature", grammar: "Poésie", category: "school" },
+    { topic: "Diplomatie", grammar: "Protocole", category: "job" },
+    { topic: "Neuroscience", grammar: "Cerveau", category: "health" },
+    { topic: "Climat", grammar: "Urgence", category: "nature" },
+    { topic: "Anthropologie", grammar: "Culture", category: "family" },
+    { topic: "Archéologie", grammar: "Fouilles", category: "travel" },
+    { topic: "Théâtre", grammar: "Dramaturgie", category: "abstract" },
+    { topic: "Musique", grammar: "Composition", category: "abstract" },
+    { topic: "Journalisme", grammar: "Investigation", category: "tech" },
+    { topic: "Traduction", grammar: "Nuances", category: "school" },
+    { topic: "Expertise C1", grammar: "Final", category: "abstract" }
   ]
 };
 
-// --- 5. LEÇONS STATIQUES (Exemples pour les premiers IDs) ---
+// --- 5. LEÇONS STATIQUES ---
 export const CONTENT_PART_1 = {
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Salutation universelle", sentence: "Hola, ¿cómo estás?", sentence_trans: "Bonjour, comment vas-tu ?" },
@@ -2759,10 +2854,8 @@ export const CONTENT_PART_1 = {
   ]
 };
 
-// --- 6. GÉNÉRATEUR INTELLIGENT DE LEÇONS (LOGIQUE CORRIGÉE) ---
-// --- 6. GÉNÉRATEUR INTELLIGENT DE LEÇONS (VERSION CORRIGÉE PREMIUM) ---
+// --- 6. GÉNÉRATEUR INTELLIGENT (ALGORITHME SANS DOUBLONS) ---
 export const generateStructuredLesson = (id) => {
-  // 1. Déterminer le niveau et la config de la leçon
   let level = "A1";
   if (id > 20) level = "A2";
   if (id > 40) level = "B1";
@@ -2770,35 +2863,40 @@ export const generateStructuredLesson = (id) => {
   if (id > 80) level = "C1";
 
   const levelConfig = CURRICULUM_LOGIC[level] || [];
-  const config = levelConfig[(id - 1) % levelConfig.length] || { topic: `Leçon ${id}`, grammar: "Général", category: "random" };
+  const config = levelConfig[(id - 1) % levelConfig.length] || { topic: `Leçon ${id}`, grammar: "Général", category: "abstract" };
   const topicLower = config.topic.toLowerCase();
   const grammarLower = config.grammar.toLowerCase();
 
-  // 2. Sélection Intelligente du Vocabulaire (Basée sur la catégorie forcée)
-  const forcedCategory = config.category || 'random';
-
-  // Helper robuste pour récupérer un nom
-  const getSmartNoun = () => {
-      // 1. Déterminer la source
-      let sourcePool = null;
-      if (forcedCategory !== 'random' && DATA_BANK.nouns[forcedCategory]) {
-          sourcePool = DATA_BANK.nouns[forcedCategory];
-      } else {
-          // Si 'random' ou catégorie introuvable, on tape dans 'objects' par défaut
-          sourcePool = DATA_BANK.nouns['objects']; 
-      }
-
-      // 2. Filtrer par niveau (ne pas donner du C1 à un A1)
-      const levelPool = sourcePool.filter(n => n.levels.includes(level));
-      
-      // 3. Fallback : Si pas de mots du niveau, on prend tout le pool pour éviter le vide
-      const finalPool = levelPool.length > 0 ? levelPool : sourcePool;
-
-      // 4. Sélection
-      return finalPool[(id + Math.floor(Math.random() * finalPool.length)) % finalPool.length];
+  // 1. SÉLECTION DU VOCABULAIRE (POOL SANS DOUBLON)
+  const forcedCategory = config.category;
+  
+  const getCandidatePool = (cat) => {
+      // Récupère la liste de mots ou fallback sur 'abstract'
+      let pool = DATA_BANK.nouns[cat] ? DATA_BANK.nouns[cat] : DATA_BANK.nouns['abstract'];
+      // Filtrage par niveau (si possible)
+      const levelPool = pool.filter(n => n.levels.includes(level));
+      // Si pas assez de mots du bon niveau, on prend tout le pool de la catégorie
+      return levelPool.length > 2 ? levelPool : pool;
   };
 
-  // 3. Sélection Intelligente du Verbe
+  let candidates = getCandidatePool(forcedCategory);
+  
+  // MÉLANGE (SHUFFLE) POUR ALÉATOIRE
+  const shuffledCandidates = candidates.sort(() => 0.5 - Math.random());
+
+  // SÉLECTION UNIQUE (GARANTIE 3 MOTS DIFFÉRENTS)
+  let card1Noun = shuffledCandidates[0];
+  let card2Noun = shuffledCandidates[1] || shuffledCandidates[0];
+  let card3Noun = shuffledCandidates[2] || shuffledCandidates[0];
+
+  // Si on n'a vraiment pas assez de mots (bug data), on complète avec une autre cat
+  if (shuffledCandidates.length < 3) {
+      const backup = getCandidatePool('abstract').sort(() => 0.5 - Math.random());
+      if (!card2Noun) card2Noun = backup[0];
+      if (!card3Noun) card3Noun = backup[1];
+  }
+
+  // 2. SÉLECTION DU VERBE
   const topicToVerbMap = {
     "obligation": ["Deber", "Tener"],
     "futur": ["Ir", "Haber", "Pensar"],
@@ -2810,7 +2908,6 @@ export const generateStructuredLesson = (id) => {
   };
 
   let targetVerbName = null;
-
   for (const [key, verbs] of Object.entries(topicToVerbMap)) {
     if (grammarLower.includes(key) || topicLower.includes(key)) {
       targetVerbName = verbs[Math.floor(Math.random() * verbs.length)];
@@ -2829,77 +2926,40 @@ export const generateStructuredLesson = (id) => {
     const candidates = levelFallbacks[level] || ["Ser"];
     targetVerbName = candidates[id % candidates.length];
   }
-
   const randVerb = DATA_BANK.verbs.find(v => v.es === targetVerbName) || DATA_BANK.verbs[0];
 
-  // 4. Construction de la Leçon
-  const card1Noun = getSmartNoun();
-  const card2Noun = getSmartNoun(); // On peut rappeler la fonction pour varier
-  const card3Noun = getSmartNoun();
-  
+  // 3. CONSTRUCTION
   const adj = DATA_BANK.adjectives[(id + 2) % DATA_BANK.adjectives.length];
   const conn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
   const tip = DATA_BANK.tips[id % DATA_BANK.tips.length];
 
   let cardId = id * 1000;
   const isPlural = id % 2 === 0;
-  
   const grammarQuestionText = isPlural ? `Conjugue : Nosotros (${randVerb.es})` : `Conjugue : Tú (${randVerb.es})`;
   const targetPronoun = isPlural ? "Nos" : "Tú";
   const conjFn = randVerb.conjugation.find(c => c.pronoun.includes(targetPronoun) || (targetPronoun === "Nos" && c.pronoun.includes("Nosotros")));
   const grammarAnswer = conjFn ? [conjFn.verb] : [randVerb.conjugation[0].verb];
 
-  const card1 = { ...card1Noun, context: "Mot clé", sentence: card1Noun.sentence || `Necesito ${card1Noun.es.toLowerCase()}.`, sentence_trans: card1Noun.sentence_trans || `J'ai besoin de ${card1Noun.en.toLowerCase()}.` };
-  const card2 = { ...card2Noun, context: "Contexte", sentence: card2Noun.sentence || `Voy a ${card2Noun.es.toLowerCase()}.`, sentence_trans: card2Noun.sentence_trans || `Je vais à ${card2Noun.en.toLowerCase()}.` };
-  const card3 = { ...card3Noun, context: "Exemple", sentence: card3Noun.sentence || `Me gusta ${card3Noun.es.toLowerCase()}.`, sentence_trans: card3Noun.sentence_trans || `J'aime ${card3Noun.en.toLowerCase()}.` };
+  // Helpers d'affichage
+  const c1 = { ...card1Noun, context: "Mot clé", sentence: card1Noun.sentence, sentence_trans: card1Noun.sentence_trans };
+  const c2 = { ...card2Noun, context: "Contexte", sentence: card2Noun.sentence, sentence_trans: card2Noun.sentence_trans };
+  const c3 = { ...card3Noun, context: "Exemple", sentence: card3Noun.sentence, sentence_trans: card3Noun.sentence_trans };
 
   return [
-    { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Verbe clé : ${randVerb.es}`, note: `Niveau ${level}` },
-    { id: cardId++, type: "swipe", es: card1.es, en: card1.en, context: card1.context, sentence: card1.sentence, sentence_trans: card1.sentence_trans },
+    { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Verbe focus : ${randVerb.es}`, note: `Niveau ${level}` },
+    { id: cardId++, type: "swipe", es: c1.es, en: c1.en, context: c1.context, sentence: c1.sentence, sentence_trans: c1.sentence_trans },
     { id: cardId++, type: "grammar", title: `Verbe : ${randVerb.es}`, description: randVerb.en, verb: randVerb.es, conjugation: randVerb.conjugation },
     { id: cardId++, type: "input", question: grammarQuestionText, answer: grammarAnswer, hint: `Verbe ${randVerb.es}` },
-    { id: cardId++, type: "swipe", es: card2.es, en: card2.en, context: card2.context, sentence: card2.sentence, sentence_trans: card2.sentence_trans },
-    { id: cardId++, type: "structure", title: "L'Accord", formula: "Nom + Adjectif", example: `${card1.es} ${adj.es.toLowerCase()}`, note: "L'adjectif s'accorde." },
-    { id: cardId++, type: "swipe", es: card3.es, en: card3.en, context: card3.context, sentence: card3.sentence, sentence_trans: card3.sentence_trans },
+    { id: cardId++, type: "swipe", es: c2.es, en: c2.en, context: c2.context, sentence: c2.sentence, sentence_trans: c2.sentence_trans },
+    { id: cardId++, type: "structure", title: "L'Accord", formula: "Nom + Adjectif", example: `${c1.es} ${adj.es.toLowerCase()}`, note: "L'adjectif s'accorde." },
+    { id: cardId++, type: "swipe", es: c3.es, en: c3.en, context: c3.context, sentence: c3.sentence, sentence_trans: c3.sentence_trans },
     { id: cardId++, type: "swipe", es: conn.es, en: conn.en, context: "Liaison", sentence: `${conn.es}, es importante.`, sentence_trans: `${conn.en}, c'est important.` },
     { id: cardId++, type: "structure", title: "Astuce", formula: "Bon à savoir", example: tip, note: "Culture" },
-    { id: cardId++, type: "input", question: `Traduis : "${card1.sentence_trans}"`, answer: [card1.sentence.toLowerCase().replace(/[¿¡!.,]/g, '')], hint: "Utilise le vocabulaire vu." }
+    { id: cardId++, type: "input", question: `Traduis : "${c1.sentence_trans}"`, answer: [c1.sentence.toLowerCase().replace(/[¿¡!.,]/g, '')], hint: "Utilise le vocabulaire vu." }
   ];
 };
 
-// --- AUTRES EXPORTS ---
-export const generateSmartTest = () => [];
-
-export const SENTENCE_STRUCTURES = [
-  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Sujet souvent omis." }
-];
-
-export const generateAllContent = () => {
-  const content = { ...CONTENT_PART_1 };
-  for (let i = 1; i <= 100; i++) {
-     if (!content[i]) {
-        content[i] = generateStructuredLesson(i);
-     }
-  }
-  return content;
-};
-
-export const INITIAL_LESSONS_CONTENT = generateAllContent();
-export const INITIAL_LESSONS_LIST = [];
-let idCnt = 1;
-["A1", "A2", "B1", "B2", "C1"].forEach(lvl => {
-    const curriculum = CURRICULUM_LOGIC[lvl] || [];
-    for(let i=0; i<20; i++) {
-        const topicTitle = (curriculum[i] && curriculum[i].topic) ? curriculum[i].topic : `Pratique ${lvl} - ${i+1}`;
-        INITIAL_LESSONS_LIST.push({ 
-            id: idCnt++, 
-            title: topicTitle, 
-            level: lvl, 
-            desc: `Niveau ${lvl}` 
-        });
-    }
-});
-
+// --- 7. EXPORTS FINAUX ---
 export const generateExamContent = (allContent, startId, endId, levelName, examId) => {
   let pool = [];
   for (let i = startId; i <= endId; i++) {
@@ -2935,3 +2995,29 @@ export const getDailyReading = (userLevel) => {
   const dayIndex = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
   return pool[dayIndex % pool.length];
 };
+
+export const generateAllContent = () => {
+  const content = { ...CONTENT_PART_1 };
+  for (let i = 1; i <= 100; i++) {
+     if (!content[i]) {
+        content[i] = generateStructuredLesson(i);
+     }
+  }
+  return content;
+};
+
+export const INITIAL_LESSONS_CONTENT = generateAllContent();
+export const INITIAL_LESSONS_LIST = [];
+let idCnt = 1;
+["A1", "A2", "B1", "B2", "C1"].forEach(lvl => {
+    const curriculum = CURRICULUM_LOGIC[lvl] || [];
+    for(let i=0; i<20; i++) {
+        const topicTitle = (curriculum[i] && curriculum[i].topic) ? curriculum[i].topic : `Pratique ${lvl} - ${i+1}`;
+        INITIAL_LESSONS_LIST.push({ 
+            id: idCnt++, 
+            title: topicTitle, 
+            level: lvl, 
+            desc: `Niveau ${lvl}` 
+        });
+    }
+});
