@@ -810,6 +810,19 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
   const [sub, setSub] = useState(false); 
   const inputRef = useRef(null);
 
+  // --- 🔴 AJOUTER CE BLOC (CORRECTIF) ---
+  // Dès que la question (data) change, on remet tout à zéro
+  useEffect(() => {
+    setVal('');          // Vide le champ
+    setStatus('idle');   // Enlève le vert/rouge
+    setSub(false);       // Débloque l'input
+    
+    // Remet le focus dans le champ pour taper direct
+    setTimeout(() => {
+        inputRef.current?.focus();
+    }, 100);
+  }, [data]); 
+
   const addChar = (c) => { 
     if (sub) return; 
     setVal(p => p + c); 
