@@ -1,14 +1,65 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
+// 1. CONFIGURATION VIEWPORT (Mobile Friendly)
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#facc15", // Jaune EspañolSprint
+  maximumScale: 1, // Empêche le zoom intempestif sur mobile (app feel)
+};
+
+// 2. METADONNÉES SEO & OPENGRAPH
 export const metadata: Metadata = {
-  title: "EspañolSprint",
-  description: "L'application d'apprentissage de l'espagnol la plus rapide.",
-  // Note : Next.js détecte automatiquement le fichier icon.png dans le dossier app/
-  // On n'a rien à ajouter ici !
+  metadataBase: new URL("https://espanol-sprint.vercel.app"), // Remplace par ton URL finale Vercel
+  title: {
+    default: "EspañolSprint - Apprenez l'espagnol rapidement",
+    template: "%s | EspañolSprint",
+  },
+  description: "L'application la plus rapide pour apprendre l'espagnol. Leçons interactives, mode histoire et répétition espacée (SRS).",
+  keywords: ["espagnol", "apprendre", "leçons", "rapide", "sprint", "débutant", "vocabulaire", "grammaire"],
+  authors: [{ name: "EspañolSprint Team" }],
+  creator: "EspañolSprint",
+  icons: {
+    icon: "/flavicon.png", // Assure-toi que ce fichier existe dans public/
+    apple: "/flavicon.png",
+  },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    url: "https://espanol-sprint.vercel.app",
+    title: "EspañolSprint - Devenez bilingue en un temps record",
+    description: "La méthode accélérée pour maîtriser l'espagnol. Quiz, Histoires et Audio IA.",
+    siteName: "EspañolSprint",
+    images: [
+      {
+        url: "/og-image.jpg", // Idéalement, ajoute une image de partage dans public/
+        width: 1200,
+        height: 630,
+        alt: "EspañolSprint Preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EspañolSprint 🚀",
+    description: "Apprenez l'espagnol plus vite que jamais.",
+    images: ["/og-image.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -18,7 +69,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.className} bg-slate-50 text-slate-900 antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }

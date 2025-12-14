@@ -13,7 +13,7 @@ import {
 } from './data/content';
 
 import Image from "next/image";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Flame, ChevronRight, X, Check, Trophy, User, BookOpen, LogOut, PlayCircle, Lock, LayoutDashboard, Library, AlertCircle, Loader2, CloudUpload, Volume2, Download, Hammer, ArrowRight, RotateCcw, Table, CheckCircle, BrainCircuit, Target, MessageCircle, Ear, Bot, Calendar
 } from 'lucide-react';
@@ -37,36 +37,38 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-// --- SYSTÈME AUDIO PREMIUM (ElevenLabs + Fallback) ---
+// --- SYSTÈME AUDIO PREMIUM (Single Audio + VoiceId) ---
 let currentAudio = null;
-let audioController = null; // 🆕 Variable pour contrôler l'annulation
+let audioController = null; // Contrôleur pour annuler les requêtes fetch en cours
 
 const speak = async (text, voiceId = null) => {
   if (!text) return;
 
-  // 1. SILENCE ABSOLU : On coupe tout ce qui est en cours
-  // Si une requête précédente est en train de charger, on l'annule !
+  // 1. SILENCE TOTAL : On coupe tout ce qui est en cours (Audio ou Fetch)
   if (audioController) {
-      audioController.abort();
+      audioController.abort(); // Annule la requête réseau précédente si elle charge encore
   }
   audioController = new AbortController(); // Nouveau contrôleur pour cette demande
 
+  // Arrêt synthèse vocale native (Robot)
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
+  // Arrêt Audio HTML5 (Premium)
   if (currentAudio) {
     currentAudio.pause();
     currentAudio.currentTime = 0;
     currentAudio = null;
   }
 
-  // Fonction locale pour lancer le Robot (Fallback)
+  // Fonction locale pour le Robot (Fallback)
   const playRobotVoice = () => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
     
+    // Tentative de trouver une voix espagnole correcte
     const esVoice = voices.find(v => 
       (v.name.includes('Google') || v.name.includes('Microsoft')) && 
       (v.lang.includes('es-ES') || v.lang.includes('es'))
@@ -79,17 +81,18 @@ const speak = async (text, voiceId = null) => {
     window.speechSynthesis.speak(utterance);
   };
 
-  // 2. TENTATIVE VOIX PREMIUM (ElevenLabs)
+  // 2. TENTATIVE VOIX PREMIUM (ElevenLabs via API)
   try {
+    // Timeout de sécurité de 4 secondes pour ne pas bloquer l'interface
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Timeout")), 3000)
+      setTimeout(() => reject(new Error("Timeout")), 4000)
     );
 
     const apiPromise = fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, voiceId }),
-      signal: audioController.signal, // 🆕 On lie la requête au contrôleur
+      signal: audioController.signal, // Liaison avec le contrôleur d'annulation
     });
 
     const response = await Promise.race([apiPromise, timeoutPromise]);
@@ -102,27 +105,31 @@ const speak = async (text, voiceId = null) => {
       currentAudio = audio;
       
       audio.onerror = () => {
-        console.warn("Erreur lecture audio, fallback robot.");
+        console.warn("Erreur lecture fichier audio, fallback robot.");
         playRobotVoice();
       };
       
-      audio.play();
+      // On joue l'audio seulement si on n'a pas été annulé entre temps
+      if (!audioController.signal.aborted) {
+          audio.play().catch(e => console.warn("Autoplay bloqué :", e));
+      }
       return; 
     }
   } catch (error) {
-    // 🆕 Si l'erreur est une annulation volontaire, on ne fait rien (pas de fallback)
+    // Si l'annulation est volontaire (nouvelle phrase demandée), on ne fait rien (pas de fallback)
     if (error.name === 'AbortError') return;
     
-    console.warn("Erreur ou Timeout API, fallback robot.", error);
+    console.warn("Erreur API Audio ou Timeout, fallback robot.", error);
   }
 
-  // 3. FALLBACK
+  // 3. FALLBACK ROBOT (Si API échoue ou Timeout)
   if (window.speechSynthesis.getVoices().length === 0) {
     window.speechSynthesis.onvoiceschanged = playRobotVoice;
   } else {
     playRobotVoice();
   }
 };
+
 // --- SIMULATION TUTEUR IA ---
 const askAITutor = async (question) => {
     await new Promise(r => setTimeout(r, 1500));
@@ -165,8 +172,8 @@ export default function EspanolSprintPro() {
                 vocab: [], 
                 completedLessons: [], 
                 dailyLimit: { date: new Date().toDateString(), count: 0 },
-                dailyStory: { date: "", storyId: "" }, // Nouveau champ
-                readStories: [] // Nouveau champ
+                dailyStory: { date: "", storyId: "" }, 
+                readStories: [] 
             };
             await setDoc(userRef, newProfile);
             setUserData(newProfile);
@@ -196,9 +203,8 @@ export default function EspanolSprintPro() {
         if (!userData || !currentUser) return;
 
         const today = new Date().toDateString();
-        const currentDaily = userData.dailyStory; // { date: "...", storyId: "..." }
+        const currentDaily = userData.dailyStory; 
         
-        // 1. Si déjà assignée aujourd'hui, on la récupère
         if (currentDaily?.date === today) {
             const existingStory = STORIES_DATA.find(s => s.id === currentDaily.storyId);
             if (existingStory) {
@@ -207,26 +213,21 @@ export default function EspanolSprintPro() {
             }
         }
 
-        // 2. Sinon, tirage au sort (Nouveau jour)
         const levels = ["A1", "A2", "B1", "B2", "C1"];
         const userLevelIdx = levels.indexOf(userData.level || "A1");
-        // On prend tous les niveaux <= niveau utilisateur
         const allowedLevels = levels.slice(0, userLevelIdx + 1);
         
         const validStories = STORIES_DATA.filter(s => allowedLevels.includes(s.level));
         const readIds = userData.readStories || [];
         
-        // Filtrer les histoires déjà lues
         let candidates = validStories.filter(s => !readIds.includes(s.id));
 
-        // Si le deck est vide (toutes lues), on réinitialise virtuellement
         if (candidates.length === 0) {
             candidates = validStories;
         }
 
-        if (candidates.length === 0) return; // Sécurité
+        if (candidates.length === 0) return;
 
-        // Tirage
         const randomStory = candidates[Math.floor(Math.random() * candidates.length)];
 
         try {
@@ -300,7 +301,6 @@ export default function EspanolSprintPro() {
   };
 
   const startStory = (storyId) => {
-     // Si c'est l'histoire du jour, on utilise dailyStoryContent, sinon on cherche dans DATA
      const story = dailyStoryContent?.id === storyId ? dailyStoryContent : STORIES_DATA.find(s => s.id === storyId);
      if (story) {
         setActiveStory(story);
@@ -326,22 +326,18 @@ export default function EspanolSprintPro() {
   };
 
   const handleLessonComplete = async (xp, lessonContent, lessonId, finalScore = 0) => {
-      // 1. Définir la fonction de navigation pour être sûr de l'appeler à la fin
       const proceedToCompleteScreen = () => {
           setTestMode(null);
           setView('complete');
       };
 
       try {
-          // --- MODE EXAMEN ---
           if (testMode === 'levelup') {
               const passed = (typeof finalScore === 'number' ? finalScore : 0) >= 16;
               if (passed && currentUser) {
                   const levels = ["A1", "A2", "B1", "B2", "C1"];
-                  // Sécurisation du niveau actuel
                   const currentLevel = userData?.level || "A1";
                   const currentIdx = levels.indexOf(currentLevel);
-                  // Si niveau inconnu ou max atteint, on reste sur le niveau actuel
                   const nextLevel = (currentIdx >= 0 && currentIdx < levels.length - 1) 
                       ? levels[currentIdx + 1] 
                       : currentLevel;
@@ -349,26 +345,19 @@ export default function EspanolSprintPro() {
                   const userRef = doc(db, "users", currentUser.uid);
                   await updateDoc(userRef, { xp: increment(500), level: nextLevel });
                   
-                  // Mise à jour locale sécurisée
                   setUserData(prev => ({ 
                       ...prev, 
                       level: nextLevel, 
                       xp: (prev?.xp || 0) + 500 
                   }));
               }
-              // On sort de la fonction après le traitement examen
               proceedToCompleteScreen();
               return;
           }
 
-          // --- MODE STANDARD ---
-          
-          // Sécurité 1 : S'assurer que lessonContent est un tableau
           const safeContent = Array.isArray(lessonContent) ? lessonContent : [];
-          
           const newItems = safeContent.filter(item => item && ['swipe', 'grammar', 'structure'].includes(item.type));
           
-          // Ajout des propriétés SRS
           const newItemsWithSRS = newItems.map(item => ({ 
             ...item, 
             grade: 0, 
@@ -381,20 +370,16 @@ export default function EspanolSprintPro() {
           if (currentUser) {
             const userRef = doc(db, "users", currentUser.uid);
             
-            // Sécurité 2 : Fallbacks pour éviter le crash sur .some() ou .includes()
             const currentVocab = Array.isArray(userData?.vocab) ? userData.vocab : [];
             const currentCompleted = Array.isArray(userData?.completedLessons) ? userData.completedLessons : [];
             const currentDaily = userData?.dailyLimit || { date: today, count: 0 };
 
-            // Filtrage des doublons (SANS CRASH)
             const uniqueNewItems = newItemsWithSRS.filter(item => !currentVocab.some(v => v.id === item.id));
             const isNew = !currentCompleted.includes(lessonId);
             
-            // Calcul limite journalière
             const currentCount = currentDaily.date === today ? currentDaily.count : 0;
             const newCount = isNew ? currentCount + 1 : currentCount;
             
-            // Mise à jour Optimiste (UI)
             setUserData(prev => ({
               ...prev,
               xp: (prev?.xp || 0) + xp,
@@ -404,7 +389,6 @@ export default function EspanolSprintPro() {
               dailyLimit: { date: today, count: newCount }
             }));
 
-            // Mise à jour Firebase (Backend)
             await updateDoc(userRef, {
               xp: increment(xp),
               streak: increment(1),
@@ -415,9 +399,7 @@ export default function EspanolSprintPro() {
           }
       } catch (error) {
           console.error("ERREUR CRITIQUE SAUVEGARDE :", error);
-          // On ne bloque PAS l'utilisateur, on loggue juste l'erreur
       } finally {
-          // 3. Quoi qu'il arrive (succès ou erreur), on change d'écran
           proceedToCompleteScreen();
       }
   };
@@ -463,7 +445,7 @@ export default function EspanolSprintPro() {
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
               {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
               
-              {/* --- VUE READING / STORY DU JOUR --- */}
+              {/* --- VUE READING --- */}
               {view === 'reading' && (
                 <div className="p-6 pb-24 space-y-8 max-w-2xl mx-auto min-h-screen flex flex-col">
                     <div className="text-center space-y-2">
@@ -478,41 +460,30 @@ export default function EspanolSprintPro() {
                                 onClick={() => startStory(dailyStoryContent.id)}
                                 className="w-full bg-white p-8 rounded-[2rem] shadow-xl border-4 border-slate-100 cursor-pointer group hover:border-pink-200 hover:shadow-2xl transition-all duration-300 relative overflow-hidden"
                             >
-                                {/* Badge Niveau */}
                                 <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 font-bold px-4 py-2 rounded-bl-2xl z-10">
                                     Niveau {dailyStoryContent.level}
                                 </div>
 
                                 <div className="flex flex-col items-center text-center space-y-6 relative z-10">
-                                    {/* Avatar animé */}
                                     <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center text-5xl group-hover:scale-110 transition-transform duration-500 shadow-inner border-4 border-white">
                                         💬
                                     </div>
-                                    
                                     <div>
                                         <h3 className="text-2xl font-black text-slate-800 mb-2 group-hover:text-pink-600 transition-colors">
                                             {dailyStoryContent.title}
                                         </h3>
                                         <p className="text-slate-400 font-medium flex items-center justify-center gap-2">
-                                            <Calendar size={16}/> Jour {dailyStoryContent.day}
+                                            <Calendar size={16}/> Jour {dailyStoryContent.day || 1}
                                         </p>
                                     </div>
-
                                     <div className="w-full bg-slate-50 rounded-xl p-4 flex items-center justify-between text-sm font-bold text-slate-500">
-                                        <span className="flex items-center gap-2">
-                                            <User size={16}/> 2 Persos
-                                        </span>
-                                        <span className="flex items-center gap-2">
-                                            <PlayCircle size={16} className="text-pink-500"/> Audio IA
-                                        </span>
+                                        <span className="flex items-center gap-2"><User size={16}/> 2 Persos</span>
+                                        <span className="flex items-center gap-2"><PlayCircle size={16} className="text-pink-500"/> Audio IA</span>
                                     </div>
-
                                     <button className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg shadow-lg group-hover:bg-pink-600 transition-colors flex items-center justify-center gap-2">
                                         Lire maintenant <ChevronRight size={20}/>
                                     </button>
                                 </div>
-                                
-                                {/* Décoration de fond */}
                                 <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-pink-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
                             </div>
                         ) : (
@@ -527,20 +498,15 @@ export default function EspanolSprintPro() {
                         <h3 className="font-bold text-slate-500 uppercase text-sm">Lecture du jour (Texte)</h3>
                         <DailyReadingContent userLevel={userData?.level} />
                     </div>
-
-                    <div className="pt-4">
-                        <button disabled className="w-full py-4 text-slate-400 font-bold bg-slate-50 rounded-xl flex items-center justify-center gap-2 opacity-60 cursor-not-allowed">
-                            <Library size={20} />
-                            Bibliothèque (Bientôt disponible)
-                        </button>
-                    </div>
                 </div>
               )}
 
               {view === 'story' && activeStory && <StoryEngine story={activeStory} onComplete={() => setView('reading')} />}
               {view === 'leaderboard' && <LeaderboardView userData={userData} />}
               {view === 'profile' && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} onUpload={uploadFullContentToCloud} />}
-              {view === 'lesson' && dynamicLessonsContent[activeLessonId] && (
+              
+              {/* --- VUE LESSON (SÉCURISÉE) --- */}
+              {view === 'lesson' && (
                 <LessonEngine 
                     content={dynamicLessonsContent[activeLessonId]} 
                     onComplete={(xp, score) => handleLessonComplete(xp, dynamicLessonsContent[activeLessonId], activeLessonId, score)} 
@@ -568,17 +534,24 @@ const StoryEngine = ({ story, onComplete }) => {
     const currentItem = story.dialogue[index];
     const isFinished = index >= story.dialogue.length - 1;
 
+    // Fonction helper pour déterminer la voix
+    const playDialogue = (msg) => {
+        if (msg.type === 'bubble') {
+            const speakerKey = msg.speaker;
+            const character = story.characters[speakerKey];
+            // On passe le voiceId spécifique du personnage
+            speak(msg.text_es, character?.voiceId);
+        }
+    };
+
     const handleNext = () => {
         if (isFinished) { onComplete(); return; }
         const nextIndex = index + 1;
         setIndex(nextIndex);
-        setVisibleMessages(prev => [...prev, story.dialogue[nextIndex]]);
+        const nextMsg = story.dialogue[nextIndex];
+        setVisibleMessages(prev => [...prev, nextMsg]);
         
-        if (story.dialogue[nextIndex].type === 'bubble') {
-            const speakerKey = story.dialogue[nextIndex].speaker;
-            const character = story.characters[speakerKey];
-            speak(story.dialogue[nextIndex].text_es, character?.voiceId);
-        }
+        playDialogue(nextMsg);
     };
 
     const handleAnswer = (option) => {
@@ -586,7 +559,12 @@ const StoryEngine = ({ story, onComplete }) => {
             handleNext(); 
         } 
         else { 
-            alert("Mauvaise réponse !"); 
+            // Feedback VISUEL uniquement (pas de "Incorrecto" audio)
+            const btn = document.getElementById(`opt-${option}`);
+            if(btn) btn.classList.add('animate-shake', 'bg-red-100', 'border-red-400');
+            setTimeout(() => {
+                if(btn) btn.classList.remove('animate-shake', 'bg-red-100', 'border-red-400');
+            }, 500);
         }
     };
 
@@ -594,9 +572,7 @@ const StoryEngine = ({ story, onComplete }) => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
         if(index===0 && story.dialogue[0].type === 'bubble' && !hasPlayedStart.current) {
             hasPlayedStart.current = true;
-            const speakerKey = story.dialogue[0].speaker;
-            const character = story.characters[speakerKey];
-            speak(story.dialogue[0].text_es, character?.voiceId);
+            playDialogue(story.dialogue[0]);
         }
     }, [visibleMessages]);
 
@@ -611,7 +587,7 @@ const StoryEngine = ({ story, onComplete }) => {
                 {visibleMessages.map((msg, i) => {
                     if (msg.type === 'bubble') {
                         const char = story.characters[msg.speaker];
-                        const isMe = msg.speaker === 'pablo' || msg.speaker.includes('2'); // Fallback simple pour identifier "moi"
+                        const isMe = msg.speaker === 'pablo' || msg.speaker.includes('2');
                         return (
                             <div key={i} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : ''} animate-in slide-in-from-bottom-2`}>
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm ${char.color}`}>{char.avatar}</div>
@@ -632,7 +608,7 @@ const StoryEngine = ({ story, onComplete }) => {
                         <p className="text-center font-bold text-slate-900 mb-2">{currentItem.question}</p>
                         <div className="grid gap-2">
                             {currentItem.options.map((opt, idx) => (
-                                <button key={idx} onClick={() => handleAnswer(opt)} className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 font-bold text-slate-700 transition-all">{opt}</button>
+                                <button id={`opt-${opt}`} key={idx} onClick={() => handleAnswer(opt)} className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 font-bold text-slate-700 transition-all">{opt}</button>
                             ))}
                         </div>
                     </div>
@@ -735,9 +711,11 @@ const LeaderboardView = ({ userData }) => {
     const rivals = [{ name: "Maria L.", xp: 1450, avatar: "👩" }, { name: "Thomas B.", xp: 1200, avatar: "👨" }, { name: userData?.name + " (Toi)", xp: userData?.xp || 0, avatar: "😎", isMe: true }, { name: "Juan P.", xp: 850, avatar: "🧔" }].sort((a, b) => b.xp - a.xp);
     return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-6"><div className="text-center space-y-2 mb-8"><div className="inline-block p-4 bg-yellow-100 rounded-full text-yellow-600 mb-2"><Trophy size={40} /></div><h2 className="text-3xl font-black text-slate-900">Ligue Diamant</h2><p className="text-slate-500 font-medium">Fin dans 2j 4h</p></div><div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">{rivals.map((user, idx) => (<div key={idx} className={`flex items-center gap-4 p-4 border-b border-slate-50 ${user.isMe ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''}`}><div className="font-black text-slate-300 w-6">{idx + 1}</div><div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-xl">{user.avatar}</div><div className="flex-1 font-bold text-slate-800">{user.name}</div><div className="font-black text-slate-900">{user.xp} XP</div></div>))}</div></div>);
 };
+
+// --- LESSON ENGINE (SECURE & ANTI-CRASH) ---
 const LessonEngine = ({ content, onComplete, onExit, isExam }) => { 
-  // 1. SÉCURITÉ : Nettoyage des données pour éviter les trous
-  const safeContent = React.useMemo(() => {
+  // 1. SÉCURITÉ : Nettoyage et filtrage des données (supprime les null/undefined)
+  const safeContent = useMemo(() => {
     if (!Array.isArray(content)) return [];
     return content.filter(item => item && item.type);
   }, [content]);
@@ -746,13 +724,13 @@ const LessonEngine = ({ content, onComplete, onExit, isExam }) => {
   const [prog, setProg] = useState(0); 
   const [score, setScore] = useState(0);
   
-  // 2. SÉCURITÉ : Récupération sécurisée de la carte
+  // 2. RÉCUPÉRATION SÉCURISÉE DE LA CARTE
   const card = safeContent[idx]; 
 
   const next = () => { 
+      // 3. LOGIQUE DE FIN SÉCURISÉE
       if (idx + 1 >= safeContent.length) { 
           setProg(100); 
-          // Petit délai pour voir la barre se remplir avant de finir
           setTimeout(() => onComplete(150, safeContent, 0, score), 500); 
       } else { 
           setProg(((idx + 1) / safeContent.length) * 100); 
@@ -762,15 +740,19 @@ const LessonEngine = ({ content, onComplete, onExit, isExam }) => {
   
   const handleScore = (correct) => { if(correct) setScore(s => s + 1); };
 
-  // Audio automatique au changement de carte
+  // Audio automatique (sans doublon grâce au AbortController dans speak)
   useEffect(() => { 
     if (card?.es && (card.type === 'swipe' || card.type === 'input')) {
         speak(card.es); 
     }
   }, [card]);
   
-  // Si pas de carte (fin de chargement ou erreur), ne rien afficher pour éviter le crash
-  if (!card) return null;
+  // 4. PROTECTION ANTI-ÉCRAN BLANC
+  // Si pas de carte (fin de chargement ou erreur), on affiche un loader ou rien
+  if (!card) {
+      if (idx >= safeContent.length && safeContent.length > 0) return null; // Fin normale
+      return <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin"/></div>; 
+  }
 
   return (
     <div className="h-full w-full flex flex-col bg-slate-50">
@@ -782,15 +764,14 @@ const LessonEngine = ({ content, onComplete, onExit, isExam }) => {
             {isExam && <div className="font-black text-indigo-600">{score} / 20</div>}
         </div>
         <div className="flex-1 flex items-center justify-center p-4 overflow-hidden relative">
-            {/* Si fini (100%), loader de fin */}
             {prog >= 100 ? (
                 <div className="flex flex-col items-center animate-in zoom-in">
                     <Check size={48} className="text-green-600 mb-4" />
-                    <h3 className="text-2xl font-black text-slate-800">Leçon terminée !</h3>
+                    <h3 className="text-2xl font-black text-slate-800">Terminé !</h3>
                 </div>
             ) : (
                 <div className="w-full max-w-md aspect-[3/4] md:aspect-auto md:h-[600px] perspective-1000">
-                    {/* IMPORTANT : Utilisation de key={card.id} pour forcer le re-rendu propre */}
+                    {/* KEY UNIQUE pour forcer le re-rendu propre à chaque carte */}
                     {card.type === 'swipe' && (
                         <SwipeCard key={card.id} data={card} onNext={next} />
                     )}
@@ -833,22 +814,16 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
       setStatus(ok ? 'success' : 'error'); 
       
       if (ok) { 
-          // Succès : On verrouille et on passe à la suite
           setSub(true);
           if(onScore) onScore(true); 
           setTimeout(onNext, 1500); 
       } else { 
-          // Erreur
           if (isExam) {
-             // Examen : On verrouille (pas de seconde chance) et on passe
              setSub(true);
              if(onScore) onScore(false);
              setTimeout(onNext, 2500);
           } else {
-             // Leçon : On NE verrouille PAS (setSub reste false)
-             // On donne juste le focus pour corriger direct
              inputRef.current?.focus();
-             // Le status 'error' affichera le rouge et l'indice, mais on peut modifier l'input
           }
       } 
   };
@@ -874,7 +849,6 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
                 onChange={(e) => { 
                     if(!sub) { 
                         setVal(e.target.value); 
-                        // Dès qu'on modifie, on enlève l'erreur pour pouvoir revalider
                         if (status === 'error') setStatus('idle'); 
                     } 
                 }} 
@@ -893,7 +867,7 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
                 disabled={sub || !val.trim()} 
                 className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-xl active:scale-95 transition-all ${
                     status === 'success' ? 'bg-green-500' : 
-                    status === 'error' ? 'bg-red-500' : // Reste rouge tant qu'on n'a pas corrigé
+                    status === 'error' ? 'bg-red-500' : 
                     'bg-slate-900'
                 }`}
             >
@@ -901,7 +875,6 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
             </button>
         </form>
 
-        {/* Feedback visuel */}
         {status === 'error' && !isExam && (
             <div className="text-center space-y-2 animate-in slide-in-from-bottom-2 fade-in">
                 <p className="text-red-500 font-bold text-lg">Oups ! Essaie encore.</p>
@@ -1102,7 +1075,6 @@ const StructuresContent = ({ structures, userVocab }) => {
   );
 };
 
-// --- NOTEBOOK CONTENT (DESIGN PRO) ---
 const NotebookContent = ({ userVocab }) => {
   const [activeTab, setActiveTab] = useState('vocab');
   const safeVocab = Array.isArray(userVocab) ? userVocab : [];
