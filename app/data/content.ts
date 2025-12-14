@@ -2535,7 +2535,6 @@ export const DATA_BANK = {
   ],
 
   nouns: {
-    // 🏠 MAISON & MEUBLES
     home: [
       { levels: ["A1"], es: "La mesa", en: "La table", sentence: "La cena está en la mesa.", sentence_trans: "Le dîner est sur la table." },
       { levels: ["A1"], es: "La silla", en: "La chaise", sentence: "Esta silla es cómoda.", sentence_trans: "Cette chaise est confortable." },
@@ -2548,8 +2547,6 @@ export const DATA_BANK = {
       { levels: ["A2"], es: "La cocina", en: "La cuisine", sentence: "Mi cocina es pequeña.", sentence_trans: "Ma cuisine est petite." },
       { levels: ["B1"], es: "El techo", en: "Le plafond", sentence: "El techo es alto.", sentence_trans: "Le plafond est haut." }
     ],
-
-    // 🏙️ VILLE & LIEUX
     city: [
       { levels: ["A1"], es: "La calle", en: "La rue", sentence: "Vivo en esta calle.", sentence_trans: "J'habite dans cette rue." },
       { levels: ["A1"], es: "La plaza", en: "La place", sentence: "Nos vemos en la plaza.", sentence_trans: "On se voit sur la place." },
@@ -2561,8 +2558,6 @@ export const DATA_BANK = {
       { levels: ["B1"], es: "El puente", en: "Le pont", sentence: "Cruzamos el puente.", sentence_trans: "Nous traversons le pont." },
       { levels: ["B1"], es: "El edificio", en: "Le bâtiment", sentence: "Es un edificio moderno.", sentence_trans: "C'est un bâtiment moderne." }
     ],
-
-    // ✈️ VOYAGE & TRANSPORT
     travel: [
       { levels: ["A1"], es: "El coche", en: "La voiture", sentence: "Tengo un coche rojo.", sentence_trans: "J'ai une voiture rouge." },
       { levels: ["A1"], es: "El autobús", en: "Le bus", sentence: "El autobús llega tarde.", sentence_trans: "Le bus arrive en retard." },
@@ -2573,19 +2568,15 @@ export const DATA_BANK = {
       { levels: ["B1"], es: "El pasaporte", en: "Le passeport", sentence: "Olvidé mi pasaporte.", sentence_trans: "J'ai oublié mon passeport." },
       { levels: ["B1"], es: "El viaje", en: "Le voyage", sentence: "Fue un viaje largo.", sentence_trans: "C'était un long voyage." }
     ],
-
-    // 💻 TECHNOLOGIE & GEEK
     tech: [
       { levels: ["A1"], es: "El móvil", en: "Le portable", sentence: "Mi móvil no tiene batería.", sentence_trans: "Mon portable n'a plus de batterie." },
       { levels: ["A1"], es: "La foto", en: "La photo", sentence: "Saco una foto.", sentence_trans: "Je prends une photo." },
       { levels: ["A2"], es: "El ordenador", en: "L'ordinateur", sentence: "Trabajo con el ordenador.", sentence_trans: "Je travaille avec l'ordinateur." },
       { levels: ["A2"], es: "La pantalla", en: "L'écran", sentence: "La pantalla es táctil.", sentence_trans: "L'écran est tactile." },
       { levels: ["A2"], es: "El mensaje", en: "Le message", sentence: "Te envié un mensaje.", sentence_trans: "Je t'ai envoyé un message." },
-      { levels: ["B1"], es: "La red", en: "Le réseau/Internet", sentence: "La red está lenta.", sentence_trans: "Le réseau est lent." },
+      { levels: ["B1"], es: "La red", en: "Le réseau", sentence: "La red está lenta.", sentence_trans: "Le réseau est lent." },
       { levels: ["B1"], es: "El archivo", en: "Le fichier", sentence: "Guarda el archivo.", sentence_trans: "Sauvegarde le fichier." }
     ],
-
-    // 🍎 NOURRITURE (FRUITS & LÉGUMES)
     food_fruit: [
       { levels: ["A1"], es: "La manzana", en: "La pomme", sentence: "Como una manzana roja.", sentence_trans: "Je mange une pomme rouge." },
       { levels: ["A1"], es: "El plátano", en: "La banane", sentence: "El plátano es dulce.", sentence_trans: "La banane est sucrée." },
@@ -2594,8 +2585,6 @@ export const DATA_BANK = {
       { levels: ["A2"], es: "El tomate", en: "La tomate", sentence: "El tomate es para la ensalada.", sentence_trans: "La tomate est pour la salade." },
       { levels: ["A2"], es: "La patata", en: "La pomme de terre", sentence: "Patatas fritas.", sentence_trans: "Pommes frites." }
     ],
-
-    // 🍽️ NOURRITURE (REPAS & PLATS)
     food_meal: [
       { levels: ["A1"], es: "El pan", en: "Le pain", sentence: "Pan con queso.", sentence_trans: "Pain au fromage." },
       { levels: ["A1"], es: "El agua", en: "L'eau", sentence: "Un vaso de agua.", sentence_trans: "Un verre d'eau." },
@@ -2606,8 +2595,6 @@ export const DATA_BANK = {
       { levels: ["B1"], es: "La cena", en: "Le dîner", sentence: "La cena está lista.", sentence_trans: "Le dîner est prêt." },
       { levels: ["B1"], es: "El desayuno", en: "Le petit-déjeuner", sentence: "Desayuno fuerte.", sentence_trans: "Petit-déjeuner copieux." }
     ],
-
-    // 👔 VÊTEMENTS
     clothing: [
       { levels: ["A1"], es: "La ropa", en: "Les vêtements", sentence: "Compro ropa nueva.", sentence_trans: "J'achète des vêtements neufs." },
       { levels: ["A1"], es: "El zapato", en: "La chaussure", sentence: "Mis zapatos son negros.", sentence_trans: "Mes chaussures sont noires." },
@@ -2617,8 +2604,6 @@ export const DATA_BANK = {
       { levels: ["B1"], es: "El vestido", en: "La robe", sentence: "Un vestido elegante.", sentence_trans: "Une robe élégante." },
       { levels: ["B1"], es: "Las gafas", en: "Les lunettes", sentence: "Gafas de sol.", sentence_trans: "Lunettes de soleil." }
     ],
-
-    // 🌳 NATURE & ANIMAUX
     nature: [
       { levels: ["A1"], es: "El sol", en: "Le soleil", sentence: "Hace sol.", sentence_trans: "Il fait soleil." },
       { levels: ["A1"], es: "El gato", en: "Le chat", sentence: "El gato maúlla.", sentence_trans: "Le chat miaule." },
@@ -2629,8 +2614,6 @@ export const DATA_BANK = {
       { levels: ["B1"], es: "El mar", en: "La mer", sentence: "Nado en el mar.", sentence_trans: "Je nage dans la mer." },
       { levels: ["B1"], es: "La montaña", en: "La montagne", sentence: "Aire de montaña.", sentence_trans: "Air de montagne." }
     ],
-
-    // 💼 TRAVAIL & BUSINESS
     job: [
       { levels: ["A2"], es: "El trabajo", en: "Le travail", sentence: "Busco trabajo.", sentence_trans: "Je cherche du travail." },
       { levels: ["A2"], es: "El jefe", en: "Le patron", sentence: "Mi jefe es bueno.", sentence_trans: "Mon patron est bon." },
@@ -2640,8 +2623,6 @@ export const DATA_BANK = {
       { levels: ["B1"], es: "El proyecto", en: "Le projet", sentence: "Nuevo proyecto.", sentence_trans: "Nouveau projet." },
       { levels: ["B2"], es: "La reunión", en: "La réunion", sentence: "Estamos en una reunión.", sentence_trans: "Nous sommes en réunion." }
     ],
-
-    // 👪 FAMILLE & GENS
     family: [
       { levels: ["A1"], es: "La madre", en: "La mère", sentence: "Amo a mi madre.", sentence_trans: "J'aime ma mère." },
       { levels: ["A1"], es: "El padre", en: "Le père", sentence: "Mi padre es fuerte.", sentence_trans: "Mon père est fort." },
@@ -2651,8 +2632,6 @@ export const DATA_BANK = {
       { levels: ["A2"], es: "El amigo", en: "L'ami", sentence: "Salgo con mi amigo.", sentence_trans: "Je sors avec mon ami." },
       { levels: ["B1"], es: "El vecino", en: "Le voisin", sentence: "Mi vecino saluda.", sentence_trans: "Mon voisin salue." }
     ],
-
-    // ❤️ ÉMOTIONS & ABSTRAIT
     abstract: [
       { levels: ["A1"], es: "El nombre", en: "Le nom", sentence: "Mi nombre es Juan.", sentence_trans: "Mon nom est Juan." },
       { levels: ["A2"], es: "El tiempo", en: "Le temps", sentence: "Pasa el tiempo.", sentence_trans: "Le temps passe." },
@@ -2661,8 +2640,6 @@ export const DATA_BANK = {
       { levels: ["B1"], es: "El miedo", en: "La peur", sentence: "No tengo miedo.", sentence_trans: "Je n'ai pas peur." },
       { levels: ["B1"], es: "La suerte", en: "La chance", sentence: "Buena suerte.", sentence_trans: "Bonne chance." }
     ],
-
-    // 🏥 SANTÉ
     health: [
       { levels: ["A2"], es: "El cuerpo", en: "Le corps", sentence: "Mueve el cuerpo.", sentence_trans: "Bouge ton corps." },
       { levels: ["A2"], es: "La mano", en: "La main", sentence: "Dame la mano.", sentence_trans: "Donne-moi la main." },
@@ -2670,14 +2647,30 @@ export const DATA_BANK = {
       { levels: ["B1"], es: "El médico", en: "Le médecin", sentence: "Cita con el médico.", sentence_trans: "Rendez-vous avec le médecin." },
       { levels: ["B1"], es: "La salud", en: "La santé", sentence: "Salud y amor.", sentence_trans: "Santé et amour." }
     ],
-
-    // 🎓 ÉCOLE & APPRENTISSAGE
     school: [
       { levels: ["A1"], es: "El libro", en: "Le livre", sentence: "Leo un libro.", sentence_trans: "Je lis un livre." },
       { levels: ["A2"], es: "El papel", en: "Le papier", sentence: "Escribe en el papel.", sentence_trans: "Écris sur le papier." },
       { levels: ["A2"], es: "La palabra", en: "Le mot", sentence: "Una palabra nueva.", sentence_trans: "Un mot nouveau." },
       { levels: ["B1"], es: "El examen", en: "L'examen", sentence: "Tengo un examen.", sentence_trans: "J'ai un examen." },
-      { levels: ["B1"], es: "La clase", en: "Le cours/classe", sentence: "Empieza la clase.", sentence_trans: "Le cours commence." }
+      { levels: ["B1"], es: "La clase", en: "Le cours", sentence: "Empieza la clase.", sentence_trans: "Le cours commence." }
+    ],
+    society: [
+      { levels: ["A2"], es: "El dinero", en: "L'argent", sentence: "No tengo dinero.", sentence_trans: "Je n'ai pas d'argent." },
+      { levels: ["A2"], es: "La tarjeta", en: "La carte", sentence: "Pago con tarjeta.", sentence_trans: "Je paie par carte." },
+      { levels: ["A2"], es: "El banco", en: "La banque", sentence: "Voy al banco.", sentence_trans: "Je vais à la banque." },
+      { levels: ["B1"], es: "La ley", en: "La loi", sentence: "Respeto la ley.", sentence_trans: "Je respecte la loi." },
+      { levels: ["B1"], es: "La policía", en: "La police", sentence: "Llama a la policía.", sentence_trans: "Appelle la police." }
+    ],
+    objects: [
+      { levels: ["A1"], es: "El bolígrafo", en: "Le stylo", sentence: "Escribe con bolígrafo.", sentence_trans: "Écris au stylo." },
+      { levels: ["A1"], es: "La mochila", en: "Le sac à dos", sentence: "Mi mochila pesa.", sentence_trans: "Mon sac à dos est lourd." },
+      { levels: ["A2"], es: "La caja", en: "La boîte", sentence: "Abre la caja.", sentence_trans: "Ouvre la boîte." },
+      { levels: ["A2"], es: "El regalo", en: "Le cadeau", sentence: "Es un regalo.", sentence_trans: "C'est un cadeau." }
+    ],
+    leisure: [
+      { levels: ["A1"], es: "El juego", en: "Le jeu", sentence: "Es un juego.", sentence_trans: "C'est un jeu." },
+      { levels: ["A2"], es: "La fiesta", en: "La fête", sentence: "Vamos a la fiesta.", sentence_trans: "Allons à la fête." },
+      { levels: ["B1"], es: "El deporte", en: "Le sport", sentence: "Hago deporte.", sentence_trans: "Je fais du sport." }
     ]
   },
 
@@ -2710,7 +2703,7 @@ export const DATA_BANK = {
   ]
 };
 
-// --- 4. CURRICULUM (MAPPING PRÉCIS) ---
+// --- 4. CURRICULUM ---
 export const CURRICULUM_LOGIC = {
   A1: [
     { topic: "Salutations", grammar: "Présent (Ser)", category: "abstract" },
@@ -2727,21 +2720,21 @@ export const CURRICULUM_LOGIC = {
     { topic: "École", grammar: "Fournitures", category: "school" },
     { topic: "Météo", grammar: "Hacer", category: "nature" },
     { topic: "Routine", grammar: "Réflexifs", category: "home" },
-    { topic: "Amis", grammar: "Ser vs Estar", category: "family" }, // amis inclus
+    { topic: "Amis", grammar: "Ser vs Estar", category: "family" },
     { topic: "Achats", grammar: "Combien ça coûte", category: "food_fruit" },
-    { topic: "Loisirs", grammar: "Jugar", category: "tech" },
+    { topic: "Loisirs", grammar: "Jugar", category: "leisure" },
     { topic: "Voyage", grammar: "Futur Proche", category: "travel" },
     { topic: "Identité", grammar: "Nationalités", category: "abstract" },
     { topic: "Bilan A1", grammar: "Révision", category: "city" }
   ],
   A2: [
-    { topic: "Passé (Hier)", grammar: "Passé Composé", category: "home" },
+    { topic: "Passé", grammar: "Passé Composé", category: "home" },
     { topic: "Souvenirs", grammar: "Imparfait", category: "family" },
     { topic: "Projets", grammar: "Futur Simple", category: "job" },
     { topic: "Restaurant", grammar: "Politesse", category: "food_meal" },
-    { topic: "Santé", grammar: "Dolor (Douleur)", category: "health" },
+    { topic: "Santé", grammar: "Dolor", category: "health" },
     { topic: "Shopping", grammar: "Comparatifs", category: "clothing" },
-    { topic: "Maison de Rêve", grammar: "Conditionnel", category: "home" },
+    { topic: "Maison", grammar: "Conditionnel", category: "home" },
     { topic: "Nature", grammar: "Superlatifs", category: "nature" },
     { topic: "Travail", grammar: "Obligation", category: "job" },
     { topic: "Internet", grammar: "Vocabulaire", category: "tech" },
@@ -2749,10 +2742,10 @@ export const CURRICULUM_LOGIC = {
     { topic: "Ville", grammar: "Orientation", category: "city" },
     { topic: "Cuisine", grammar: "Impératif", category: "food_fruit" },
     { topic: "Sentiments", grammar: "Estar + Adj", category: "abstract" },
-    { topic: "Musique", grammar: "Opinion", category: "abstract" }, // loisirs
+    { topic: "Musique", grammar: "Opinion", category: "leisure" },
     { topic: "Sport", grammar: "Verbes", category: "health" },
     { topic: "Fêtes", grammar: "Traditions", category: "family" },
-    { topic: "Argent", grammar: "Banque", category: "city" },
+    { topic: "Argent", grammar: "Banque", category: "society" },
     { topic: "Urgences", grammar: "Impératif Négatif", category: "health" },
     { topic: "Bilan A2", grammar: "Validation", category: "travel" }
   ],
@@ -2764,16 +2757,16 @@ export const CURRICULUM_LOGIC = {
     { topic: "Culture", grammar: "Art", category: "city" },
     { topic: "Relations", grammar: "Réciproque", category: "family" },
     { topic: "Santé Mentale", grammar: "Conseils", category: "health" },
-    { topic: "Voyage Aventure", grammar: "Récit", category: "travel" },
+    { topic: "Voyage", grammar: "Récit", category: "travel" },
     { topic: "Gastronomie", grammar: "Description", category: "food_meal" },
     { topic: "Mode", grammar: "Tendances", category: "clothing" },
     { topic: "Éducation", grammar: "Système", category: "school" },
     { topic: "Architecture", grammar: "Passif", category: "home" },
-    { topic: "Politique", grammar: "Débat", category: "abstract" },
+    { topic: "Politique", grammar: "Débat", category: "society" },
     { topic: "Histoire", grammar: "Concordance", category: "city" },
     { topic: "Science", grammar: "Hypothèses", category: "tech" },
-    { topic: "Cinéma", grammar: "Critique", category: "abstract" },
-    { topic: "Justice", grammar: "Loi", category: "job" },
+    { topic: "Cinéma", grammar: "Critique", category: "leisure" },
+    { topic: "Justice", grammar: "Loi", category: "society" },
     { topic: "Médias", grammar: "Journalisme", category: "tech" },
     { topic: "Philosophie", grammar: "Concepts", category: "abstract" },
     { topic: "Bilan B1", grammar: "Expertise", category: "job" }
@@ -2785,15 +2778,15 @@ export const CURRICULUM_LOGIC = {
     { topic: "Psychologie", grammar: "Nuances", category: "abstract" },
     { topic: "Urbanisme", grammar: "Futur", category: "city" },
     { topic: "Médecine", grammar: "Technique", category: "health" },
-    { topic: "Droit", grammar: "Vocabulaire", category: "job" },
-    { topic: "Art", grammar: "Analyse", category: "abstract" },
+    { topic: "Droit", grammar: "Vocabulaire", category: "society" },
+    { topic: "Art", grammar: "Analyse", category: "leisure" },
     { topic: "Conflits", grammar: "Résolution", category: "family" },
     { topic: "Innovation", grammar: "Tech", category: "tech" },
     { topic: "Tourisme", grammar: "Impact", category: "travel" },
     { topic: "Nutrition", grammar: "Diète", category: "food_fruit" },
-    { topic: "Cinéma", grammar: "Réalisation", category: "abstract" },
+    { topic: "Cinéma", grammar: "Réalisation", category: "leisure" },
     { topic: "Histoire", grammar: "Mémoire", category: "city" },
-    { topic: "Société", grammar: "Débat", category: "school" },
+    { topic: "Société", grammar: "Débat", category: "society" },
     { topic: "Finance", grammar: "Marchés", category: "job" },
     { topic: "Astronomie", grammar: "Espace", category: "nature" },
     { topic: "Langues", grammar: "Linguistique", category: "school" },
@@ -2802,29 +2795,38 @@ export const CURRICULUM_LOGIC = {
   ],
   C1: [
     { topic: "Rhétorique", grammar: "Discours", category: "abstract" },
-    { topic: "Géopolitique", grammar: "Relations", category: "city" },
+    { topic: "Géopolitique", grammar: "Relations", category: "society" },
     { topic: "Bioéthique", grammar: "Débat", category: "health" },
     { topic: "Métaphysique", grammar: "Concepts", category: "abstract" },
     { topic: "Finance", grammar: "Bourse", category: "job" },
     { topic: "Luxe", grammar: "Marché", category: "clothing" },
     { topic: "Gastronomie", grammar: "Haute Cuisine", category: "food_meal" },
     { topic: "Architecture", grammar: "Patrimoine", category: "city" },
-    { topic: "Cinéma", grammar: "Essai", category: "abstract" },
+    { topic: "Cinéma", grammar: "Essai", category: "leisure" },
     { topic: "Littérature", grammar: "Poésie", category: "school" },
     { topic: "Diplomatie", grammar: "Protocole", category: "job" },
     { topic: "Neuroscience", grammar: "Cerveau", category: "health" },
     { topic: "Climat", grammar: "Urgence", category: "nature" },
     { topic: "Anthropologie", grammar: "Culture", category: "family" },
     { topic: "Archéologie", grammar: "Fouilles", category: "travel" },
-    { topic: "Théâtre", grammar: "Dramaturgie", category: "abstract" },
-    { topic: "Musique", grammar: "Composition", category: "abstract" },
-    { topic: "Journalisme", grammar: "Investigation", category: "tech" },
+    { topic: "Théâtre", grammar: "Dramaturgie", category: "leisure" },
+    { topic: "Musique", grammar: "Composition", category: "leisure" },
+    { topic: "Journalisme", grammar: "Investigation", category: "society" },
     { topic: "Traduction", grammar: "Nuances", category: "school" },
     { topic: "Expertise C1", grammar: "Final", category: "abstract" }
   ]
 };
 
-// --- 5. LEÇONS STATIQUES ---
+// --- 5. STRUCTURES GRAMMATICALES (CORRECTION BUG) ---
+export const SENTENCE_STRUCTURES = [
+  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Sujet souvent omis." },
+  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No hablo.", example_en: "Je ne parle pas.", explanation: "'No' se place avant le verbe." },
+  { id: 3, title: "L'Accord", formula: "Nom + Adjectif", example_es: "Casa roja.", example_en: "Maison rouge.", explanation: "Accord en genre et nombre." },
+  { id: 4, title: "Gustar", formula: "Me gusta...", example_es: "Me gusta el pan.", example_en: "J'aime le pain.", explanation: "Verbe spécial." },
+  { id: 5, title: "Futur Proche", formula: "Ir a + Infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Pour le futur immédiat." }
+];
+
+// --- 6. LEÇONS STATIQUES (INIT) ---
 export const CONTENT_PART_1 = {
   1: [
     { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Salutation universelle", sentence: "Hola, ¿cómo estás?", sentence_trans: "Bonjour, comment vas-tu ?" },
@@ -2854,7 +2856,7 @@ export const CONTENT_PART_1 = {
   ]
 };
 
-// --- 6. GÉNÉRATEUR INTELLIGENT (ALGORITHME SANS DOUBLONS) ---
+// --- 7. GÉNÉRATEUR INTELLIGENT ---
 export const generateStructuredLesson = (id) => {
   let level = "A1";
   if (id > 20) level = "A2";
@@ -2867,36 +2869,29 @@ export const generateStructuredLesson = (id) => {
   const topicLower = config.topic.toLowerCase();
   const grammarLower = config.grammar.toLowerCase();
 
-  // 1. SÉLECTION DU VOCABULAIRE (POOL SANS DOUBLON)
+  // SÉLECTION DU VOCABULAIRE
   const forcedCategory = config.category;
   
   const getCandidatePool = (cat) => {
-      // Récupère la liste de mots ou fallback sur 'abstract'
       let pool = DATA_BANK.nouns[cat] ? DATA_BANK.nouns[cat] : DATA_BANK.nouns['abstract'];
-      // Filtrage par niveau (si possible)
       const levelPool = pool.filter(n => n.levels.includes(level));
-      // Si pas assez de mots du bon niveau, on prend tout le pool de la catégorie
       return levelPool.length > 2 ? levelPool : pool;
   };
 
   let candidates = getCandidatePool(forcedCategory);
-  
-  // MÉLANGE (SHUFFLE) POUR ALÉATOIRE
   const shuffledCandidates = candidates.sort(() => 0.5 - Math.random());
 
-  // SÉLECTION UNIQUE (GARANTIE 3 MOTS DIFFÉRENTS)
   let card1Noun = shuffledCandidates[0];
   let card2Noun = shuffledCandidates[1] || shuffledCandidates[0];
   let card3Noun = shuffledCandidates[2] || shuffledCandidates[0];
 
-  // Si on n'a vraiment pas assez de mots (bug data), on complète avec une autre cat
   if (shuffledCandidates.length < 3) {
       const backup = getCandidatePool('abstract').sort(() => 0.5 - Math.random());
       if (!card2Noun) card2Noun = backup[0];
       if (!card3Noun) card3Noun = backup[1];
   }
 
-  // 2. SÉLECTION DU VERBE
+  // SÉLECTION DU VERBE
   const topicToVerbMap = {
     "obligation": ["Deber", "Tener"],
     "futur": ["Ir", "Haber", "Pensar"],
@@ -2928,7 +2923,7 @@ export const generateStructuredLesson = (id) => {
   }
   const randVerb = DATA_BANK.verbs.find(v => v.es === targetVerbName) || DATA_BANK.verbs[0];
 
-  // 3. CONSTRUCTION
+  // CONSTRUCTION
   const adj = DATA_BANK.adjectives[(id + 2) % DATA_BANK.adjectives.length];
   const conn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
   const tip = DATA_BANK.tips[id % DATA_BANK.tips.length];
@@ -2940,7 +2935,6 @@ export const generateStructuredLesson = (id) => {
   const conjFn = randVerb.conjugation.find(c => c.pronoun.includes(targetPronoun) || (targetPronoun === "Nos" && c.pronoun.includes("Nosotros")));
   const grammarAnswer = conjFn ? [conjFn.verb] : [randVerb.conjugation[0].verb];
 
-  // Helpers d'affichage
   const c1 = { ...card1Noun, context: "Mot clé", sentence: card1Noun.sentence, sentence_trans: card1Noun.sentence_trans };
   const c2 = { ...card2Noun, context: "Contexte", sentence: card2Noun.sentence, sentence_trans: card2Noun.sentence_trans };
   const c3 = { ...card3Noun, context: "Exemple", sentence: card3Noun.sentence, sentence_trans: card3Noun.sentence_trans };
@@ -2959,7 +2953,7 @@ export const generateStructuredLesson = (id) => {
   ];
 };
 
-// --- 7. EXPORTS FINAUX ---
+// --- 8. EXPORTS FINAUX ---
 export const generateExamContent = (allContent, startId, endId, levelName, examId) => {
   let pool = [];
   for (let i = startId; i <= endId; i++) {
