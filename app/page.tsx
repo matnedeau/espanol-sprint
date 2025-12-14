@@ -833,46 +833,55 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
       e?.preventDefault(); 
       if (sub) return; 
       
-      // 1. Fonction de nettoyage "agressive"
+      // --- DÉBUT CORRECTION INTELLIGENTE ---
+      
+      // Fonction de normalisation (nettoyage)
       const normalize = (text) => {
+          if (!text) return "";
           return text
+            .toString()
             .toLowerCase()
             .trim()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Enlève les accents (optionnel, sinon garde-les)
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Enlève les accents (é -> e)
             .replace(/[¿¡!.,;?]/g, '') // Enlève la ponctuation
-            .replace(/\s+/g, ' '); // Enlève les doubles espaces
+            .replace(/\s+/g, ' '); // Enlève les espaces multiples
       };
 
-      const cleanVal = normalize(val); 
-      const ansArray = Array.isArray(data.answer) ? data.answer : [data.answer]; 
+      const userVal = normalize(val); 
       
-      // 2. Vérification Intelligente
-      const ok = ansArray.some(originalAns => {
-          const cleanAns = normalize(originalAns);
+      // On récupère les réponses possibles (tableau ou string unique)
+      const possibleAnswers = Array.isArray(data.answer) ? data.answer : [data.answer];
+      
+      // On vérifie si l'une des réponses correspond
+      const isCorrect = possibleAnswers.some(ans => {
+          const correctVal = normalize(ans);
           
-          // A. Correspondance Exacte (une fois nettoyé)
-          if (cleanVal === cleanAns) return true;
+          // 1. Correspondance exacte (une fois nettoyé)
+          if (userVal === correctVal) return true;
 
-          // B. Tolérance des Articles (El/La/Un/Una)
-          // Si la réponse attendue est "el gato" et l'user écrit "gato", on accepte
-          const ansWithoutArticle = cleanAns.replace(/^(el|la|los|las|un|una|unos|unas)\s+/, '');
-          const valWithoutArticle = cleanVal.replace(/^(el|la|los|las|un|una|unos|unas)\s+/, '');
-          if (ansWithoutArticle === valWithoutArticle) return true;
+          // 2. Tolérance des articles (ex: "el gato" accepté si on tape "gato")
+          // On enlève el, la, los, las, un, una... au début
+          const articlesRegex = /^(el|la|los|las|un|una|unos|unas)\s+/;
+          const userWithoutArt = userVal.replace(articlesRegex, '');
+          const correctWithoutArt = correctVal.replace(articlesRegex, '');
+          
+          if (userWithoutArt === correctWithoutArt) return true;
 
-          // C. Tolérance des Pronoms Sujets (Yo/Tú...)
-          // Si la réponse attendue est "como" et l'user écrit "yo como", on accepte
-          const pronouns = /^(yo|tu|el|ella|nosotros|nosotras|vosotros|vosotras|ellos|ellas)\s+/;
-          const ansNoPronoun = cleanAns.replace(pronouns, '');
-          const valNoPronoun = cleanVal.replace(pronouns, '');
-          if (ansNoPronoun === valNoPronoun) return true;
+          // 3. Tolérance des pronoms sujets (ex: "yo como" accepté pour "como")
+          const pronounsRegex = /^(yo|tu|el|ella|nosotros|nosotras|vosotros|vosotras|ellos|ellas)\s+/;
+          const userWithoutPronoun = userVal.replace(pronounsRegex, '');
+          const correctWithoutPronoun = correctVal.replace(pronounsRegex, '');
+
+          if (userWithoutPronoun === correctWithoutPronoun) return true;
 
           return false;
       });
       
-      setStatus(ok ? 'success' : 'error'); 
+      // --- FIN CORRECTION INTELLIGENTE ---
+
+      setStatus(isCorrect ? 'success' : 'error'); 
       
-      // ... reste du code (animation, score, next)
-      if (ok) { 
+      if (isCorrect) { 
           setSub(true);
           if(onScore) onScore(true); 
           setTimeout(onNext, 1500); 
@@ -882,6 +891,7 @@ const InputCard = ({ data, onNext, isExam, onScore }) => {
              if(onScore) onScore(false);
              setTimeout(onNext, 2500);
           } else {
+             // On donne le focus pour corriger
              inputRef.current?.focus();
           }
       } 
