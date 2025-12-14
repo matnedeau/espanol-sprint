@@ -3523,7 +3523,14 @@ export const CONTENT_PART_1 = {
   ]
 };
 
-// --- 7. GÉNÉRATEUR INTELLIGENT ---
+export const SENTENCE_STRUCTURES = [
+  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Le sujet est souvent omis en espagnol car la terminaison du verbe suffit." },
+  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No hablo inglés.", example_en: "Je ne parle pas anglais.", explanation: "Le mot 'no' se place toujours juste avant le verbe conjugué." },
+  { id: 3, title: "L'Accord Adjectif", formula: "Nom + Adjectif", example_es: "La casa blanca.", example_en: "La maison blanche.", explanation: "L'adjectif s'accorde en genre (o/a) et en nombre (s) avec le nom." },
+  { id: 4, title: "Gustar (Aimer)", formula: "(A mí) me gusta + Nom", example_es: "Me gusta el fútbol.", example_en: "J'aime le football.", explanation: "Littéralement 'Le football me plaît'. On accorde avec ce qui est aimé (gusta/gustan)." },
+  { id: 5, title: "Futur Proche", formula: "Ir + a + Infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Construction très courante pour parler de ce qu'on va faire bientôt." }
+];
+
 export const generateStructuredLesson = (id) => {
   let level = "A1";
   if (id > 20) level = "A2";
