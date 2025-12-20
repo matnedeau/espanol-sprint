@@ -13,12 +13,13 @@ import {
 } from '@/app/lib/generator';
 import { speak } from '@/app/lib/audio';
 
-// Composants modulaires
+// Composants modulaires existants
 import LessonEngine from '@/app/components/LessonEngine';
 import { InputCard } from '@/app/components/LessonCards';
 
 import Image from "next/image";
 import React, { useState, useEffect, useRef } from 'react';
+// CORRECTION IMPORTS : J'ai nettoyé la liste pour éviter le doublon de "Bot"
 import { 
   Flame, ChevronRight, X, Check, Trophy, User, LogOut, PlayCircle, Lock, 
   LayoutDashboard, Library, AlertCircle, Loader2, CloudUpload, Volume2, 
@@ -47,6 +48,54 @@ const googleProvider = new GoogleAuthProvider();
 
 // --- COMPOSANT PRINCIPAL ---
 export default function EspanolSprintPro() {
+  // --- ÉTATS TUTEUR IA (WIDGET) ---
+  const [isTutorOpen, setIsTutorOpen] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatHistory, setChatHistory] = useState([
+      { role: 'ai', text: "Hola! Je suis ton coach personnel. Une question sur tes progrès ?" }
+  ]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  
+  // CORRECTION : Fonction adaptée pour le Widget
+  const handleAskTutorWidget = async (e, directMessage = null) => {
+      if (e && e.preventDefault) e.preventDefault();
+      
+      const userMsg = directMessage || chatInput;
+      if (!userMsg || !userMsg.trim()) return;
+
+      if (!directMessage) setChatInput("");
+      
+      setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
+      setIsChatLoading(true);
+
+      const isPremium = userData?.subscription?.status === 'active';
+
+      try {
+          const res = await fetch('/api/chat', { 
+              method: 'POST', 
+              body: JSON.stringify({ 
+                  message: userMsg, 
+                  userContext: { 
+                      isPremium, 
+                      level: userData?.level || "A1",
+                      context: "dashboard"
+                  } 
+              }) 
+          });
+          const data = await res.json();
+          
+          if (data.error === "LIMIT_REACHED") {
+             setChatHistory(prev => [...prev, { role: 'ai', text: "🔒 Limite atteinte. Passez Premium !" }]);
+          } else {
+             setChatHistory(prev => [...prev, { role: 'ai', text: data.reply || "Désolé, je n'ai pas compris." }]);
+          }
+      } catch (err) {
+          setChatHistory(prev => [...prev, { role: 'ai', text: "Erreur de connexion 😓" }]);
+      } finally {
+          setIsChatLoading(false);
+      }
+  };
+
   const [view, setView] = useState('landing'); 
   const [currentUser, setCurrentUser] = useState(null); 
   const [userData, setUserData] = useState(null); 
@@ -58,7 +107,7 @@ export default function EspanolSprintPro() {
   const [testMode, setTestMode] = useState(null);
   const [activeStory, setActiveStory] = useState(null);
   const [dailyStoryContent, setDailyStoryContent] = useState(null);
-  
+   
   // États pour les limites & promo
   const [dailyAiCount, setDailyAiCount] = useState(0);
   const [showPromoInput, setShowPromoInput] = useState(false);
@@ -161,7 +210,6 @@ export default function EspanolSprintPro() {
 
   const startStory = (storyId) => { const story = dailyStoryContent?.id === storyId ? dailyStoryContent : STORIES_DATA.find(s => s.id === storyId); if (story) { setActiveStory(story); setView('story'); } };
 
-  // MISE À JOUR : startTest gère maintenant le mode conversation
   const startTest = (mode) => {
     if (mode === 'conversation') {
         setView('conversation');
@@ -184,7 +232,223 @@ export default function EspanolSprintPro() {
       } catch (error) { console.error("ERREUR SAUVEGARDE :", error); } finally { proceedToCompleteScreen(); }
   };
 
-  const handlePrintPDF = async (lessonId) => { let content = dynamicLessonsContent[lessonId]; if(!content) { try { const res = await fetch(`/api/lesson/${lessonId}`); content = await res.json(); } catch(e) { alert("Erreur chargement PDF"); return; } } let html2pdf; try { html2pdf = (await import('html2pdf.js')).default; } catch (e) { alert("Erreur PDF"); return; } const element = document.createElement('div'); element.innerHTML = `<div style="font-family:sans-serif; padding:20px;"><h1 style="color:#4f46e5;">Leçon #${lessonId}</h1>${content.map(c => c.es ? `<p><b>${c.es}</b> = ${c.en}</p>` : '').join('')}</div>`; html2pdf().from(element).save(`Lecon-${lessonId}.pdf`); };
+const handleDownloadPDF = async (lessonId) => {
+    const specificContent = dynamicLessonsContent[lessonId];
+    
+    if (!specificContent || !Array.isArray(specificContent)) {
+        alert("Contenu non disponible pour le PDF.");
+        return;
+    }
+    
+    try {
+      const html2pdf = (await import('html2pdf.js')).default;
+      
+      const vocab = specificContent.filter((i) => i.type === 'swipe');
+      const grammar = specificContent.filter((i) => i.type === 'grammar');
+      const structures = specificContent.filter((i) => i.type === 'structure');
+
+      if (!vocab.length && !grammar.length && !structures.length) {
+          alert("Cette leçon est uniquement pratique.");
+          return;
+      }
+
+      // --- 1. VOCABULAIRE ---
+      const vocabHtml = vocab.length ? `
+        <div class="section">
+            <h2 class="section-title">📚 Vocabulaire</h2>
+            <div class="vocab-grid">
+                ${vocab.map((item) => `
+                    <div class="vocab-item">
+                        <span class="es">${item.es}</span>
+                        <span class="en">${item.en}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+      ` : '';
+
+      // --- 2. GRAMMAIRE ---
+      const grammarHtml = grammar.length ? `
+        <div class="section">
+            <h2 class="section-title">📐 Grammaire</h2>
+            ${grammar.map((item) => `
+                <div class="compact-card">
+                    <div class="card-header">
+                        <h3 class="card-title">${item.title}</h3>
+                        <span class="card-desc">${item.description}</span>
+                    </div>
+                    ${item.conjugation ? `
+                        <table class="mini-table">
+                            ${item.conjugation.map((c) => `
+                                <tr>
+                                    <td class="td-pn">${c.pronoun}</td>
+                                    <td class="td-vb">${c.verb}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    ` : ''}
+                </div>
+            `).join('')}
+        </div>
+      ` : '';
+
+      // --- 3. STRUCTURES (Style harmonisé avec Grammaire) ---
+      const structureHtml = structures.length ? `
+        <div class="section">
+            <h2 class="section-title">🏗️ Structures</h2>
+            ${structures.map((item) => {
+                const traduction = item.example_fr || item.example_en || "";
+                return `
+                <div class="compact-card">
+                    <div class="card-header">
+                        <h3 class="card-title">${item.title}</h3>
+                    </div>
+                    
+                    <div class="struct-content">
+                        <div class="struct-row border-b">
+                            <span class="s-label">Formule</span>
+                            <span class="s-value formula-font">${item.formula}</span>
+                        </div>
+                        
+                        <div class="struct-row">
+                            <span class="s-label">Exemple</span>
+                            <div class="s-value">
+                                <div class="ex-es">🇪🇸 ${item.example || item.example_es}</div>
+                                ${traduction ? `<div class="ex-fr">🇫🇷 ${traduction}</div>` : ''}
+                            </div>
+                        </div>
+
+                        ${item.note ? `
+                        <div class="struct-note">
+                            💡 ${item.note}
+                        </div>` : ''}
+                    </div>
+                </div>
+            `}).join('')}
+        </div>
+      ` : '';
+
+      // --- CSS & HTML AVEC BUFFER ---
+      const element = document.createElement('div');
+      element.innerHTML = `
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
+            
+            body { 
+                font-family: 'Inter', sans-serif; 
+                color: #1e293b; 
+                line-height: 1.5;
+                padding: 40px; 
+                background: #fff;
+                font-size: 14px;
+            }
+
+            /* Header */
+            .header { 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: flex-end; 
+                border-bottom: 2px solid #e2e8f0; 
+                padding-bottom: 15px; 
+                margin-bottom: 30px; 
+            }
+            .brand { font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1; }
+            .brand span { color: #dc2626; }
+            .lesson-text { color: #4f46e5; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+
+            /* Sections */
+            .section { margin-bottom: 30px; page-break-inside: avoid; }
+            .section-title { 
+                font-size: 16px; 
+                font-weight: 800; 
+                color: #334155; 
+                margin-bottom: 12px; 
+                text-transform: uppercase; 
+                letter-spacing: 0.5px; 
+                border-left: 4px solid #4f46e5; 
+                padding-left: 10px; 
+            }
+
+            /* Vocabulaire */
+            .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .vocab-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 8px; }
+            .es { font-weight: 700; color: #0f172a; font-size: 14px; }
+            .en { font-size: 12px; color: #64748b; }
+
+            /* Style Cartes (Grammaire & Structures) */
+            .compact-card { 
+                border: 1px solid #e2e8f0; 
+                border-radius: 8px; 
+                padding: 15px; 
+                margin-bottom: 15px; 
+                background: #fff; 
+                page-break-inside: avoid; /* Évite de couper une carte en deux */
+                box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            }
+            .card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+            .card-title { margin: 0; font-size: 15px; font-weight: 800; color: #1e293b; }
+            .card-desc { font-size: 12px; color: #64748b; font-style: italic; }
+
+            .mini-table { width: 100%; border-collapse: collapse; }
+            .mini-table td { padding: 4px 0; border-bottom: 1px dashed #f1f5f9; font-size: 13px; }
+            .td-pn { color: #94a3b8; width: 35%; }
+            .td-vb { font-weight: 600; color: #4f46e5; }
+
+            /* Structures details */
+            .struct-content { display: flex; flex-direction: column; gap: 8px; }
+            .struct-row { display: flex; gap: 15px; padding: 4px 0; }
+            .border-b { border-bottom: 1px dashed #f1f5f9; padding-bottom: 8px; }
+            .s-label { width: 80px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; flex-shrink: 0; padding-top: 2px; }
+            .s-value { flex: 1; font-size: 14px; color: #334155; }
+            .formula-font { font-family: monospace; font-weight: 700; color: #4f46e5; font-size: 15px; letter-spacing: 0.5px; }
+            .ex-es { font-weight: 700; color: #1e293b; }
+            .ex-fr { font-style: italic; color: #64748b; font-size: 13px; margin-top: 2px; }
+            .struct-note { margin-top: 5px; background: #fffbeb; color: #b45309; font-size: 12px; padding: 8px; border-radius: 6px; font-weight: 500; }
+
+            /* Footer */
+            .footer { 
+                margin-top: 40px; 
+                text-align: center; 
+                font-size: 10px; 
+                color: #cbd5e1; 
+                border-top: 1px solid #f1f5f9; 
+                padding-top: 15px;
+                /* On force le bloc footer à ne pas être coupé */
+                page-break-inside: avoid;
+            }
+        </style>
+
+        <div class="header">
+            <div class="brand">Español<span>Sprint</span></div>
+            <div class="lesson-text">Leçon ${lessonId}</div>
+        </div>
+
+        ${vocabHtml}
+        ${grammarHtml}
+        ${structureHtml}
+
+        <div class="footer">
+            Fiche personnelle • Générée sur EspanolSprint.com
+        </div>
+
+        <div style="height: 50px; width: 100%;"></div>
+      `;
+      
+      const opt = {
+        margin: [0.5, 0.5, 0.5, 0.5], // Marges standard
+        filename: `Lecon-${lessonId}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
+
+    } catch (e) {
+      console.error(e);
+      alert("Erreur PDF.");
+    }
+  };
   const uploadFullContentToCloud = async () => { if (!confirm("ADMIN : Initialiser ?")) return; try { await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST }); const contentToUpload = generateAllContent(); for (const [id, content] of Object.entries(contentToUpload)) { await setDoc(doc(db, "lessons", id), { content: content }); } alert(`✅ OK !`); window.location.reload(); } catch (e) { alert("Erreur: " + e.message); } };
 
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-yellow-400"><Loader2 size={48} className="animate-spin text-white" /></div>;
@@ -251,12 +515,10 @@ export default function EspanolSprintPro() {
           <main className="flex-1 h-full overflow-hidden relative flex flex-col">
             <MobileHeader userData={userData} />
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
-              {view === 'dashboard' && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} onDownloadPDF={handlePrintPDF}/>}
+              {/* CORRECTION : onDownloadPDF appelle handleDownloadPDF */}
+              {view === 'dashboard' && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} onDownloadPDF={handleDownloadPDF}/>}
               {view === 'notebook' && <NotebookContent userVocab={userData.vocab} />}
-              
-              {/* Le Mode Conversation est appelé via le menu Entraînement désormais */}
               {view === 'conversation' && <ConversationMode onExit={() => setView('tests')} />}
-              
               {view === 'quiz' && (
                 <QuizZone 
                   onExit={() => setView('dashboard')} 
@@ -266,10 +528,7 @@ export default function EspanolSprintPro() {
                 />
               )}
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
-              
-              {/* MISE À JOUR : Le Dashboard Test inclut maintenant le lien vers Conversation */}
               {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
-              
               {view === 'reading' && (
                 <div className="p-6 pb-24 space-y-8 max-w-2xl mx-auto min-h-screen flex flex-col">
                     <div className="text-center space-y-2"><span className="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Story Mode</span><h2 className="text-3xl font-black text-slate-900">L'Histoire du Jour 📖</h2></div>
@@ -294,9 +553,22 @@ export default function EspanolSprintPro() {
               {view === 'profile' && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} onUpload={uploadFullContentToCloud} />}
               
               {view === 'lesson' && <LessonEngine lessonId={activeLessonId} initialContent={dynamicLessonsContent[activeLessonId]} onComplete={handleLessonComplete} onExit={() => setView('dashboard')} isExam={testMode === 'levelup'} />}
-              {view === 'complete' && <LessonComplete xp={150} onHome={() => setView('dashboard')} onDownload={() => handlePrintPDF(activeLessonId)} isTest={!!testMode} />}
+              
+              {/* CORRECTION : handleDownloadPDF ici aussi */}
+              {view === 'complete' && <LessonComplete xp={150} onHome={() => setView('dashboard')} onDownload={() => handleDownloadPDF(activeLessonId)} isTest={!!testMode} />}
             </div>
             {view !== 'lesson' && view !== 'complete' && view !== 'story' && <MobileBottomNav currentView={view} onChangeView={setView} />}
+            
+            {/* --- AJOUT DU WIDGET FLOTTANT ICI --- */}
+            <AITutorWidget 
+                isOpen={isTutorOpen} 
+                onToggle={() => setIsTutorOpen(!isTutorOpen)}
+                history={chatHistory}
+                onSend={(msg) => handleAskTutorWidget(null, msg)} 
+                isLoading={isChatLoading}
+                isPremium={userData?.subscription?.status === 'active'}
+            />
+
           </main>
         </>
       )}
@@ -306,94 +578,137 @@ export default function EspanolSprintPro() {
 
 // --- SOUS-COMPOSANTS ---
 
+// NOUVEAU WIDGET TUTEUR
+const AITutorWidget = ({ isOpen, onToggle, history, onSend, isLoading, isPremium }) => {
+  const [input, setInput] = React.useState("");
+  const scrollRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (isOpen && scrollRef.current) { scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }
+  }, [history, isOpen]);
+
+  const handleSubmit = (e) => { e.preventDefault(); if (!input.trim()) return; onSend(input); setInput(""); };
+
+  if (!isPremium) return null; 
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
+      {isOpen && (
+        <div className="mb-4 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-in slide-in-from-bottom-5 fade-in duration-200" style={{height: '500px', maxHeight: '80vh'}}>
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 flex items-center justify-between text-white shadow-md">
+            <div className="flex items-center gap-3"><div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm"><Bot size={24} /></div><div><h3 className="font-bold text-sm leading-tight">Coach IA</h3><p className="text-[10px] text-indigo-100 font-medium opacity-90">Toujours disponible</p></div></div><button onClick={onToggle} className="text-white/80 hover:text-white transition-colors"><X size={20} /></button>
+          </div>
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+            {history.map((msg, idx) => (<div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`max-w-[85%] p-3 text-sm rounded-2xl shadow-sm ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-slate-700 border border-slate-200 rounded-tl-none'}`}>{msg.text}</div></div>))}
+            {isLoading && (<div className="flex justify-start"><div className="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm"><Loader2 size={16} className="animate-spin text-indigo-600" /></div></div>)}
+          </div>
+          <form onSubmit={handleSubmit} className="p-3 bg-white border-t border-slate-100 flex gap-2"><input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Pose ta question..." className="flex-1 bg-slate-100 border-0 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 font-medium" /><button type="submit" disabled={isLoading || !input.trim()} className="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"><ArrowRight size={20} /></button></form>
+        </div>
+      )}
+      <button onClick={onToggle} className={`w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 ${isOpen ? 'bg-slate-700 rotate-90' : 'bg-gradient-to-tr from-indigo-600 to-purple-500 animate-bounce-slow'}`}>{isOpen ? <X color="white" size={24} /> : <Bot color="white" size={28} />}</button>
+    </div>
+  );
+};
+
 const ConversationMode = ({ onExit }) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [status, setStatus] = useState("idle"); // idle, recording, processing, speaking
+  const [status, setStatus] = useState("idle"); // idle, recording, processing, speaking, waiting_play
   const [history, setHistory] = useState([]);
+  const [pendingAudio, setPendingAudio] = useState(null); // Stocke l'audio si l'autoplay échoue
+  
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
- const startRecording = async () => {
+  // Fonction pour trouver le meilleur format supporté par le navigateur
+  const getSupportedMimeType = () => {
+    const types = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus", "audio/aac"];
+    for (const type of types) { if (MediaRecorder.isTypeSupported(type)) return type; }
+    return "";
+  };
+
+  const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      // 1. DÉTECTION INTELLIGENTE DU FORMAT
-      // On préfère le webm (format natif du web) qui marche mieux avec OpenAI
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
-      
+      const mimeType = getSupportedMimeType();
+
+      if (!mimeType) { alert("Navigateur non compatible."); return; }
+
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) audioChunksRef.current.push(event.data);
-      };
+      mediaRecorder.ondataavailable = (event) => { if (event.data.size > 0) audioChunksRef.current.push(event.data); };
 
       mediaRecorder.onstop = async () => {
-        // 2. CRÉATION DU BLOB AVEC LE BON TYPE
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        // On passe le mimeType à la fonction de traitement
-        await processAudio(audioBlob, mimeType); 
+        if (audioBlob.size < 1000) { setStatus("idle"); return; }
+        await processAudio(audioBlob, mimeType);
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(200); 
       setIsRecording(true);
       setStatus("recording");
-    } catch (err) {
-      console.error(err);
-      alert("Microphone non autorisé ou non détecté.");
-    }
+    } catch (err) { console.error("Erreur micro:", err); alert("Vérifiez l'accès micro."); setStatus("idle"); }
   };
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      setStatus("processing");
+      setTimeout(() => {
+          if (mediaRecorderRef.current.state !== "inactive") {
+            mediaRecorderRef.current.stop();
+            mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+          }
+          setIsRecording(false);
+          setStatus("processing");
+      }, 500);
     }
   };
 
-  // 3. MISE À JOUR DE LA FONCTION POUR ACCEPTER LE MIMETYPE
   const processAudio = async (audioBlob, mimeType) => {
     const formData = new FormData();
+    let extension = "webm";
+    if (mimeType.includes("mp4") || mimeType.includes("aac")) extension = "mp4";
     
-    // 4. EXTENSION DYNAMIQUE (CRUCIAL POUR ÉVITER LE BUG AMARA.ORG)
-    // Si c'est du webm, on envoie "input.webm", sinon "input.mp4"
-    const extension = mimeType.includes("webm") ? "webm" : "mp4";
     formData.append('file', audioBlob, `input.${extension}`);
-    
-    formData.append('isPremium', 'true'); 
+    formData.append('isPremium', 'true');
 
     try {
       const res = await fetch('/api/conversation', { method: 'POST', body: formData });
       const data = await res.json();
-      
-      if(data.error === "PREMIUM_REQUIRED") {
-        alert("Réservé aux membres Premium !");
-        setStatus("idle");
-        return;
-      }
+
+      if (data.error === "PREMIUM_REQUIRED") { alert("Premium requis !"); setStatus("idle"); return; }
+      if (!data.userText || data.userText.includes("Silence détecté")) { setStatus("idle"); return; }
 
       setHistory(prev => [...prev, { role: 'user', text: data.userText }, { role: 'ai', text: data.aiText }]);
-      setStatus("speaking");
       
-      // 5. VÉRIFICATION AVANT DE JOUER L'AUDIO
-      // Si l'IA a détecté du silence, data.audio sera null
       if (data.audio) {
-          const audio = new Audio(data.audio);
-          audio.onended = () => setStatus("idle");
-          audio.play();
+        const audio = new Audio(data.audio);
+        audio.onended = () => { setStatus("idle"); setPendingAudio(null); };
+        
+        // --- CORRECTION DU BUG "NotAllowedError" ---
+        try {
+            setStatus("speaking");
+            await audio.play(); // On tente la lecture auto
+        } catch (err) {
+            console.warn("Autoplay bloqué par le navigateur :", err);
+            // Si bloqué, on sauvegarde l'audio et on demande à l'utilisateur de cliquer
+            setPendingAudio(audio);
+            setStatus("waiting_play"); 
+        }
       } else {
-          // Si pas d'audio (silence), on remet le statut à idle tout de suite
-          setStatus("idle");
+        setStatus("idle");
       }
 
-    } catch (e) {
-      console.error(e);
-      setStatus("idle");
-      alert("Erreur de connexion.");
-    }
-  }; 
+    } catch (e) { console.error(e); setStatus("idle"); }
+  };
+
+  // Fonction pour lancer l'audio manuellement si bloqué
+  const playPendingAudio = () => {
+      if (pendingAudio) {
+          setStatus("speaking");
+          pendingAudio.play().catch(e => console.error("Lecture impossible:", e));
+      }
+  };
 
   return (
     <div className="h-full flex flex-col bg-slate-900 text-white relative overflow-hidden">
@@ -403,7 +718,7 @@ const ConversationMode = ({ onExit }) => {
          {history.length === 0 && (
            <div className="text-center mt-20 opacity-50 space-y-4">
              <div className="w-24 h-24 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto"><Mic size={40}/></div>
-             <p>Appuyez sur le micro pour parler.</p>
+             <p>Maintenez le micro pour parler.</p>
            </div>
          )}
          {history.map((msg, i) => (
@@ -417,46 +732,50 @@ const ConversationMode = ({ onExit }) => {
       </div>
 
       <div className="p-8 pb-12 flex justify-center bg-gradient-to-t from-slate-900 to-transparent">
-        <button
-          onMouseDown={startRecording}
-          onMouseUp={stopRecording}
-          onTouchStart={startRecording}
-          onTouchEnd={stopRecording}
-          className={`w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-all ${status === 'recording' ? 'bg-red-500 scale-110 ring-4 ring-red-500/30' : 'bg-indigo-600 hover:scale-105'}`}
-        >
-          <Mic size={40} className="fill-white"/>
-        </button>
+        
+        {/* CAS 1 : Lecture Bloquée -> Bouton "Écouter" */}
+        {status === "waiting_play" ? (
+             <button 
+                onClick={playPendingAudio}
+                className="w-auto px-8 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-2xl animate-bounce gap-2 font-bold text-lg"
+             >
+                <Volume2 size={24} /> Écouter la réponse
+             </button>
+        ) : (
+        /* CAS 2 : Bouton Micro Normal */
+             <button 
+                onMouseDown={startRecording} 
+                onMouseUp={stopRecording} 
+                onMouseLeave={stopRecording}
+                onTouchStart={(e) => { e.preventDefault(); startRecording(); }} 
+                onTouchEnd={(e) => { e.preventDefault(); stopRecording(); }} 
+                disabled={status === "processing" || status === "speaking"}
+                className={`w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-all select-none touch-none 
+                    ${status === 'recording' ? 'bg-red-500 scale-110 ring-4 ring-red-500/30' : 
+                      status === 'speaking' ? 'bg-green-500' : 'bg-indigo-600 hover:scale-105'}
+                    ${(status === "processing" || status === "speaking") ? 'opacity-50 cursor-not-allowed' : ''}
+                `}
+            >
+                {status === 'speaking' ? <Volume2 size={40} className="animate-pulse"/> : <Mic size={40} className="fill-white"/>}
+            </button>
+        )}
       </div>
-      {status === 'recording' && <div className="absolute bottom-32 w-full text-center font-bold animate-pulse">Enregistrement...</div>}
+      
+      {status === 'recording' && <div className="absolute bottom-32 w-full text-center font-bold animate-pulse text-red-400">Je vous écoute...</div>}
+      {status === 'speaking' && <div className="absolute bottom-32 w-full text-center font-bold text-green-400">L'IA parle...</div>}
+      {status === 'waiting_play' && <div className="absolute bottom-32 w-full text-center font-bold text-green-400">Réponse prête !</div>}
     </div>
   );
 };
 
-// ... (Autres sous-composants inchangés : LivesCounter, StoryEngine, QuizZone, etc.)
 const LivesCounter = ({ userData }) => {
   const isPremium = userData?.subscription?.status === 'active';
   const today = new Date().toDateString();
   const count = (userData?.dailyLimit?.date === today) ? userData?.dailyLimit?.count : 0;
   const maxLives = 4;
   const livesLeft = Math.max(0, maxLives - count);
-
-  if (isPremium) {
-    return (
-      <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-3 py-1.5 rounded-full font-black shadow-sm transform hover:scale-105 transition-all">
-        <Infinity size={20} strokeWidth={3} />
-        <span className="text-sm">ILLIMITÉ</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-1 bg-white border border-red-100 px-3 py-1.5 rounded-full shadow-sm">
-      <Heart size={20} className={`fill-red-500 ${livesLeft === 0 ? 'text-slate-300 fill-slate-300' : 'text-red-500'} transition-colors`} />
-      <span className={`font-black text-sm ${livesLeft === 0 ? 'text-slate-400' : 'text-red-500'}`}>
-        {livesLeft}
-      </span>
-    </div>
-  );
+  if (isPremium) { return (<div className="flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-3 py-1.5 rounded-full font-black shadow-sm transform hover:scale-105 transition-all"><Infinity size={20} strokeWidth={3} /><span className="text-sm">ILLIMITÉ</span></div>); }
+  return (<div className="flex items-center gap-1 bg-white border border-red-100 px-3 py-1.5 rounded-full shadow-sm"><Heart size={20} className={`fill-red-500 ${livesLeft === 0 ? 'text-slate-300 fill-slate-300' : 'text-red-500'} transition-colors`} /><span className={`font-black text-sm ${livesLeft === 0 ? 'text-slate-400' : 'text-red-500'}`}>{livesLeft}</span></div>);
 };
 
 const StoryEngine = ({ story, onComplete }) => {

@@ -1,63 +1,84 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 export async function POST(req: Request) {
   try {
+    // 1. INITIALISATION (À l'intérieur pour éviter les erreurs de build Vercel)
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });
+    }
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    // 2. RÉCUPÉRATION DES DONNÉES
     const formData = await req.formData();
     const audioFile = formData.get('file') as File;
     const isPremium = formData.get('isPremium') === 'true';
 
-    if (!isPremium) return NextResponse.json({ error: "PREMIUM_REQUIRED" }, { status: 403 });
-    if (!audioFile) return NextResponse.json({ error: "No audio" }, { status: 400 });
+    // 3. VÉRIFICATIONS DE SÉCURITÉ
+    if (!isPremium) {
+      return NextResponse.json({ error: "PREMIUM_REQUIRED" }, { status: 403 });
+    }
+    
+    if (!audioFile || audioFile.size === 0) {
+      console.warn("Fichier audio reçu vide ou null");
+      return NextResponse.json({ 
+        userText: "(Silence détecté)", 
+        aiText: "" 
+      }); // On renvoie une réponse "douce" pour ne pas faire planter le front
+    }
 
-    // 1. TRANSCRIPTION
+    console.log(`🎤 Réception audio: ${audioFile.name} (${audioFile.size} bytes)`);
+
+    // 4. TRANSCRIPTION (Whisper)
+    // Note : On passe l'objet File directement, OpenAI gère le format grâce au nom (ex: input.mp4)
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
       model: "whisper-1",
       language: "es", 
-      prompt: "Une conversation en espagnol.", // Aide l'IA à se caler
+      prompt: "Une conversation informelle en espagnol.", 
     });
 
     let userText = transcription.text.trim();
+    console.log("📝 Transcription brute :", userText);
 
-    // 🛡️ FILTRE ANTI-HALLUCINATION (Amara.org, etc.)
+    // 5. FILTRE ANTI-HALLUCINATION
+    // Whisper invente parfois ces textes quand il y a du silence ou du bruit de fond
     const hallucinations = [
       "Amara.org", "subtítulos", "sous-titres", "Watching", "Sosty", 
-      "co-", "Copyright", "Kevin MacLeod"
+      "co-", "Copyright", "Kevin MacLeod", "Silence", "audio", "MBC"
     ];
     
-    // Si le texte contient une hallucination connue ou est vide
     const isHallucination = hallucinations.some(h => userText.includes(h));
     
+    // Si le texte est trop court ou est une hallucination connue
     if (userText.length < 2 || isHallucination) {
+       console.log("🚫 Hallucination ou silence filtré.");
        return NextResponse.json({ 
          userText: "🔇 (Silence détecté)", 
          aiText: "Je n'ai pas bien entendu. Peux-tu répéter ?",
-         audio: null // Pas d'audio généré pour économiser
+         audio: null 
        });
     }
 
-    // 2. INTELLIGENCE (Seulement si on a du vrai texte)
+    // 6. INTELLIGENCE (GPT-4o)
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         { 
           role: "system", 
-          content: "Tu es un ami espagnol natif. Tu as une conversation orale. Réponds en 1 seule phrase courte (max 15 mots). Sois naturel et encourageant." 
+          content: "Tu es un ami espagnol natif bienveillant. L'utilisateur apprend la langue. Réponds à son message oral en 1 seule phrase courte (max 15 mots). Sois naturel, dynamique et encourageant." 
         },
         { role: "user", content: userText }
       ],
       max_tokens: 60,
     });
 
-    const aiResponseText = completion.choices[0].message.content || "¡Hola!";
+    const aiResponseText = completion.choices[0].message.content || "¡Hola! ¿Cómo estás?";
 
-    // 3. VOCALISATION
+    // 7. VOCALISATION (TTS)
     const mp3 = await openai.audio.speech.create({
       model: "tts-1",
-      voice: "alloy", // "alloy" est très polyvalent pour l'espagnol
+      voice: "alloy", 
       input: aiResponseText,
     });
 
@@ -70,8 +91,9 @@ export async function POST(req: Request) {
       audio: `data:audio/mp3;base64,${audioBase64}` 
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Conversation Error:", error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    // On renvoie l'erreur précise pour t'aider à débugger dans les logs Vercel
+    return NextResponse.json({ error: error.message || "Erreur serveur" }, { status: 500 });
   }
 }
