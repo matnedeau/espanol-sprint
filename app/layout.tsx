@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { Analytics } from "@vercel/analytics/react"; // <-- IMPORT AJOUTÉ
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -9,19 +9,19 @@ const inter = Inter({ subsets: ["latin"] });
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#facc15",
+  themeColor: "#facc15", // Jaune Espagnol
   maximumScale: 1,
 };
 
 // 2. METADONNÉES SEO & OPENGRAPH
 export const metadata: Metadata = {
-  metadataBase: new URL("https://espanol-sprint.vercel.app"),
+  metadataBase: new URL("https://espanolsprint.vercel.app"), // Remplacez par votre URL Vercel finale si différente
   title: {
-    default: "EspañolSprint - Apprenez l'espagnol rapidement",
+    default: "EspañolSprint - Apprenez l'espagnol en vitesse éclair",
     template: "%s | EspañolSprint",
   },
-  description: "L'application la plus rapide pour apprendre l'espagnol. Leçons interactives, mode histoire et répétition espacée (SRS).",
-  keywords: ["espagnol", "apprendre", "leçons", "rapide", "sprint", "débutant", "vocabulaire", "grammaire"],
+  description: "La méthode la plus rapide pour passer de A1 à C1. 5 minutes par jour, gamification style Vision Pro et Audio IA.",
+  keywords: ["espagnol", "apprendre espagnol", "cours espagnol gratuit", "vocabulaire espagnol", "application langue", "sprint"],
   authors: [{ name: "EspañolSprint Team" }],
   creator: "EspañolSprint",
   
@@ -31,32 +31,33 @@ export const metadata: Metadata = {
   },
   // ----------------------------------------
 
-  icons: {
-    icon: "/flavicon.png",
-    apple: "/flavicon.png",
-  },
+  // Note : La configuration 'icons' a été supprimée.
+  // Next.js détectera automatiquement le fichier 'app/icon.png'.
+
+  // Configuration OpenGraph (Réseaux Sociaux)
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    url: "https://espanol-sprint.vercel.app",
-    title: "EspañolSprint - Devenez bilingue en un temps record",
-    description: "La méthode accélérée pour maîtriser l'espagnol. Quiz, Histoires et Audio IA.",
+    url: "https://espanolsprint.vercel.app",
+    title: "EspañolSprint - Devenez bilingue rapidement",
+    description: "N'apprenez pas l'espagnol, vivez-le. Méthode interactive avec Audio IA et Répétition Espacée.",
     siteName: "EspañolSprint",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/opengraph-image", // Utilise l'image générée dynamiquement (si vous avez créé le fichier opengraph-image.tsx)
         width: 1200,
         height: 630,
-        alt: "EspañolSprint Preview",
+        alt: "Aperçu EspañolSprint",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "EspañolSprint 🚀",
-    description: "Apprenez l'espagnol plus vite que jamais.",
-    images: ["/og-image.jpg"],
+    title: "EspañolSprint 🇪🇸",
+    description: "Le Duolingo killer ? Apprenez l'espagnol avec une UX incroyable.",
+    images: ["/opengraph-image"],
   },
+  
   robots: {
     index: true,
     follow: true,
@@ -77,9 +78,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={`${inter.className} bg-slate-50 text-slate-900 antialiased`}>
+      <body className={`${inter.className} bg-slate-50 text-slate-900 antialiased selection:bg-yellow-200 selection:text-yellow-900`}>
         {children}
-        <Analytics /> {/* <-- COMPOSANT AJOUTÉ ICI */}
+        <Analytics />
       </body>
     </html>
   );

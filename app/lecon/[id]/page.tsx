@@ -1,9 +1,9 @@
-import { INITIAL_LESSONS_CONTENT, INITIAL_LESSONS_LIST } from '@/app/data/content';
+import { INITIAL_LESSONS_LIST } from '@/app/lib/curriculum';
+import { generateStructuredLesson } from '@/app/lib/generator';
 import { Metadata } from 'next';
 import Link from 'next/link';
 
 // 1. DÉFINITION DU TYPE POUR LES LEÇONS
-// Permet de typer strictement les données importées
 interface Lesson {
   id: number;
   title: string;
@@ -20,10 +20,10 @@ type Props = {
 };
 
 // 2. GÉNÉRATION DES PARAMÈTRES STATIQUES (SSG)
-// Génère une page HTML pour chaque clé trouvée dans le contenu
+// Correction : On itère sur la LISTE (curriculum) et non plus sur le CONTENU supprimé
 export async function generateStaticParams() {
-  return Object.keys(INITIAL_LESSONS_CONTENT).map((id) => ({
-    id: id.toString(),
+  return INITIAL_LESSONS_LIST.map((lesson) => ({
+    id: lesson.id.toString(),
   }));
 }
 
@@ -48,12 +48,12 @@ export default async function LessonPage(props: Props) {
   const params = await props.params;
   const idNum = parseInt(params.id);
 
-  // Récupération sécurisée du contenu
-  // @ts-ignore : On ignore l'erreur d'indexation dynamique sur l'objet importé
-  const lessonContent = INITIAL_LESSONS_CONTENT[idNum] || INITIAL_LESSONS_CONTENT[params.id];
+  // Correction : On génère le contenu à la volée via la fonction importée
+  // Plus besoin de l'objet géant INITIAL_LESSONS_CONTENT
+  const lessonContent = generateStructuredLesson(idNum);
   const lessonInfo = ALL_LESSONS.find((l) => l.id === idNum);
 
-  // Gestion du cas où la leçon n'existe pas
+  // Gestion du cas où la leçon n'existe pas ou erreur de génération
   if (!lessonContent || !lessonInfo) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-slate-800">
@@ -66,7 +66,7 @@ export default async function LessonPage(props: Props) {
   }
 
   // Extraction du vocabulaire (items de type 'swipe') pour l'affichage SEO
-  // @ts-ignore : On ignore le typage strict du contenu brut
+  // @ts-ignore : Typage souple sur le contenu généré
   const vocabulary = Array.isArray(lessonContent) ? lessonContent.filter(i => i.type === 'swipe') : [];
 
   // Données structurées (JSON-LD) pour Google
@@ -78,7 +78,8 @@ export default async function LessonPage(props: Props) {
     "educationalLevel": lessonInfo.level,
     "url": `https://espanol-sprint.vercel.app/lecon/${params.id}`,
     "isAccessibleForFree": true,
-    "teaches": vocabulary.map((v: any) => v.es).join(', ')
+    // @ts-ignore
+    "teaches": vocabulary.map((v) => v.es).join(', ')
   };
 
   return (
@@ -95,8 +96,9 @@ export default async function LessonPage(props: Props) {
           <span className="text-2xl group-hover:scale-110 transition-transform">🇪🇸</span> 
           <span>Español<span className="text-red-600">Sprint</span></span>
         </Link>
+        {/* Le bouton renvoie vers le Dashboard avec l'ID de la leçon */}
         <Link 
-          href={`/?startLesson=${idNum}`} 
+          href={`/dashboard?startLesson=${idNum}`} 
           className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:scale-105 hover:bg-slate-800 transition-all shadow-lg"
         >
           Ouvrir l'App
@@ -171,7 +173,7 @@ export default async function LessonPage(props: Props) {
                 </p>
               </div>
               <Link 
-                href={`/?startLesson=${idNum}`}
+                href={`/dashboard?startLesson=${idNum}`}
                 className="inline-flex items-center justify-center w-full sm:w-auto bg-white text-indigo-600 font-black text-lg px-8 py-4 rounded-2xl shadow-xl hover:bg-yellow-400 hover:text-yellow-900 transition-all hover:scale-[1.02] hover:shadow-2xl"
               >
                 ▶  Démarrer le Sprint
