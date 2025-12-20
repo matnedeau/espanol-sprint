@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s | EspañolSprint",
   },
   description: "La méthode la plus rapide pour passer de A1 à C1. 5 minutes par jour, gamification style Vision Pro et Audio IA.",
-  keywords: ["espagnol", "apprendre espagnol", "cours espagnol gratuit", "vocabulaire espagnol", "application langue", "sprint"],
+  keywords: ["espagnol", "apprendre espagnol", "cours espagnol gratuit", "vocabulaire espagnol", "application langue", "sprint", "bilingue espagnol 3 mois"],
   authors: [{ name: "EspañolSprint Team" }],
   creator: "EspañolSprint",
   
