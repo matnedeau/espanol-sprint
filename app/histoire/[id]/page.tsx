@@ -1,11 +1,10 @@
-import { STORIES_DATA } from '@/app/data/content';
+import { STORIES_DATA } from '@/app/lib/stories'; // <-- CORRECTION ICI
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Play, MessageCircle, BookOpen, ArrowLeft } from 'lucide-react';
 
 // 1. DÉFINITION DES TYPES
-// Basé sur la structure de STORIES_DATA dans content.ts
 interface Character {
   name: string;
   avatar: string;
@@ -18,7 +17,9 @@ interface DialogueItem {
   speaker?: string;
   text_es?: string;
   text_fr?: string;
-  question?: string; // Pour les items de type 'question'
+  question?: string; 
+  answer?: string;
+  options?: string[];
 }
 
 interface Story {
@@ -75,7 +76,7 @@ export default async function StoryPage(props: Props) {
   // Filtrer uniquement les dialogues (on exclut les questions pour la vue lecture seule)
   const dialogueLines = story.dialogue.filter((line) => line.type === 'bubble');
 
-  // Données structurées (Schema.org)
+  // Données structurées (Schema.org) pour Google
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CreativeWork",
@@ -88,7 +89,7 @@ export default async function StoryPage(props: Props) {
       "@type": "Organization",
       "name": "EspañolSprint"
     },
-    "url": `https://espanolsprint.com/histoire/${story.id}`,
+    "url": `https://espanolsprint.vercel.app/histoire/${story.id}`,
     "character": Object.values(story.characters).map(c => c.name)
   };
 
@@ -140,6 +141,7 @@ export default async function StoryPage(props: Props) {
                 Ne vous contentez pas de lire ! Écoutez les voix IA natives, répondez aux questions et améliorez votre prononciation.
               </p>
             </div>
+            {/* Lien qui renvoie vers le Dashboard avec le paramètre startStory */}
             <Link 
               href={`/?startStory=${story.id}`}
               className="bg-white text-indigo-700 font-bold px-6 py-3 rounded-xl shadow-lg hover:bg-yellow-400 hover:text-indigo-900 transition-all hover:scale-105 whitespace-nowrap"
@@ -153,7 +155,7 @@ export default async function StoryPage(props: Props) {
           </div>
         </div>
 
-        {/* SCRIPT THÉÂTRAL */}
+        {/* SCRIPT THÉÂTRAL (SEO & LECTURE) */}
         <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12">
           <h3 className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-8 flex items-center gap-2">
             <BookOpen size={16} /> Script de l'histoire

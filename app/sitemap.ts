@@ -1,12 +1,13 @@
 import { MetadataRoute } from 'next';
-import { INITIAL_LESSONS_CONTENT, STORIES_DATA } from '@/app/data/content';
-import { BLOG_POSTS } from '@/app/data/blog-content';
+import { INITIAL_LESSONS_LIST } from '@/app/lib/curriculum'; // <-- Import corrigé (Liste des IDs)
+import { STORIES_DATA } from '@/app/lib/stories';       // <-- Import corrigé
+import { BLOG_POSTS } from '@/app/data/blog-content';   // Celui-ci ne change pas
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  // Votre URL de production
-  const baseUrl = 'https://espanol-sprint.vercel.app'; 
+  // Votre URL de production (Vérifiez si c'est avec ou sans tiret selon votre Vercel)
+  const baseUrl = 'https://espanolsprint.vercel.app'; 
 
-  // 1. La Page d'Accueil (Priorité Maximale)
+  // 1. La Page d'Accueil & Blog (Priorité Maximale)
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
@@ -15,22 +16,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${baseUrl}/blog`, // La page liste des articles
+      url: `${baseUrl}/blog`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
     },
   ];
 
-  // 2. Génération des URLs pour les Leçons (/lecon/1, /lecon/2...)
-  const lessonPages: MetadataRoute.Sitemap = Object.keys(INITIAL_LESSONS_CONTENT).map((id) => ({
-    url: `${baseUrl}/lecon/${id}`,
+  // 2. Leçons (On boucle sur le tableau INITIAL_LESSONS_LIST)
+  const lessonPages: MetadataRoute.Sitemap = INITIAL_LESSONS_LIST.map((lesson) => ({
+    url: `${baseUrl}/lecon/${lesson.id}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
   }));
 
-  // 3. Génération des URLs pour les Histoires (/histoire/story-A1-01...)
+  // 3. Histoires (On boucle sur STORIES_DATA)
   const storyPages: MetadataRoute.Sitemap = STORIES_DATA.map((story) => ({
     url: `${baseUrl}/histoire/${story.id}`,
     lastModified: new Date(),
@@ -38,14 +39,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  // 4. Génération des URLs pour les Articles de Blog (/blog/slug...)
+  // 4. Articles de Blog
   const blogPages: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(post.date), // On utilise la vraie date de l'article
+    lastModified: new Date(post.date),
     changeFrequency: 'monthly',
     priority: 0.7,
   }));
 
-  // 5. On fusionne tout pour Google
+  // 5. Fusion
   return [...staticPages, ...lessonPages, ...storyPages, ...blogPages];
 }
