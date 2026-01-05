@@ -29,7 +29,7 @@ import {
 
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, getRedirectResult } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, increment, collection, getDocs } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 
 // --- CONFIGURATION FIREBASE ---
 const firebaseConfig = {
@@ -449,6 +449,35 @@ const handleDownloadPDF = async (lessonId) => {
       alert("Erreur PDF.");
     }
   };
+  // --- DÉBUT DU BLOC À COLLER ---
+  
+  // 1. Gérer le portail Stripe (Abonnement)
+  const handlePortal = async () => {
+    if (!currentUser) return;
+    try {
+      const res = await fetch('/api/portal', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUser.uid }) 
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else alert("Accès au portail impossible.");
+    } catch (e) { console.error(e); alert("Erreur de connexion."); }
+  };
+
+  // 2. Supprimer le compte
+  const handleDeleteAccount = async () => {
+    if (!currentUser) return;
+    if (window.confirm("⚠️ Êtes-vous sûr de vouloir supprimer votre compte ? Tout sera perdu.")) {
+      try {
+        await deleteDoc(doc(db, "users", currentUser.uid));
+        await currentUser.delete();
+        window.location.reload();
+      } catch (e) { alert("Veuillez vous reconnecter pour supprimer votre compte."); }
+    }
+  };
+  // --- FIN DU BLOC À COLLER ---
   const uploadFullContentToCloud = async () => { if (!confirm("ADMIN : Initialiser ?")) return; try { await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST }); const contentToUpload = generateAllContent(); for (const [id, content] of Object.entries(contentToUpload)) { await setDoc(doc(db, "lessons", id), { content: content }); } alert(`✅ OK !`); window.location.reload(); } catch (e) { alert("Erreur: " + e.message); } };
 
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-yellow-400"><Loader2 size={48} className="animate-spin text-white" /></div>;
@@ -550,7 +579,18 @@ const handleDownloadPDF = async (lessonId) => {
 
               {view === 'story' && activeStory && <StoryEngine story={activeStory} onComplete={() => setView('reading')} />}
               {view === 'leaderboard' && <LeaderboardView userData={userData} />}
-              {view === 'profile' && <ProfileContent userData={userData} email={currentUser.email} onLogout={handleLogout} onUpload={uploadFullContentToCloud} />}
+              {view === 'profile' && (
+                <ProfileContent 
+                  userData={userData} 
+                  email={currentUser.email} 
+                  onLogout={handleLogout} 
+                  onUpload={uploadFullContentToCloud}
+                  // 👇 AJOUTS
+                  onPremium={handleCheckout} 
+                  onManageSubscription={handlePortal}
+                  onDeleteAccount={handleDeleteAccount}
+                />
+              )}
               
               {view === 'lesson' && <LessonEngine lessonId={activeLessonId} initialContent={dynamicLessonsContent[activeLessonId]} onComplete={handleLessonComplete} onExit={() => setView('dashboard')} isExam={testMode === 'levelup'} />}
               
@@ -854,7 +894,67 @@ const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUploa
 const MobileHeader = ({ userData }) => (<div className="md:hidden bg-white px-4 py-3 flex justify-between items-center shadow-sm z-20 sticky top-0"><div className="flex items-center gap-3"><div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm border border-indigo-200">{userData?.name?.charAt(0).toUpperCase()}</div><LivesCounter userData={userData}/></div><div className="flex items-center gap-1 bg-orange-50 px-3 py-1 rounded-full border border-orange-100"><Flame size={16} className="text-orange-500 fill-orange-500" /><span className="text-orange-700 font-bold">{userData?.streak}</span></div></div>);
 const MobileBottomNav = ({ currentView, onChangeView }) => (<div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30"><NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} /><NavBtn icon={MessageCircle} label="Histoires" active={currentView === 'reading' || currentView === 'story'} onClick={() => onChangeView('reading')} /><NavBtn icon={BrainCircuit} label="Entraînement" active={currentView === 'tests' || currentView === 'quiz'} onClick={() => onChangeView('tests')} /><NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} /></div>);
 const NavBtn = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex flex-col items-center p-2 transition-colors ${active ? 'text-indigo-600' : 'hover:text-slate-600'}`}><Icon size={24} strokeWidth={active ? 2.5 : 2} /><span className="text-[10px] font-bold mt-1">{label}</span></button>);
-const ProfileContent = ({ userData, email, onLogout, onUpload }) => (<div className="max-w-2xl mx-auto w-full p-6 md:p-12 space-y-8"><h2 className="text-3xl font-black text-slate-900">Mon Compte</h2><div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6"><div className="flex items-center gap-4"><div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center text-2xl font-bold text-indigo-600">{userData?.name?.charAt(0).toUpperCase()}</div><div><p className="font-bold text-slate-900 text-lg">{userData?.name}</p><p className="text-slate-400 text-sm">{email}</p></div></div><div className="grid grid-cols-3 gap-4 text-center py-4 border-y border-slate-100"><div><p className="text-2xl font-black text-slate-900">{userData?.xp}</p><p className="text-xs text-slate-400 uppercase font-bold">XP Total</p></div><div><p className="text-2xl font-black text-slate-900">{userData?.streak}</p><p className="text-xs text-slate-400 uppercase font-bold">Série</p></div><div><p className="text-2xl font-black text-slate-900">{userData?.level}</p><p className="text-xs text-slate-400 uppercase font-bold">Niveau</p></div></div><button onClick={onUpload} className="w-full bg-indigo-50 text-indigo-600 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors border border-indigo-100"><CloudUpload size={20} /> Réinitialiser le Contenu</button><button onClick={onLogout} className="w-full text-red-500 font-bold py-3 rounded-xl hover:bg-red-50 transition-colors flex items-center justify-center gap-2"><LogOut size={20} /> Se déconnecter</button></div></div>);
+const ProfileContent = ({ userData, email, onLogout, onUpload, onPremium, onManageSubscription, onDeleteAccount }) => {
+  const isPremium = userData?.subscription?.status === 'active';
+
+  return (
+    <div className="max-w-2xl mx-auto w-full p-6 pb-32 space-y-8">
+      <h2 className="text-3xl font-black text-slate-900">Mon Compte</h2>
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-8">
+        
+        {/* INFO UTILISATEUR */}
+        <div className="flex items-center gap-6">
+          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center text-3xl font-bold text-indigo-600 border-4 border-white shadow-sm">
+            {userData?.name?.charAt(0).toUpperCase() || "U"}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+                <p className="font-black text-slate-900 text-xl">{userData?.name || "Utilisateur"}</p>
+                {isPremium && <span className="bg-yellow-400 text-yellow-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">PRO</span>}
+            </div>
+            <p className="text-slate-400 text-sm font-medium">{email}</p>
+          </div>
+        </div>
+
+        {/* STATISTIQUES */}
+        <div className="grid grid-cols-3 gap-4 text-center py-6 border-y border-slate-50">
+            <div><p className="text-2xl font-black text-slate-900">{userData?.xp || 0}</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">XP</p></div>
+            <div><p className="text-2xl font-black text-slate-900">{userData?.streak || 0} 🔥</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Série</p></div>
+            <div><p className="text-2xl font-black text-slate-900">{userData?.level || "A1"}</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Niveau</p></div>
+        </div>
+
+        {/* ABONNEMENT */}
+        <div className="space-y-4">
+            <h4 className="font-bold text-slate-900 flex items-center gap-2">👑 Abonnement</h4>
+            {!isPremium ? (
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-3">
+                    <p className="text-sm text-slate-500">Débloquez la puissance de l'IA.</p>
+                    <button onClick={onPremium} className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold shadow-lg hover:scale-[1.02] transition-all">
+                        💎 Devenir Premium
+                    </button>
+                </div>
+            ) : (
+                <div className="bg-yellow-50 p-4 rounded-2xl border border-yellow-100 flex flex-col gap-3">
+                    <p className="text-sm text-yellow-800 font-bold">✅ Abonnement Actif</p>
+                    <button onClick={onManageSubscription} className="w-full bg-white text-yellow-700 border border-yellow-200 py-3 rounded-xl font-bold text-sm">
+                        Gérer mon abonnement / Résilier
+                    </button>
+                </div>
+            )}
+        </div>
+
+        {/* ACTIONS & DANGER */}
+        <div className="space-y-3 pt-4 border-t border-slate-50">
+            <button onClick={onUpload} className="w-full bg-indigo-50 text-indigo-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors border border-indigo-100 text-sm"><CloudUpload size={18} /> Réinitialiser (Admin)</button>
+            <button onClick={onLogout} className="w-full text-slate-500 font-bold py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-sm"><LogOut size={18} /> Se déconnecter</button>
+        </div>
+        <div className="text-center pt-4">
+            <button onClick={onDeleteAccount} className="text-red-300 text-xs font-bold hover:text-red-500 transition-colors px-4 py-2">Supprimer mon compte</button>
+        </div>
+      </div>
+    </div>
+  );
+};
 const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }) => { 
   const levels = ["A1", "A2", "B1", "B2", "C1"]; 
   const safeLevel = (userData.level && levels.includes(userData.level)) ? userData.level : "A1"; 
