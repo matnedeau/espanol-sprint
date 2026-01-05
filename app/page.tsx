@@ -13,13 +13,12 @@ import {
 } from '@/app/lib/generator';
 import { speak } from '@/app/lib/audio';
 
-// Composants modulaires existants
+// Composants modulaires
 import LessonEngine from '@/app/components/LessonEngine';
 import { InputCard } from '@/app/components/LessonCards';
 
 import Image from "next/image";
 import React, { useState, useEffect, useRef } from 'react';
-// CORRECTION IMPORTS : J'ai nettoyé la liste pour éviter le doublon de "Bot"
 import { 
   Flame, ChevronRight, X, Check, Trophy, User, LogOut, PlayCircle, Lock, 
   LayoutDashboard, Library, AlertCircle, Loader2, CloudUpload, Volume2, 
@@ -27,9 +26,11 @@ import {
   MessageCircle, Ear, Bot, Calendar, Crown, Heart, Infinity, Award, Mic
 } from 'lucide-react';
 
+// --- FIREBASE IMPORTS (C'est ici que l'erreur se trouvait) ---
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, getRedirectResult } from "firebase/auth";
-import { doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
+// J'ai bien remis getFirestore et ajouté deleteDoc ici :
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, increment, collection, getDocs } from "firebase/firestore";
 
 // --- CONFIGURATION FIREBASE ---
 const firebaseConfig = {
@@ -43,7 +44,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+const db = getFirestore(app); // C'est cette ligne qui plantait sans l'import !
 const googleProvider = new GoogleAuthProvider();
 
 // --- COMPOSANT PRINCIPAL ---
