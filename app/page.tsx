@@ -817,12 +817,13 @@ const MobileHeader = ({ userData }) => (
     <div className="flex items-center gap-3">
       {/* MON LOGO PONG */}
       <div className="w-8 h-8 relative">
-        <Image 
-            src="/logo.png"  
-            alt="Logo" 
-            fill 
-            className="object-contain" 
-        />
+        // Test temporaire
+<Image 
+    src="https://placekitten.com/200/200" 
+    alt="Test" 
+    fill 
+    className="object-contain" 
+    /> 
       </div>
       
       <LivesCounter userData={userData}/>
