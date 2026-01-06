@@ -402,7 +402,13 @@ const handleDownloadPDF = async (lessonId) => {
                 />
               )}
               {view === 'structures' && <StructuresContent structures={SENTENCE_STRUCTURES} userVocab={userData?.vocab} />}
-              {view === 'tests' && <TestDashboard userData={userData} onStartTest={startTest} />}
+              {view === 'tests' && (
+                  <TestDashboard 
+                      userData={userData} 
+                      onStartTest={startTest} 
+                      onTriggerPremium={() => setShowPremiumModal(true)} // <--- C'est ici que ça se joue
+                  />
+              )}
               {view === 'reading' && (
                 <div className="p-6 pb-24 space-y-8 max-w-2xl mx-auto min-h-screen flex flex-col">
                     <div className="text-center space-y-2"><span className="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Story Mode</span><h2 className="text-3xl font-black text-slate-900">L'Histoire du Jour 📖</h2></div>
