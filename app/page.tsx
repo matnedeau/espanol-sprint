@@ -587,7 +587,7 @@ const handleDownloadPDF = async (lessonId) => {
                   onLogout={handleLogout} 
                   onUpload={uploadFullContentToCloud}
                   // 👇 AJOUTS
-                  onPremium={handleCheckout} 
+                  onPremium={() => setShowPremiumModal(true)} 
                   onManageSubscription={handlePortal}
                   onDeleteAccount={handleDeleteAccount}
                 />
