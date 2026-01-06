@@ -3,52 +3,40 @@ import Stripe from 'stripe';
 
 export async function POST(req: NextRequest) {
   try {
-    // Vérification de la clé API
+    // 1. Vérification de la clé Secrète
     if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('La clé STRIPE_SECRET_KEY est manquante.');
+      throw new Error('La clé STRIPE_SECRET_KEY est manquante dans .env.local');
     }
 
-    // Initialisation de Stripe à l'intérieur de la fonction
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-    // Lecture du body (optionnel, sécurisé pour éviter les crashs)
-    let body = {};
-    try {
-      body = await req.json();
-    } catch (e) {
-      // Pas de JSON envoyé ou body vide
-    }
-
-    // Création de la session Stripe
+    // 2. Création de la session Stripe
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
-          // --- CONFIGURATION DU PRODUIT ---
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: 'Accès Espanol Sprint',
-              description: 'Formation complète',
-            },
-            unit_amount: 4700, // 47.00€
-          },
+          // C'est ici qu'on utilise l'ID de ton produit à 4.99€ (défini dans .env.local)
+          // au lieu d'écrire le prix en dur.
+          price: process.env.STRIPE_PRICE_ID, 
           quantity: 1,
         },
       ],
-      mode: 'payment',
-      // On utilise req.headers.get('origin') pour récupérer l'URL du site dynamiquement
-      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
+      // 3. IMPORTANT : 'subscription' pour un abonnement mensuel
+      mode: 'subscription', 
+      
+      // 4. Active la case "Code Promo" sur la page de paiement
+      allow_promotion_codes: true,
+
+      success_url: `${req.headers.get('origin')}/?payment=success`,
       cancel_url: `${req.headers.get('origin')}/`,
     });
 
     return NextResponse.json({ url: session.url });
 
   } catch (error: any) {
-    // Le ': any' ici corrige l'erreur "object is of type unknown"
     console.error('Erreur Stripe:', error);
     return NextResponse.json(
-      { error: error.message || 'Erreur lors de la création de la session' },
+      { error: error.message || 'Erreur création session' },
       { status: 500 }
     );
   }
