@@ -15,17 +15,19 @@ export async function POST(req: NextRequest) {
       payment_method_types: ['card'],
       line_items: [
         {
-          // C'est ici qu'on utilise l'ID de ton produit à 4.99€ (défini dans .env.local)
-          // au lieu d'écrire le prix en dur.
+          // Ton ID de prix (4.99€)
           price: process.env.STRIPE_PRICE_ID, 
           quantity: 1,
         },
       ],
-      // 3. IMPORTANT : 'subscription' pour un abonnement mensuel
-      mode: 'subscription', 
+      mode: 'subscription',
       
-      // 4. Active la case "Code Promo" sur la page de paiement
-      allow_promotion_codes: true,
+      // ✅ AJOUT ICI : Les 7 jours d'essai gratuits
+      subscription_data: {
+        trial_period_days: 7,
+      },
+
+      allow_promotion_codes: true, // Toujours utile pour tes codes promos
 
       success_url: `${req.headers.get('origin')}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/`,
