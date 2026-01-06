@@ -450,35 +450,71 @@ const handleDownloadPDF = async (lessonId) => {
       alert("Erreur PDF.");
     }
   };
-  // --- DÉBUT DU BLOC À COLLER ---
-  
-  // 1. Gérer le portail Stripe (Abonnement)
-  const handlePortal = async () => {
-    if (!currentUser) return;
+const handlePortal = async () => {
+    // 1. Sécurité : Si pas connecté, on arrête
+    if (!currentUser || !userData) return;
+
+    // 2. CAS CADEAU : On gère tout de suite, sans appeler le serveur
+    // On vérifie si le plan contient le mot 'gift' ou si c'est un code manuel
+    if (userData.subscription?.plan === 'premium_gift') {
+        alert("🎁 ABONNEMENT OFFERT\n\nVous bénéficiez d'un accès Premium illimité grâce à votre Code Secret.\nVous n'avez aucun prélèvement, donc rien à résilier !");
+        return; 
+    }
+
+    // 3. CAS STRIPE : On essaie d'ouvrir le portail
     try {
       const res = await fetch('/api/portal', { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: currentUser.uid }) 
       });
+      
+      if (res.status === 404) {
+          alert("Erreur : Le système de gestion d'abonnement n'est pas encore activé (fichier api/portal manquant).");
+          return;
+      }
+
       const data = await res.json();
       if (data.url) window.location.href = data.url;
-      else alert("Accès au portail impossible.");
-    } catch (e) { console.error(e); alert("Erreur de connexion."); }
-  };
+      else alert("Impossible de trouver votre dossier client Stripe.");
 
-  // 2. Supprimer le compte
-  const handleDeleteAccount = async () => {
-    if (!currentUser) return;
-    if (window.confirm("⚠️ Êtes-vous sûr de vouloir supprimer votre compte ? Tout sera perdu.")) {
-      try {
-        await deleteDoc(doc(db, "users", currentUser.uid));
-        await currentUser.delete();
-        window.location.reload();
-      } catch (e) { alert("Veuillez vous reconnecter pour supprimer votre compte."); }
+    } catch (e) { 
+        console.error(e); 
+        alert("Une erreur est survenue lors de la connexion à Stripe."); 
     }
   };
-  // --- FIN DU BLOC À COLLER ---
+
+// 2. Supprimer le compte (Version Corrigée)
+  const handleDeleteAccount = async () => {
+    if (!currentUser) return;
+
+    // On demande confirmation
+    const confirmDelete = window.confirm("⚠️ ATTENTION : Êtes-vous sûr de vouloir supprimer votre compte ?\n\nToute votre progression (XP, niveau, vocabulaire) sera définitivement perdue.");
+
+    if (confirmDelete) {
+      try {
+        // 1. On essaie de supprimer les données de la base
+        await deleteDoc(doc(db, "users", currentUser.uid));
+        
+        // 2. On essaie de supprimer l'utilisateur (Authentification)
+        await currentUser.delete();
+        
+        alert("Votre compte a été supprimé.");
+        window.location.reload(); // On recharge la page pour revenir à l'accueil
+
+      } catch (error) {
+        console.error("Erreur suppression :", error);
+
+        // GESTION DE L'ERREUR SPÉCIFIQUE "CONNECTÉ DEPUIS TROP LONGTEMPS"
+        if (error.code === 'auth/requires-recent-login') {
+            alert("🔒 SÉCURITÉ GOOGLE :\n\nPour supprimer un compte, vous devez vous être connecté il y a quelques instants.\n\n➡️ Veuillez vous déconnecter, vous reconnecter, et réessayer immédiatement.");
+        } else {
+            alert("Une erreur est survenue : " + error.message);
+        }
+      }
+    }
+  };
+  
   const uploadFullContentToCloud = async () => { if (!confirm("ADMIN : Initialiser ?")) return; try { await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST }); const contentToUpload = generateAllContent(); for (const [id, content] of Object.entries(contentToUpload)) { await setDoc(doc(db, "lessons", id), { content: content }); } alert(`✅ OK !`); window.location.reload(); } catch (e) { alert("Erreur: " + e.message); } };
 
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-yellow-400"><Loader2 size={48} className="animate-spin text-white" /></div>;
