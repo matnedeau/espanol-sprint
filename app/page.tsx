@@ -13,12 +13,13 @@ import {
 } from '@/app/lib/generator';
 import { speak } from '@/app/lib/audio';
 
-// Composants modulaires
+// Composants modulaires existants
 import LessonEngine from '@/app/components/LessonEngine';
 import { InputCard } from '@/app/components/LessonCards';
 
 import Image from "next/image";
 import React, { useState, useEffect, useRef } from 'react';
+
 import { 
   Flame, ChevronRight, X, Check, Trophy, User, LogOut, PlayCircle, Lock, 
   LayoutDashboard, Library, AlertCircle, Loader2, CloudUpload, Volume2, 
@@ -26,10 +27,8 @@ import {
   MessageCircle, Ear, Bot, Calendar, Crown, Heart, Infinity, Award, Mic
 } from 'lucide-react';
 
-// --- FIREBASE IMPORTS (C'est ici que l'erreur se trouvait) ---
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, getRedirectResult } from "firebase/auth";
-// J'ai bien remis getFirestore et ajouté deleteDoc ici :
 import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, increment, collection, getDocs } from "firebase/firestore";
 
 // --- CONFIGURATION FIREBASE ---
@@ -44,7 +43,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app); // C'est cette ligne qui plantait sans l'import !
+const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
 // --- COMPOSANT PRINCIPAL ---
@@ -57,7 +56,6 @@ export default function EspanolSprintPro() {
   ]);
   const [isChatLoading, setIsChatLoading] = useState(false);
   
-  // CORRECTION : Fonction adaptée pour le Widget
   const handleAskTutorWidget = async (e, directMessage = null) => {
       if (e && e.preventDefault) e.preventDefault();
       
@@ -116,25 +114,23 @@ export default function EspanolSprintPro() {
 
   const [dynamicLessonsList, setDynamicLessonsList] = useState(INITIAL_LESSONS_LIST);
   const [dynamicLessonsContent, setDynamicLessonsContent] = useState({});
-// INITIALISATION & GESTION RETOUR PAIEMENT
+
+  // INITIALISATION
   useEffect(() => {
     const initApp = async (user) => {
       try { await getRedirectResult(auth); } catch (e) { console.error(e); }
-      
       if (user) {
         setCurrentUser(user);
         const userRef = doc(db, "users", user.uid);
         
-        // --- DÉBUT GESTION RETOUR STRIPE ---
+        // GESTION RETOUR STRIPE
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             if (params.get('payment') === 'success') {
                 try {
-                    // 1. On récupère l'ID de session dans l'URL
                     const sessionId = params.get('session_id');
                     let customerId = null;
 
-                    // 2. Si on a une session, on demande à notre API qui est le client
                     if (sessionId) {
                         const res = await fetch('/api/get-customer', {
                             method: 'POST',
@@ -144,27 +140,18 @@ export default function EspanolSprintPro() {
                         customerId = data.customerId;
                     }
 
-                    // 3. On sauvegarde le tout dans Firebase (Status + ID Client)
                     await updateDoc(userRef, { 
                         'subscription.status': 'active', 
                         'subscription.plan': 'premium', 
                         'subscription.startDate': new Date().toISOString(),
-                        'subscription.customerId': customerId // ✅ On sauvegarde l'ID ici !
+                        'subscription.customerId': customerId 
                     });
-
-                    // 4. Mise à jour locale
-                    setUserData(prev => ({
-                        ...prev, 
-                        subscription: { status: 'active', plan: 'premium', customerId }
-                    }));
-
-                    // 5. Nettoyage de l'URL
+                    setUserData(prev => ({...prev, subscription: { status: 'active', plan: 'premium', customerId }}));
                     window.history.replaceState(null, '', '/'); 
                     alert("🎉 Félicitations ! Votre compte est maintenant Premium !");
                 } catch(e) { console.error("Erreur activation premium", e); }
             }
         }
-        // --- FIN GESTION RETOUR STRIPE ---
 
         try {
           const userSnap = await getDoc(userRef);
@@ -197,6 +184,60 @@ export default function EspanolSprintPro() {
     };
     if (!loading && userData && STORIES_DATA.length > 0) assignDailyStory();
   }, [userData?.dailyStory?.date, currentUser, loading]);
+
+  // FONCTION PORTAIL (Gérer abo / Résilier)
+  const handlePortal = async () => {
+    if (!currentUser || !userData) return;
+
+    // 1. CAS CADEAU (Code Secret)
+    if (userData.subscription?.plan === 'premium_gift') {
+        alert("🎁 ABONNEMENT OFFERT\n\nVous bénéficiez d'un accès illimité grâce à un Code Secret.\nPas de prélèvement, pas de résiliation nécessaire !");
+        return; 
+    }
+
+    // 2. CAS STRIPE (Abonnement payant)
+    try {
+      const res = await fetch('/api/portal', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            customerId: userData.subscription?.customerId 
+        }) 
+      });
+      
+      const data = await res.json();
+      
+      if (data.url) {
+          window.location.href = data.url;
+      } else {
+          alert("Impossible d'accéder à l'interface de résiliation (ID Client introuvable).\n\nVeuillez gérer l'abonnement via le lien reçu par email ou contacter le support.");
+      }
+    } catch (e) { 
+        console.error(e); 
+        alert("Erreur de connexion au portail."); 
+    }
+  };
+
+  // FONCTION SUPPRESSION COMPTE
+  const handleDeleteAccount = async () => {
+    if (!currentUser) return;
+    const confirmDelete = window.confirm("⚠️ ATTENTION : Êtes-vous sûr de vouloir supprimer votre compte ?\n\nToute votre progression sera perdue.");
+    
+    if (confirmDelete) {
+      try {
+        await deleteDoc(doc(db, "users", currentUser.uid));
+        await currentUser.delete();
+        window.location.reload();
+      } catch (error) { 
+        console.error(error);
+        if (error.code === 'auth/requires-recent-login') {
+            alert("🔒 SÉCURITÉ GOOGLE :\n\nPour supprimer un compte, vous devez vous être connecté récemment.\n\n➡️ Veuillez vous déconnecter, vous reconnecter, et réessayer immédiatement.");
+        } else {
+            alert("Erreur : " + error.message);
+        }
+      }
+    }
+  };
 
   const handleCheckout = async () => {
     if (!currentUser) return alert("Connectez-vous d'abord !");
@@ -266,253 +307,21 @@ export default function EspanolSprintPro() {
 
 const handleDownloadPDF = async (lessonId) => {
     const specificContent = dynamicLessonsContent[lessonId];
-    
-    if (!specificContent || !Array.isArray(specificContent)) {
-        alert("Contenu non disponible pour le PDF.");
-        return;
-    }
-    
+    if (!specificContent || !Array.isArray(specificContent)) { alert("Contenu non disponible pour le PDF."); return; }
     try {
       const html2pdf = (await import('html2pdf.js')).default;
-      
       const vocab = specificContent.filter((i) => i.type === 'swipe');
       const grammar = specificContent.filter((i) => i.type === 'grammar');
       const structures = specificContent.filter((i) => i.type === 'structure');
-
-      if (!vocab.length && !grammar.length && !structures.length) {
-          alert("Cette leçon est uniquement pratique.");
-          return;
-      }
-
-      // --- 1. VOCABULAIRE ---
-      const vocabHtml = vocab.length ? `
-        <div class="section">
-            <h2 class="section-title">📚 Vocabulaire</h2>
-            <div class="vocab-grid">
-                ${vocab.map((item) => `
-                    <div class="vocab-item">
-                        <span class="es">${item.es}</span>
-                        <span class="en">${item.en}</span>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-      ` : '';
-
-      // --- 2. GRAMMAIRE ---
-      const grammarHtml = grammar.length ? `
-        <div class="section">
-            <h2 class="section-title">📐 Grammaire</h2>
-            ${grammar.map((item) => `
-                <div class="compact-card">
-                    <div class="card-header">
-                        <h3 class="card-title">${item.title}</h3>
-                        <span class="card-desc">${item.description}</span>
-                    </div>
-                    ${item.conjugation ? `
-                        <table class="mini-table">
-                            ${item.conjugation.map((c) => `
-                                <tr>
-                                    <td class="td-pn">${c.pronoun}</td>
-                                    <td class="td-vb">${c.verb}</td>
-                                </tr>
-                            `).join('')}
-                        </table>
-                    ` : ''}
-                </div>
-            `).join('')}
-        </div>
-      ` : '';
-
-      // --- 3. STRUCTURES (Style harmonisé avec Grammaire) ---
-      const structureHtml = structures.length ? `
-        <div class="section">
-            <h2 class="section-title">🏗️ Structures</h2>
-            ${structures.map((item) => {
-                const traduction = item.example_fr || item.example_en || "";
-                return `
-                <div class="compact-card">
-                    <div class="card-header">
-                        <h3 class="card-title">${item.title}</h3>
-                    </div>
-                    
-                    <div class="struct-content">
-                        <div class="struct-row border-b">
-                            <span class="s-label">Formule</span>
-                            <span class="s-value formula-font">${item.formula}</span>
-                        </div>
-                        
-                        <div class="struct-row">
-                            <span class="s-label">Exemple</span>
-                            <div class="s-value">
-                                <div class="ex-es">🇪🇸 ${item.example || item.example_es}</div>
-                                ${traduction ? `<div class="ex-fr">🇫🇷 ${traduction}</div>` : ''}
-                            </div>
-                        </div>
-
-                        ${item.note ? `
-                        <div class="struct-note">
-                            💡 ${item.note}
-                        </div>` : ''}
-                    </div>
-                </div>
-            `}).join('')}
-        </div>
-      ` : '';
-
-      // --- CSS & HTML AVEC BUFFER ---
+      if (!vocab.length && !grammar.length && !structures.length) { alert("Cette leçon est uniquement pratique."); return; }
+      const vocabHtml = vocab.length ? `<div class="section"><h2 class="section-title">📚 Vocabulaire</h2><div class="vocab-grid">${vocab.map((item) => `<div class="vocab-item"><span class="es">${item.es}</span><span class="en">${item.en}</span></div>`).join('')}</div></div>` : '';
+      const grammarHtml = grammar.length ? `<div class="section"><h2 class="section-title">📐 Grammaire</h2>${grammar.map((item) => `<div class="compact-card"><div class="card-header"><h3 class="card-title">${item.title}</h3><span class="card-desc">${item.description}</span></div>${item.conjugation ? `<table class="mini-table">${item.conjugation.map((c) => `<tr><td class="td-pn">${c.pronoun}</td><td class="td-vb">${c.verb}</td></tr>`).join('')}</table>` : ''}</div>`).join('')}</div>` : '';
+      const structureHtml = structures.length ? `<div class="section"><h2 class="section-title">🏗️ Structures</h2>${structures.map((item) => { const traduction = item.example_fr || item.example_en || ""; return `<div class="compact-card"><div class="card-header"><h3 class="card-title">${item.title}</h3></div><div class="struct-content"><div class="struct-row border-b"><span class="s-label">Formule</span><span class="s-value formula-font">${item.formula}</span></div><div class="struct-row"><span class="s-label">Exemple</span><div class="s-value"><div class="ex-es">🇪🇸 ${item.example || item.example_es}</div>${traduction ? `<div class="ex-fr">🇫🇷 ${traduction}</div>` : ''}</div></div>${item.note ? `<div class="struct-note">💡 ${item.note}</div>` : ''}</div></div>`}).join('')}</div>` : '';
       const element = document.createElement('div');
-      element.innerHTML = `
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
-            
-            body { 
-                font-family: 'Inter', sans-serif; 
-                color: #1e293b; 
-                line-height: 1.5;
-                padding: 40px; 
-                background: #fff;
-                font-size: 14px;
-            }
-
-            /* Header */
-            .header { 
-                display: flex; 
-                justify-content: space-between; 
-                align-items: flex-end; 
-                border-bottom: 2px solid #e2e8f0; 
-                padding-bottom: 15px; 
-                margin-bottom: 30px; 
-            }
-            .brand { font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1; }
-            .brand span { color: #dc2626; }
-            .lesson-text { color: #4f46e5; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-
-            /* Sections */
-            .section { margin-bottom: 30px; page-break-inside: avoid; }
-            .section-title { 
-                font-size: 16px; 
-                font-weight: 800; 
-                color: #334155; 
-                margin-bottom: 12px; 
-                text-transform: uppercase; 
-                letter-spacing: 0.5px; 
-                border-left: 4px solid #4f46e5; 
-                padding-left: 10px; 
-            }
-
-            /* Vocabulaire */
-            .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-            .vocab-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 8px; }
-            .es { font-weight: 700; color: #0f172a; font-size: 14px; }
-            .en { font-size: 12px; color: #64748b; }
-
-            /* Style Cartes (Grammaire & Structures) */
-            .compact-card { 
-                border: 1px solid #e2e8f0; 
-                border-radius: 8px; 
-                padding: 15px; 
-                margin-bottom: 15px; 
-                background: #fff; 
-                page-break-inside: avoid; /* Évite de couper une carte en deux */
-                box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-            }
-            .card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
-            .card-title { margin: 0; font-size: 15px; font-weight: 800; color: #1e293b; }
-            .card-desc { font-size: 12px; color: #64748b; font-style: italic; }
-
-            .mini-table { width: 100%; border-collapse: collapse; }
-            .mini-table td { padding: 4px 0; border-bottom: 1px dashed #f1f5f9; font-size: 13px; }
-            .td-pn { color: #94a3b8; width: 35%; }
-            .td-vb { font-weight: 600; color: #4f46e5; }
-
-            /* Structures details */
-            .struct-content { display: flex; flex-direction: column; gap: 8px; }
-            .struct-row { display: flex; gap: 15px; padding: 4px 0; }
-            .border-b { border-bottom: 1px dashed #f1f5f9; padding-bottom: 8px; }
-            .s-label { width: 80px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; flex-shrink: 0; padding-top: 2px; }
-            .s-value { flex: 1; font-size: 14px; color: #334155; }
-            .formula-font { font-family: monospace; font-weight: 700; color: #4f46e5; font-size: 15px; letter-spacing: 0.5px; }
-            .ex-es { font-weight: 700; color: #1e293b; }
-            .ex-fr { font-style: italic; color: #64748b; font-size: 13px; margin-top: 2px; }
-            .struct-note { margin-top: 5px; background: #fffbeb; color: #b45309; font-size: 12px; padding: 8px; border-radius: 6px; font-weight: 500; }
-
-            /* Footer */
-            .footer { 
-                margin-top: 40px; 
-                text-align: center; 
-                font-size: 10px; 
-                color: #cbd5e1; 
-                border-top: 1px solid #f1f5f9; 
-                padding-top: 15px;
-                /* On force le bloc footer à ne pas être coupé */
-                page-break-inside: avoid;
-            }
-        </style>
-
-        <div class="header">
-            <div class="brand">Español<span>Sprint</span></div>
-            <div class="lesson-text">Leçon ${lessonId}</div>
-        </div>
-
-        ${vocabHtml}
-        ${grammarHtml}
-        ${structureHtml}
-
-        <div class="footer">
-            Fiche personnelle • Générée sur EspanolSprint.com
-        </div>
-
-        <div style="height: 50px; width: 100%;"></div>
-      `;
-      
-      const opt = {
-        margin: [0.5, 0.5, 0.5, 0.5], // Marges standard
-        filename: `Lecon-${lessonId}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-      };
-
+      element.innerHTML = `<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');body{font-family:'Inter',sans-serif;color:#1e293b;line-height:1.5;padding:40px;background:#fff;font-size:14px;}.header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #e2e8f0;padding-bottom:15px;margin-bottom:30px;}.brand{font-size:24px;font-weight:800;color:#0f172a;line-height:1;}.brand span{color:#dc2626;}.lesson-text{color:#4f46e5;font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;}.section{margin-bottom:30px;page-break-inside:avoid;}.section-title{font-size:16px;font-weight:800;color:#334155;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;border-left:4px solid #4f46e5;padding-left:10px;}.vocab-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}.vocab-item{background:#f8fafc;border:1px solid #e2e8f0;padding:8px 12px;border-radius:8px;}.es{font-weight:700;color:#0f172a;font-size:14px;}.en{font-size:12px;color:#64748b;}.compact-card{border:1px solid #e2e8f0;border-radius:8px;padding:15px;margin-bottom:15px;background:#fff;page-break-inside:avoid;box-shadow:0 1px 2px rgba(0,0,0,0.02);}.card-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;border-bottom:1px solid #f1f5f9;padding-bottom:8px;}.card-title{margin:0;font-size:15px;font-weight:800;color:#1e293b;}.card-desc{font-size:12px;color:#64748b;font-style:italic;}.mini-table{width:100%;border-collapse:collapse;}.mini-table td{padding:4px 0;border-bottom:1px dashed #f1f5f9;font-size:13px;}.td-pn{color:#94a3b8;width:35%;}.td-vb{font-weight:600;color:#4f46e5;}.struct-content{display:flex;flex-direction:column;gap:8px;}.struct-row{display:flex;gap:15px;padding:4px 0;}.border-b{border-bottom:1px dashed #f1f5f9;padding-bottom:8px;}.s-label{width:80px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;flex-shrink:0;padding-top:2px;}.s-value{flex:1;font-size:14px;color:#334155;}.formula-font{font-family:monospace;font-weight:700;color:#4f46e5;font-size:15px;letter-spacing:0.5px;}.ex-es{font-weight:700;color:#1e293b;}.ex-fr{font-style:italic;color:#64748b;font-size:13px;margin-top:2px;}.struct-note{margin-top:5px;background:#fffbeb;color:#b45309;font-size:12px;padding:8px;border-radius:6px;font-weight:500;}.footer{margin-top:40px;text-align:center;font-size:10px;color:#cbd5e1;border-top:1px solid #f1f5f9;padding-top:15px;page-break-inside:avoid;}</style><div class="header"><div class="brand">Español<span>Sprint</span></div><div class="lesson-text">Leçon ${lessonId}</div></div>${vocabHtml}${grammarHtml}${structureHtml}<div class="footer">Fiche personnelle • Générée sur EspanolSprint.com</div><div style="height: 50px; width: 100%;"></div>`;
+      const opt = { margin: [0.5, 0.5, 0.5, 0.5], filename: `Lecon-${lessonId}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, letterRendering: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
       html2pdf().set(opt).from(element).save();
-
-    } catch (e) {
-      console.error(e);
-      alert("Erreur PDF.");
-    }
-  };
-const handlePortal = async () => {
-    if (!currentUser || !userData) return;
-
-    // 1. CAS CADEAU (Code Secret)
-    if (userData.subscription?.plan === 'premium_gift') {
-        alert("🎁 ABONNEMENT OFFERT\n\nVous bénéficiez d'un accès illimité grâce à un Code Secret.\nPas de prélèvement, pas de résiliation nécessaire !");
-        return; 
-    }
-
-    // 2. CAS STRIPE (Abonnement payant)
-    try {
-      const res = await fetch('/api/portal', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            // On envoie l'ID Client qu'on a sauvegardé à l'étape précédente
-            customerId: userData.subscription?.customerId 
-        }) 
-      });
-      
-      const data = await res.json();
-      
-      if (data.url) {
-          window.location.href = data.url;
-      } else {
-          // Si pas d'ID trouvé ou erreur
-          alert("Impossible d'accéder à l'interface de résiliation (ID Client introuvable).\n\nVeuillez gérer l'abonnement via le lien reçu par email ou contacter le support.");
-      }
-    } catch (e) { 
-        console.error(e); 
-        alert("Erreur de connexion au portail."); 
-    }
+    } catch (e) { console.error(e); alert("Erreur PDF."); }
   };
 
   const uploadFullContentToCloud = async () => { if (!confirm("ADMIN : Initialiser ?")) return; try { await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST }); const contentToUpload = generateAllContent(); for (const [id, content] of Object.entries(contentToUpload)) { await setDoc(doc(db, "lessons", id), { content: content }); } alert(`✅ OK !`); window.location.reload(); } catch (e) { alert("Erreur: " + e.message); } };
@@ -529,7 +338,7 @@ const handlePortal = async () => {
             <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500 mb-2 animate-pulse"><Heart size={48} className="fill-red-500" /></div>
             <div><h3 className="text-2xl font-black text-slate-900">Plus de vies ! 💔</h3><p className="text-slate-500 mt-2 font-medium">Vous avez utilisé vos 4 leçons gratuites du jour.</p></div>
             <div className="space-y-3 pt-4 border-t border-slate-100">
-               <button onClick={() => { setShowLimitModal(false); handleCheckout(); }} className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2"><Infinity size={20} /> Vies Infinies (9.99€)</button>
+               <button onClick={() => { setShowLimitModal(false); setShowPremiumModal(true); }} className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2"><Infinity size={20} /> Vies Infinies</button>
                <button onClick={() => setShowLimitModal(false)} className="text-slate-400 font-bold text-sm hover:text-slate-600">Attendre demain</button>
             </div>
           </div>
@@ -554,15 +363,15 @@ const handlePortal = async () => {
                     </ul>
                     <div className="space-y-3">
                         <button id="premium-btn" onClick={handleCheckout} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold shadow-xl hover:bg-slate-800 transition-all transform hover:scale-[1.02] flex flex-col items-center leading-tight"><span>Essayer 7 jours gratuitement</span><span className="text-xs font-normal opacity-70">puis 4,99€/mois</span></button>
-                        <div className="flex justify-between items-center px-1"><button onClick={() => setShowPremiumModal(false)} className="text-slate-400 font-bold text-xs hover:text-slate-600">Non merci</button><button onClick={() => setShowPromoInput(true)} className="text-indigo-500 font-bold text-xs hover:text-indigo-700 underline">J'ai un code promo</button></div>
+                        <div className="flex justify-between items-center px-1"><button onClick={() => setShowPremiumModal(false)} className="text-slate-400 font-bold text-xs hover:text-slate-600">Non merci</button><button onClick={() => setShowPromoInput(true)} className="text-indigo-500 font-bold text-xs hover:text-indigo-700 underline">J'ai un code d'accès</button></div>
                     </div>
                 </>
             ) : (
                 <div className="animate-in fade-in slide-in-from-bottom-4">
-                    <p className="text-sm font-bold text-slate-700 mb-2">Entrez votre code d'accès :</p>
+                    <p className="text-sm font-bold text-slate-700 mb-2">Entrez votre code VIP :</p>
                     <input type="text" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} placeholder="Ex: VIP2025" className="w-full p-3 border-2 border-slate-200 rounded-xl mb-4 text-center font-bold uppercase tracking-widest outline-none focus:border-indigo-500" />
-                    <button onClick={async () => { if(!promoCode) return; try { const res = await fetch('/api/verify-code', { method: 'POST', body: JSON.stringify({ code: promoCode }) }); const data = await res.json(); if(data.valid) { const userRef = doc(db, "users", currentUser.uid); await updateDoc(userRef, { 'subscription.status': 'active', 'subscription.plan': 'premium_gift', 'subscription.startDate': new Date().toISOString() }); setUserData(prev => ({...prev, subscription: { status: 'active', plan: 'premium_gift' }})); setShowPremiumModal(false); setShowPromoInput(false); alert("Code validé ! Bienvenue en Premium 🌟"); } else { alert("Code invalide ❌"); } } catch(e) { alert("Erreur vérification"); } }} className="w-full bg-green-500 text-white py-3 rounded-xl font-bold shadow-md hover:bg-green-600 transition-all">Valider le code</button>
-                    <button onClick={() => setShowPromoInput(false)} className="mt-4 text-slate-400 text-xs font-bold hover:text-slate-600">Annuler</button>
+                    <button onClick={async () => { if(!promoCode) return; try { const res = await fetch('/api/verify-code', { method: 'POST', body: JSON.stringify({ code: promoCode }) }); const data = await res.json(); if(data.valid) { const userRef = doc(db, "users", currentUser.uid); await updateDoc(userRef, { 'subscription.status': 'active', 'subscription.plan': 'premium_gift', 'subscription.startDate': new Date().toISOString() }); setUserData(prev => ({...prev, subscription: { status: 'active', plan: 'premium_gift' }})); setShowPremiumModal(false); setShowPromoInput(false); alert("🌟 Code validé ! Bienvenue en Premium !"); } else { alert("❌ Code invalide."); } } catch(e) { alert("Erreur vérification"); } }} className="w-full bg-green-500 text-white py-3 rounded-xl font-bold shadow-md hover:bg-green-600 transition-all">Valider l'accès</button>
+                    <button onClick={() => setShowPromoInput(false)} className="mt-4 text-slate-400 text-xs font-bold hover:text-slate-600">Retour</button>
                 </div>
             )}
           </div>
@@ -580,7 +389,7 @@ const handlePortal = async () => {
           <main className="flex-1 h-full overflow-hidden relative flex flex-col">
             <MobileHeader userData={userData} />
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
-              {/* CORRECTION : onDownloadPDF appelle handleDownloadPDF */}
+              
               {view === 'dashboard' && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} onDownloadPDF={handleDownloadPDF}/>}
               {view === 'notebook' && <NotebookContent userVocab={userData.vocab} />}
               {view === 'conversation' && <ConversationMode onExit={() => setView('tests')} />}
@@ -615,27 +424,25 @@ const handlePortal = async () => {
 
               {view === 'story' && activeStory && <StoryEngine story={activeStory} onComplete={() => setView('reading')} />}
               {view === 'leaderboard' && <LeaderboardView userData={userData} />}
+              
               {view === 'profile' && (
-                <ProfileContent 
-                  userData={userData} 
-                  email={currentUser.email} 
-                  onLogout={handleLogout} 
-                  onUpload={uploadFullContentToCloud}
-                  // 👇 AJOUTS
-                  onPremium={() => setShowPremiumModal(true)} 
-                  onManageSubscription={handlePortal}
-                  onDeleteAccount={handleDeleteAccount}
-                />
+                  <ProfileContent 
+                    userData={userData} 
+                    email={currentUser.email} 
+                    onLogout={handleLogout} 
+                    onUpload={uploadFullContentToCloud}
+                    onPremium={() => setShowPremiumModal(true)} 
+                    onManageSubscription={handlePortal}
+                    onDeleteAccount={handleDeleteAccount}
+                  />
               )}
               
               {view === 'lesson' && <LessonEngine lessonId={activeLessonId} initialContent={dynamicLessonsContent[activeLessonId]} onComplete={handleLessonComplete} onExit={() => setView('dashboard')} isExam={testMode === 'levelup'} />}
               
-              {/* CORRECTION : handleDownloadPDF ici aussi */}
               {view === 'complete' && <LessonComplete xp={150} onHome={() => setView('dashboard')} onDownload={() => handleDownloadPDF(activeLessonId)} isTest={!!testMode} />}
             </div>
             {view !== 'lesson' && view !== 'complete' && view !== 'story' && <MobileBottomNav currentView={view} onChangeView={setView} />}
             
-            {/* --- AJOUT DU WIDGET FLOTTANT ICI --- */}
             <AITutorWidget 
                 isOpen={isTutorOpen} 
                 onToggle={() => setIsTutorOpen(!isTutorOpen)}
@@ -654,7 +461,79 @@ const handlePortal = async () => {
 
 // --- SOUS-COMPOSANTS ---
 
-// NOUVEAU WIDGET TUTEUR
+const ProfileContent = ({ userData, email, onLogout, onUpload, onPremium, onManageSubscription, onDeleteAccount }) => {
+  const isPremium = userData?.subscription?.status === 'active';
+  const initial = userData?.name?.charAt(0)?.toUpperCase() || "U";
+
+  return (
+    <div className="max-w-2xl mx-auto w-full p-6 md:p-12 pb-32 space-y-8">
+      <h2 className="text-3xl font-black text-slate-900">Mon Compte</h2>
+
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-8">
+        
+        {/* En-tête */}
+        <div className="flex items-center gap-6">
+          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center text-3xl font-bold text-indigo-600 border-4 border-white shadow-sm">
+            {initial}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+                <p className="font-black text-slate-900 text-xl">{userData?.name || "Utilisateur"}</p>
+                {isPremium && <span className="bg-yellow-400 text-yellow-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">PRO</span>}
+            </div>
+            <p className="text-slate-400 text-sm font-medium">{email}</p>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4 text-center py-6 border-y border-slate-50">
+            <div><p className="text-2xl font-black text-slate-900">{userData?.xp || 0}</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">XP</p></div>
+            <div><p className="text-2xl font-black text-slate-900">{userData?.streak || 0} 🔥</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Série</p></div>
+            <div><p className="text-2xl font-black text-slate-900">{userData?.level || "A1"}</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Niveau</p></div>
+        </div>
+
+        {/* ABONNEMENT */}
+        <div className="space-y-4">
+            <h4 className="font-bold text-slate-900 flex items-center gap-2">👑 Abonnement</h4>
+            
+            {!isPremium ? (
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-3">
+                    <p className="text-sm text-slate-500">Passez à la vitesse supérieure.</p>
+                    <button onClick={onPremium} className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold shadow-lg hover:scale-[1.02] transition-all">
+                        💎 Devenir Premium
+                    </button>
+                </div>
+            ) : (
+                <div className="bg-yellow-50 p-4 rounded-2xl border border-yellow-100 flex flex-col gap-3">
+                    <p className="text-sm text-yellow-800 font-bold">✅ Abonnement Actif</p>
+                    <button onClick={onManageSubscription} className="w-full bg-white text-yellow-700 border border-yellow-200 py-3 rounded-xl font-bold text-sm">
+                        Gérer / Résilier
+                    </button>
+                </div>
+            )}
+        </div>
+
+        {/* Actions */}
+        <div className="space-y-3 pt-4 border-t border-slate-50">
+            <button onClick={onUpload} className="w-full bg-indigo-50 text-indigo-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors border border-indigo-100 text-sm">
+                <CloudUpload size={18} /> Réinitialiser Contenu (Admin)
+            </button>
+            <button onClick={onLogout} className="w-full text-slate-500 font-bold py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-sm">
+                <LogOut size={18} /> Se déconnecter
+            </button>
+        </div>
+      </div>
+
+      {/* Suppression (Zone Danger) */}
+      <div className="mt-8 text-center">
+          <button onClick={onDeleteAccount} className="text-red-300 text-xs font-bold hover:text-red-500 transition-colors py-2 px-4">
+            Supprimer mon compte définitivement
+          </button>
+      </div>
+    </div>
+  );
+};
+
 const AITutorWidget = ({ isOpen, onToggle, history, onSend, isLoading, isPremium }) => {
   const [input, setInput] = React.useState("");
   const scrollRef = React.useRef(null);
@@ -930,67 +809,6 @@ const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUploa
 const MobileHeader = ({ userData }) => (<div className="md:hidden bg-white px-4 py-3 flex justify-between items-center shadow-sm z-20 sticky top-0"><div className="flex items-center gap-3"><div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm border border-indigo-200">{userData?.name?.charAt(0).toUpperCase()}</div><LivesCounter userData={userData}/></div><div className="flex items-center gap-1 bg-orange-50 px-3 py-1 rounded-full border border-orange-100"><Flame size={16} className="text-orange-500 fill-orange-500" /><span className="text-orange-700 font-bold">{userData?.streak}</span></div></div>);
 const MobileBottomNav = ({ currentView, onChangeView }) => (<div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30"><NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} /><NavBtn icon={MessageCircle} label="Histoires" active={currentView === 'reading' || currentView === 'story'} onClick={() => onChangeView('reading')} /><NavBtn icon={BrainCircuit} label="Entraînement" active={currentView === 'tests' || currentView === 'quiz'} onClick={() => onChangeView('tests')} /><NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} /></div>);
 const NavBtn = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex flex-col items-center p-2 transition-colors ${active ? 'text-indigo-600' : 'hover:text-slate-600'}`}><Icon size={24} strokeWidth={active ? 2.5 : 2} /><span className="text-[10px] font-bold mt-1">{label}</span></button>);
-const ProfileContent = ({ userData, email, onLogout, onUpload, onPremium, onManageSubscription, onDeleteAccount }) => {
-  const isPremium = userData?.subscription?.status === 'active';
-
-  return (
-    <div className="max-w-2xl mx-auto w-full p-6 pb-32 space-y-8">
-      <h2 className="text-3xl font-black text-slate-900">Mon Compte</h2>
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-8">
-        
-        {/* INFO UTILISATEUR */}
-        <div className="flex items-center gap-6">
-          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center text-3xl font-bold text-indigo-600 border-4 border-white shadow-sm">
-            {userData?.name?.charAt(0).toUpperCase() || "U"}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-                <p className="font-black text-slate-900 text-xl">{userData?.name || "Utilisateur"}</p>
-                {isPremium && <span className="bg-yellow-400 text-yellow-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">PRO</span>}
-            </div>
-            <p className="text-slate-400 text-sm font-medium">{email}</p>
-          </div>
-        </div>
-
-        {/* STATISTIQUES */}
-        <div className="grid grid-cols-3 gap-4 text-center py-6 border-y border-slate-50">
-            <div><p className="text-2xl font-black text-slate-900">{userData?.xp || 0}</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">XP</p></div>
-            <div><p className="text-2xl font-black text-slate-900">{userData?.streak || 0} 🔥</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Série</p></div>
-            <div><p className="text-2xl font-black text-slate-900">{userData?.level || "A1"}</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Niveau</p></div>
-        </div>
-
-        {/* ABONNEMENT */}
-        <div className="space-y-4">
-            <h4 className="font-bold text-slate-900 flex items-center gap-2">👑 Abonnement</h4>
-            {!isPremium ? (
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-3">
-                    <p className="text-sm text-slate-500">Débloquez la puissance de l'IA.</p>
-                    <button onClick={onPremium} className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold shadow-lg hover:scale-[1.02] transition-all">
-                        💎 Devenir Premium
-                    </button>
-                </div>
-            ) : (
-                <div className="bg-yellow-50 p-4 rounded-2xl border border-yellow-100 flex flex-col gap-3">
-                    <p className="text-sm text-yellow-800 font-bold">✅ Abonnement Actif</p>
-                    <button onClick={onManageSubscription} className="w-full bg-white text-yellow-700 border border-yellow-200 py-3 rounded-xl font-bold text-sm">
-                        Gérer mon abonnement / Résilier
-                    </button>
-                </div>
-            )}
-        </div>
-
-        {/* ACTIONS & DANGER */}
-        <div className="space-y-3 pt-4 border-t border-slate-50">
-            <button onClick={onUpload} className="w-full bg-indigo-50 text-indigo-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors border border-indigo-100 text-sm"><CloudUpload size={18} /> Réinitialiser (Admin)</button>
-            <button onClick={onLogout} className="w-full text-slate-500 font-bold py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-sm"><LogOut size={18} /> Se déconnecter</button>
-        </div>
-        <div className="text-center pt-4">
-            <button onClick={onDeleteAccount} className="text-red-300 text-xs font-bold hover:text-red-500 transition-colors px-4 py-2">Supprimer mon compte</button>
-        </div>
-      </div>
-    </div>
-  );
-};
 const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }) => { 
   const levels = ["A1", "A2", "B1", "B2", "C1"]; 
   const safeLevel = (userData.level && levels.includes(userData.level)) ? userData.level : "A1"; 
