@@ -514,11 +514,10 @@ const handleDownloadPDF = async (lessonId) => {
                     <ul className="text-left text-sm text-slate-700 space-y-3 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
                         <li className="flex items-start gap-3"><div className="bg-white p-1 rounded-md shadow-sm text-indigo-600"><Infinity size={16}/></div><span><b>Vies Infinies :</b> Apprenez sans limites.</span></li>
                         <li className="flex items-start gap-3"><div className="bg-white p-1 rounded-md shadow-sm text-indigo-600"><Bot size={16}/></div><span><b>Tuteur IA :</b> Un prof privé 24/7.</span></li>
-                        <li className="flex items-start gap-3"><div className="bg-white p-1 rounded-md shadow-sm text-indigo-600"><Award size={16}/></div><span><b>Certificats :</b> Validez votre niveau.</span></li>
                         <li className="flex items-start gap-3"><div className="bg-white p-1 rounded-md shadow-sm text-indigo-600"><Mic size={16}/></div><span><b>Mode Oral :</b> Conversation Vocale.</span></li>
                     </ul>
                     <div className="space-y-3">
-                        <button id="premium-btn" onClick={handleCheckout} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold shadow-xl hover:bg-slate-800 transition-all transform hover:scale-[1.02] flex flex-col items-center leading-tight"><span>Essayer 7 jours gratuitement</span><span className="text-xs font-normal opacity-70">puis 9,99€/mois</span></button>
+                        <button id="premium-btn" onClick={handleCheckout} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold shadow-xl hover:bg-slate-800 transition-all transform hover:scale-[1.02] flex flex-col items-center leading-tight"><span>Essayer 7 jours gratuitement</span><span className="text-xs font-normal opacity-70">puis 4,99€/mois</span></button>
                         <div className="flex justify-between items-center px-1"><button onClick={() => setShowPremiumModal(false)} className="text-slate-400 font-bold text-xs hover:text-slate-600">Non merci</button><button onClick={() => setShowPromoInput(true)} className="text-indigo-500 font-bold text-xs hover:text-indigo-700 underline">J'ai un code promo</button></div>
                     </div>
                 </>
