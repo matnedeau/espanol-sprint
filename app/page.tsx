@@ -116,25 +116,56 @@ export default function EspanolSprintPro() {
 
   const [dynamicLessonsList, setDynamicLessonsList] = useState(INITIAL_LESSONS_LIST);
   const [dynamicLessonsContent, setDynamicLessonsContent] = useState({});
-
-  // INITIALISATION
+// INITIALISATION & GESTION RETOUR PAIEMENT
   useEffect(() => {
     const initApp = async (user) => {
       try { await getRedirectResult(auth); } catch (e) { console.error(e); }
+      
       if (user) {
         setCurrentUser(user);
         const userRef = doc(db, "users", user.uid);
+        
+        // --- DÉBUT GESTION RETOUR STRIPE ---
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             if (params.get('payment') === 'success') {
                 try {
-                    await updateDoc(userRef, { 'subscription.status': 'active', 'subscription.plan': 'premium', 'subscription.startDate': new Date().toISOString() });
-                    setUserData(prev => ({...prev, subscription: { status: 'active', plan: 'premium', startDate: new Date().toISOString() }}));
+                    // 1. On récupère l'ID de session dans l'URL
+                    const sessionId = params.get('session_id');
+                    let customerId = null;
+
+                    // 2. Si on a une session, on demande à notre API qui est le client
+                    if (sessionId) {
+                        const res = await fetch('/api/get-customer', {
+                            method: 'POST',
+                            body: JSON.stringify({ sessionId })
+                        });
+                        const data = await res.json();
+                        customerId = data.customerId;
+                    }
+
+                    // 3. On sauvegarde le tout dans Firebase (Status + ID Client)
+                    await updateDoc(userRef, { 
+                        'subscription.status': 'active', 
+                        'subscription.plan': 'premium', 
+                        'subscription.startDate': new Date().toISOString(),
+                        'subscription.customerId': customerId // ✅ On sauvegarde l'ID ici !
+                    });
+
+                    // 4. Mise à jour locale
+                    setUserData(prev => ({
+                        ...prev, 
+                        subscription: { status: 'active', plan: 'premium', customerId }
+                    }));
+
+                    // 5. Nettoyage de l'URL
                     window.history.replaceState(null, '', '/'); 
                     alert("🎉 Félicitations ! Votre compte est maintenant Premium !");
                 } catch(e) { console.error("Erreur activation premium", e); }
             }
         }
+        // --- FIN GESTION RETOUR STRIPE ---
+
         try {
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) { setUserData(userSnap.data()); } else {
@@ -451,70 +482,39 @@ const handleDownloadPDF = async (lessonId) => {
     }
   };
 const handlePortal = async () => {
-    // 1. Sécurité : Si pas connecté, on arrête
     if (!currentUser || !userData) return;
 
-    // 2. CAS CADEAU : On gère tout de suite, sans appeler le serveur
-    // On vérifie si le plan contient le mot 'gift' ou si c'est un code manuel
+    // 1. CAS CADEAU (Code Secret)
     if (userData.subscription?.plan === 'premium_gift') {
-        alert("🎁 ABONNEMENT OFFERT\n\nVous bénéficiez d'un accès Premium illimité grâce à votre Code Secret.\nVous n'avez aucun prélèvement, donc rien à résilier !");
+        alert("🎁 ABONNEMENT OFFERT\n\nVous bénéficiez d'un accès illimité grâce à un Code Secret.\nPas de prélèvement, pas de résiliation nécessaire !");
         return; 
     }
 
-    // 3. CAS STRIPE : On essaie d'ouvrir le portail
+    // 2. CAS STRIPE (Abonnement payant)
     try {
       const res = await fetch('/api/portal', { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: currentUser.uid }) 
+        body: JSON.stringify({ 
+            // On envoie l'ID Client qu'on a sauvegardé à l'étape précédente
+            customerId: userData.subscription?.customerId 
+        }) 
       });
       
-      if (res.status === 404) {
-          alert("Erreur : Le système de gestion d'abonnement n'est pas encore activé (fichier api/portal manquant).");
-          return;
-      }
-
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else alert("Impossible de trouver votre dossier client Stripe.");
-
+      
+      if (data.url) {
+          window.location.href = data.url;
+      } else {
+          // Si pas d'ID trouvé ou erreur
+          alert("Impossible d'accéder à l'interface de résiliation (ID Client introuvable).\n\nVeuillez gérer l'abonnement via le lien reçu par email ou contacter le support.");
+      }
     } catch (e) { 
         console.error(e); 
-        alert("Une erreur est survenue lors de la connexion à Stripe."); 
+        alert("Erreur de connexion au portail."); 
     }
   };
 
-// 2. Supprimer le compte (Version Corrigée)
-  const handleDeleteAccount = async () => {
-    if (!currentUser) return;
-
-    // On demande confirmation
-    const confirmDelete = window.confirm("⚠️ ATTENTION : Êtes-vous sûr de vouloir supprimer votre compte ?\n\nToute votre progression (XP, niveau, vocabulaire) sera définitivement perdue.");
-
-    if (confirmDelete) {
-      try {
-        // 1. On essaie de supprimer les données de la base
-        await deleteDoc(doc(db, "users", currentUser.uid));
-        
-        // 2. On essaie de supprimer l'utilisateur (Authentification)
-        await currentUser.delete();
-        
-        alert("Votre compte a été supprimé.");
-        window.location.reload(); // On recharge la page pour revenir à l'accueil
-
-      } catch (error) {
-        console.error("Erreur suppression :", error);
-
-        // GESTION DE L'ERREUR SPÉCIFIQUE "CONNECTÉ DEPUIS TROP LONGTEMPS"
-        if (error.code === 'auth/requires-recent-login') {
-            alert("🔒 SÉCURITÉ GOOGLE :\n\nPour supprimer un compte, vous devez vous être connecté il y a quelques instants.\n\n➡️ Veuillez vous déconnecter, vous reconnecter, et réessayer immédiatement.");
-        } else {
-            alert("Une erreur est survenue : " + error.message);
-        }
-      }
-    }
-  };
-  
   const uploadFullContentToCloud = async () => { if (!confirm("ADMIN : Initialiser ?")) return; try { await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST }); const contentToUpload = generateAllContent(); for (const [id, content] of Object.entries(contentToUpload)) { await setDoc(doc(db, "lessons", id), { content: content }); } alert(`✅ OK !`); window.location.reload(); } catch (e) { alert("Erreur: " + e.message); } };
 
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-yellow-400"><Loader2 size={48} className="animate-spin text-white" /></div>;

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       // 4. Active la case "Code Promo" sur la page de paiement
       allow_promotion_codes: true,
 
-      success_url: `${req.headers.get('origin')}/?payment=success`,
+      success_url: `${req.headers.get('origin')}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/`,
     });
 
