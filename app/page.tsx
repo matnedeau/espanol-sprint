@@ -840,12 +840,14 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
 };
 
 // --- NOUVEAU DASHBOARD ENTRAÎNEMENT ---
-const TestDashboard = ({ userData, onStartTest }) => { 
+// --- NOUVEAU DASHBOARD ENTRAÎNEMENT (Corrigé) ---
+const TestDashboard = ({ userData, onStartTest, onTriggerPremium }) => { 
     const levels = ["A1", "A2", "B1", "B2", "C1"]; 
     const currentIdx = levels.indexOf(userData.level || "A1"); 
     const nextLevel = levels[currentIdx + 1]; 
     const lessonsDone = userData.completedLessons.length; 
     const canTakeExam = lessonsDone >= (currentIdx + 1) * 20; 
+    const isPremium = userData?.subscription?.status === 'active';
     
     return (
         <div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-8">
@@ -854,7 +856,7 @@ const TestDashboard = ({ userData, onStartTest }) => {
                 <p className="text-slate-500">Valide tes acquis.</p>
             </div>
             
-            {/* CARTE 1: Entraînement Rapide */}
+            {/* CARTE 1: Entraînement Rapide (Gratuit) */}
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all cursor-pointer group" onClick={() => onStartTest('training')}>
                 <div className="flex items-center gap-6">
                     <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
@@ -868,20 +870,30 @@ const TestDashboard = ({ userData, onStartTest }) => {
                 </div>
             </div>
 
-            {/* CARTE 2: COACH ORAL (Premium) */}
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all cursor-pointer group relative overflow-hidden" onClick={() => onStartTest('conversation')}>
+            {/* CARTE 2: COACH ORAL (Premium Uniquement) */}
+            <div 
+                className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all cursor-pointer group relative overflow-hidden" 
+                onClick={() => {
+                    if (isPremium) {
+                        onStartTest('conversation'); // ✅ Si Premium, on entre
+                    } else {
+                        onTriggerPremium(); // ❌ Si Gratuit, on ouvre le Modal de paiement
+                    }
+                }}
+            >
                 <div className="flex items-center gap-6 relative z-10">
                     <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
-                        <Mic size={32} />
+                        {isPremium ? <Mic size={32} /> : <Lock size={32} />} {/* Icône Cadenas si gratuit */}
                     </div>
                     <div className="flex-1">
                         <h3 className="text-xl font-bold text-slate-900">Coach Oral IA</h3>
                         <p className="text-sm text-slate-500 mt-1">Améliore ta prononciation.</p>
                     </div>
-                    <ChevronRight className="text-slate-300" />
+                    {/* Flèche ou Cadenas selon le statut */}
+                    {isPremium ? <ChevronRight className="text-slate-300" /> : <Lock size={16} className="text-yellow-600 opacity-50"/>}
                 </div>
                 {/* Badge Premium */}
-                <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-[10px] font-black px-3 py-1 rounded-bl-xl z-20">PREMIUM</div>
+                <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-[10px] font-black px-3 py-1 rounded-bl-xl z-20 shadow-sm">PREMIUM</div>
             </div>
 
             {/* CARTE 3: EXAMEN PASSAGE DE NIVEAU */}
@@ -901,6 +913,5 @@ const TestDashboard = ({ userData, onStartTest }) => {
         </div>
     ); 
 };
-
 const StructuresContent = ({ structures, userVocab }) => { const safeList = Array.isArray(userVocab) ? userVocab : []; const learnedStructures = safeList.filter(item => item && item.type === 'structure'); const allStructures = [...structures, ...learnedStructures]; const uniqueStructures = allStructures.filter((item, index, self) => index === self.findIndex((t) => t.title === item.title)); return (<div className="max-w-3xl mx-auto w-full p-6 pb-24"><h2 className="text-3xl font-black text-slate-900 mb-8">Structures de Phrases 🏗️</h2><div className="space-y-6">{uniqueStructures.map((struct, idx) => (<div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4">{struct.example_es ? (<><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_en}</p></>) : (<><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example}</p></>)}</div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation || struct.note}</p></div>))}{uniqueStructures.length === 0 && (<div className="text-center text-slate-400 py-10"><p>Aucune structure découverte pour le moment.</p><p className="text-sm">Avance dans les leçons pour en débloquer !</p></div>)}</div></div>); };
 const NotebookContent = ({ userVocab }) => { const [activeTab, setActiveTab] = useState('vocab'); const safeVocab = Array.isArray(userVocab) ? userVocab : []; const vocabItems = safeVocab.filter(item => item.type === 'swipe'); const grammarItems = safeVocab.filter(item => item.type === 'grammar'); const structureItems = safeVocab.filter(item => item.type === 'structure'); return (<div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24 space-y-6"><h2 className="text-3xl font-black text-slate-900">Mon Lexique 📚</h2><div className="flex space-x-2 bg-slate-100 p-1 rounded-xl">{['vocab', 'grammar', 'structure'].map(tab => (<button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{tab === 'vocab' && 'Vocabulaire'}{tab === 'grammar' && 'Grammaire'}{tab === 'structure' && 'Structures'}</button>))}</div>{activeTab === 'vocab' && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4">{vocabItems.length > 0 ? vocabItems.map((item, idx) => (<div key={idx} className="bg-white p-4 rounded-xl border border-slate-100 flex justify-between items-center"><div><p className="font-bold text-slate-800">{item.es}</p><p className="text-xs text-slate-400 italic">{item.context}</p></div><p className="text-indigo-600 font-medium">{item.en}</p></div>)) : <p className="text-slate-400 text-center col-span-2 py-10">Rien ici pour l'instant.</p>}</div>)}{activeTab === 'grammar' && (<div className="space-y-4">{grammarItems.length > 0 ? grammarItems.map((item, idx) => (<div key={idx} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm"><h4 className="font-bold text-lg text-indigo-600 mb-2">{item.title}</h4><p className="text-slate-600 mb-4 text-sm">{item.description}</p><div className="grid grid-cols-2 gap-2 text-sm">{item.conjugation && item.conjugation.map((row, rIdx) => (<div key={rIdx} className="flex justify-between bg-slate-50 p-2 rounded"><span className="text-slate-400">{row.pronoun}</span><span className="font-bold text-slate-800">{row.verb}</span></div>))}</div></div>)) : <p className="text-slate-400 text-center py-10">Aucune règle de grammaire sauvée.</p>}</div>)}{activeTab === 'structure' && (<div className="grid gap-6">{structureItems.length > 0 ? structureItems.map((item, idx) => (<div key={idx} className="group relative bg-white overflow-hidden rounded-3xl border-2 border-slate-100 hover:border-indigo-100 transition-all shadow-sm hover:shadow-md"><div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-[4rem] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div><div className="relative p-6"><div className="flex items-center gap-4 mb-6"><div className="w-12 h-12 bg-white border-2 border-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform"><Hammer size={24} /></div><div><h4 className="font-black text-xl text-slate-800 leading-tight">{item.title}</h4><span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Grammaire</span></div></div><div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 flex flex-col items-center text-center relative overflow-hidden"><div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-10"></div><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 z-10">Construction</span><code className="font-mono text-lg md:text-xl font-bold text-indigo-600 bg-white px-4 py-2 rounded-xl border-b-4 border-indigo-100 shadow-sm z-10">{item.formula}</code></div><div className="space-y-3"><div className="flex gap-4 items-start pl-2"><div className="w-1 h-12 bg-green-400 rounded-full shrink-0 mt-1"></div><div><p className="text-xs font-bold text-slate-400 uppercase mb-1">Exemple</p><p className="text-lg font-medium text-slate-700 italic">"{item.example}"</p></div></div>{item.note && (<div className="mt-4 bg-yellow-50 p-3 rounded-xl border border-yellow-100 flex gap-3 items-start"><span className="text-lg">💡</span><p className="text-sm text-yellow-800 font-medium leading-relaxed">{item.note}</p></div>)}</div></div></div>)) : (<div className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center"><div className="p-4 bg-white rounded-full shadow-sm mb-4"><Hammer className="h-8 w-8 text-slate-300" /></div><p className="text-slate-900 font-bold text-lg">Aucune structure découverte</p><p className="text-slate-500 text-sm mt-1 max-w-xs mx-auto">Avance dans les leçons pour débloquer tes premières fiches de construction de phrases !</p></div>)}</div>)}</div>); };
