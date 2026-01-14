@@ -2,7 +2,6 @@
 // @ts-nocheck
 'use client';
 
-// --- IMPORTS ---
 import { INITIAL_LESSONS_LIST } from '@/app/lib/curriculum';
 import { STORIES_DATA } from '@/app/lib/stories';
 import { SENTENCE_STRUCTURES } from '@/app/lib/data-bank';
@@ -45,6 +44,19 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
+
+const PLACEMENT_TEST = [
+  { id: 1, q: "Comment dit-on 'Bonjour' ?", options: ["Hola", "Adiós", "Gracias", "Por favor"], ans: "Hola" }, // A1
+  { id: 2, q: "Yo ___ español.", options: ["hablo", "habla", "hablas", "hablan"], ans: "hablo" }, // A1
+  { id: 3, q: "Nosotros ___ en Madrid.", options: ["vivimos", "viven", "vivo", "vivís"], ans: "vivimos" }, // A2
+  { id: 4, q: "Ayer yo ___ al cine.", options: ["fui", "iba", "voy", "he ido"], ans: "fui" }, // A2
+  { id: 5, q: "Busco una casa que ___ grande.", options: ["sea", "es", "era", "será"], ans: "sea" }, // B1 (Subjonctif)
+  { id: 6, q: "Si ___ dinero, viajaría más.", options: ["tuviera", "tengo", "tendría", "tenga"], ans: "tuviera" }, // B1 (Imparfait Subj)
+  { id: 7, q: "Es importante que ___ a tiempo.", options: ["llegues", "llegas", "llegarás", "llegaste"], ans: "llegues" }, // B1
+  { id: 8, q: "No creo que él ___ la verdad.", options: ["sepa", "sabe", "sabrá", "supo"], ans: "sepa" }, // B2
+  { id: 9, q: "Au moment où tu arriveras (Futur)...", options: ["Cuando llegues", "Cuando llegas", "Cuando llegarás", "Cuando llegue"], ans: "Cuando llegues" }, // B2
+  { id: 10, q: "Expression : 'Tomar el pelo' signifie ?", options: ["Se moquer de qqn", "Aller chez le coiffeur", "Avoir peur", "Être chauve"], ans: "Se moquer de qqn" } // Idiome
+];
 
 // --- COMPOSANT PRINCIPAL ---
 export default function EspanolSprintPro() {
@@ -106,6 +118,110 @@ export default function EspanolSprintPro() {
   const [testMode, setTestMode] = useState(null);
   const [activeStory, setActiveStory] = useState(null);
   const [dailyStoryContent, setDailyStoryContent] = useState(null);
+  useEffect(() => {
+    const initApp = async (user) => {
+      try { await getRedirectResult(auth); } catch (e) { console.error(e); }
+      
+      if (user) {
+        setCurrentUser(user);
+        const userRef = doc(db, "users", user.uid);
+        
+        // --- 1. GESTION RETOUR STRIPE (Si paiement) ---
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('payment') === 'success') {
+                try {
+                    const sessionId = params.get('session_id');
+                    let customerId = null;
+
+                    if (sessionId) {
+                        const res = await fetch('/api/get-customer', {
+                            method: 'POST',
+                            body: JSON.stringify({ sessionId })
+                        });
+                        const data = await res.json();
+                        customerId = data.customerId;
+                    }
+
+                    await updateDoc(userRef, { 
+                        'subscription.status': 'active', 
+                        'subscription.plan': 'premium', 
+                        'subscription.startDate': new Date().toISOString(),
+                        'subscription.customerId': customerId 
+                    });
+                    setUserData(prev => ({...prev, subscription: { status: 'active', plan: 'premium', customerId }}));
+                    window.history.replaceState(null, '', '/'); 
+                    alert("🎉 Félicitations ! Votre compte est maintenant Premium !");
+                } catch(e) { console.error("Erreur activation premium", e); }
+            }
+        }
+
+        // --- 2. CHARGEMENT OU CRÉATION DU PROFIL ---
+        try {
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) { 
+              setUserData(userSnap.data()); 
+          } else {
+            // 🔥 C'EST ICI QUE TOUT SE JOUE POUR LE NIVEAU 🔥
+            
+            // On récupère le niveau détecté par le test (stocké temporairement)
+            const tempLevel = typeof window !== 'undefined' ? localStorage.getItem('tempLevel') : null;
+            const startLevel = tempLevel || "A1"; 
+            
+            // Calcul des leçons à débloquer si le niveau est > A1
+            let unlockedLessons = [];
+            let bonusXP = 0;
+            
+            if (startLevel !== "A1") {
+                const levelsOrder = ["A1", "A2", "B1", "B2", "C1"];
+                const targetIdx = levelsOrder.indexOf(startLevel);
+                // On prend tous les niveaux avant le niveau cible
+                const levelsToUnlock = levelsOrder.slice(0, targetIdx);
+                
+                // On utilise la liste par défaut si la liste dynamique n'est pas encore chargée
+                const sourceList = dynamicLessonsList.length > 0 ? dynamicLessonsList : INITIAL_LESSONS_LIST;
+                
+                unlockedLessons = sourceList
+                    .filter(l => levelsToUnlock.includes(l.level))
+                    .map(l => l.id);
+                
+                // Petit cadeau d'XP pour avoir sauté des niveaux
+                bonusXP = unlockedLessons.length * 50;
+            }
+
+            const name = user.displayName || user.email.split('@')[0];
+            
+            const newProfile = { 
+                name, 
+                xp: bonusXP, 
+                streak: 1, 
+                level: startLevel, // ✅ On applique le niveau B1/B2...
+                vocab: [], 
+                completedLessons: unlockedLessons, // ✅ On valide les leçons précédentes
+                dailyLimit: { date: new Date().toDateString(), count: 0 }, 
+                dailyStory: { date: "", storyId: "" }, 
+                readStories: [], 
+                subscription: { status: 'free' } 
+            };
+            
+            await setDoc(userRef, newProfile); 
+            setUserData(newProfile);
+            
+            // Nettoyage de la mémoire
+            if(typeof window !== 'undefined') localStorage.removeItem('tempLevel');
+          }
+          
+          const roadmapSnap = await getDoc(doc(db, "meta", "roadmap")); if (roadmapSnap.exists()) setDynamicLessonsList(roadmapSnap.data().lessons);
+          const lessonsSnapshot = await getDocs(collection(db, "lessons")); const lessonsData = {}; lessonsSnapshot.forEach((doc) => { lessonsData[doc.id] = doc.data().content; });
+          const baseContent = generateAllContent(); setDynamicLessonsContent({ ...baseContent, ...lessonsData });
+          setView('dashboard');
+        } catch (error) { console.error(error); }
+      } else { setCurrentUser(null); setUserData(null); setView('landing'); }
+      setLoading(false);
+    };
+    const unsubscribe = onAuthStateChanged(auth, initApp);
+    return () => unsubscribe();
+  }, []); 
    
   // États pour les limites & promo
   const [dailyAiCount, setDailyAiCount] = useState(0);
@@ -378,10 +494,37 @@ const handleDownloadPDF = async (lessonId) => {
         </div>
       )}
 
-      {(!currentUser || view === 'landing' || view === 'auth') ? (
+      {(!currentUser || view === 'landing' || view === 'auth' || view === 'levelTest') ? (
         <div className="w-full h-full flex items-center justify-center bg-white">
-           {view === 'landing' && <LandingPage onStart={() => setView('auth')} />}
-           {view === 'auth' && <AuthScreen onAuth={handleAuth} onGoogle={handleGoogleLogin} onBack={() => setView('landing')} error={authError} />}
+           
+           {view === 'landing' && (
+               <LandingPage 
+                   onStart={() => setView('auth')} 
+                   onTest={() => setView('levelTest')} // -> Ouvre le test
+               />
+           )}
+
+           {view === 'auth' && (
+               <AuthScreen 
+                   onAuth={handleAuth} 
+                   onGoogle={handleGoogleLogin} 
+                   onBack={() => setView('landing')} 
+                   error={authError} 
+               />
+           )}
+
+           {/* ÉCRAN DU TEST */}
+           {view === 'levelTest' && (
+               <LevelTest 
+                   onBack={() => setView('landing')}
+                   onComplete={(level) => {
+                       // On sauvegarde le résultat du test
+                       if (typeof window !== 'undefined') localStorage.setItem('tempLevel', level);
+                       alert(`🎯 Niveau détecté : ${level}\n\nCréez votre compte pour sauvegarder ce niveau.`);
+                       setView('auth'); 
+                   }}
+               />
+           )}
         </div>
       ) : (
         <>
@@ -808,10 +951,108 @@ const ListeningCard = ({ data, onNext, onScore }) => {
 const LeaderboardView = ({ userData }) => { const rivals = [{ name: "Maria L.", xp: 1450, avatar: "👩" }, { name: "Thomas B.", xp: 1200, avatar: "👨" }, { name: userData?.name + " (Toi)", xp: userData?.xp || 0, avatar: "😎", isMe: true }, { name: "Juan P.", xp: 850, avatar: "🧔" }].sort((a, b) => b.xp - a.xp); return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-6"><div className="text-center space-y-2 mb-8"><div className="inline-block p-4 bg-yellow-100 rounded-full text-yellow-600 mb-2"><Trophy size={40} /></div><h2 className="text-3xl font-black text-slate-900">Ligue Diamant</h2><p className="text-slate-500 font-medium">Fin dans 2j 4h</p></div><div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">{rivals.map((user, idx) => (<div key={idx} className={`flex items-center gap-4 p-4 border-b border-slate-50 ${user.isMe ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''}`}><div className="font-black text-slate-300 w-6">{idx + 1}</div><div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-xl">{user.avatar}</div><div className="flex-1 font-bold text-slate-800">{user.name}</div><div className="font-black text-slate-900">{user.xp} XP</div></div>))}</div></div>); };
 const LessonComplete = ({ xp, onHome, onDownload, isTest }) => (<div className="h-full w-full flex flex-col items-center justify-center bg-yellow-400 p-8 text-center space-y-8 animate-in zoom-in"><div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform"><Trophy size={100} className="text-yellow-500 fill-yellow-500" /></div><div><h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">{isTest ? "Examen Réussi !" : "Increíble!"}</h2><p className="text-xl text-yellow-900 font-bold opacity-80">{isTest ? "Niveau Validé" : "Leçon terminée !"}</p></div><div className="flex gap-4"><div className="bg-white/30 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/50 text-slate-900 font-black text-2xl">+{xp} XP</div></div><div className="flex flex-col gap-4 w-full max-w-sm"><button onClick={onDownload} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2"><Download size={20} /> Télécharger PDF</button><button onClick={onHome} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-2xl">Continuer</button></div></div>);
 const DailyReadingContent = ({ userLevel }) => { const reading = getDailyReading(userLevel); const [trans, setTrans] = useState(false); return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-8"><div className="text-center"><span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase">Lecture du jour</span><h2 className="text-3xl font-black text-slate-900 mt-2">{reading.title_es}</h2></div><div className="bg-white p-8 rounded-3xl shadow-lg border-b-4 border-slate-100 relative overflow-hidden group"><div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-xl">Español</div><button onClick={() => speak(reading.text_es)} className="absolute top-6 right-6 p-3 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors"><Volume2 size={20} /></button><p className="text-xl text-slate-800 leading-relaxed font-medium mt-4">{reading.text_es}</p></div><div className="flex justify-center"><button onClick={() => setTrans(!trans)} className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-bold transition-colors">{trans ? <><X size={16}/> Masquer</> : <><Check size={16}/> Traduction</>}</button></div>{trans && <div className="bg-slate-50 p-8 rounded-3xl border-2 border-dashed border-slate-200"><h4 className="text-lg font-bold text-slate-700 mb-2">{reading.title_fr}</h4><p className="text-slate-600 leading-relaxed">{reading.text_fr}</p></div>}</div>); };
-const LandingPage = ({ onStart }) => (<div className="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-400 relative overflow-hidden text-center"><div className="z-10 space-y-8 max-w-md"><div className="w-32 h-32 bg-white rounded-[2rem] shadow-2xl mx-auto flex items-center justify-center rotate-6 hover:rotate-12 transition-transform duration-500"><span className="text-6xl">🇪🇸</span></div><div><h1 className="text-5xl md:text-6xl font-black tracking-tighter text-slate-900 mb-4">Español<span className="text-red-600">Sprint</span></h1><p className="text-slate-800 font-medium text-xl md:text-2xl opacity-90">La méthode la plus rapide.</p></div><button onClick={onStart} className="w-full bg-slate-900 text-white py-5 px-8 rounded-2xl font-bold text-xl shadow-xl hover:scale-105 active:scale-95 transition-all">Commencer</button></div></div>);
+const LandingPage = ({ onStart, onTest }) => (
+    <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-400 relative overflow-hidden text-center">
+        <div className="z-10 space-y-8 max-w-md w-full">
+            <div className="w-32 h-32 bg-white rounded-[2rem] shadow-2xl mx-auto flex items-center justify-center rotate-6 hover:rotate-12 transition-transform duration-500">
+                <span className="text-6xl">🇪🇸</span>
+            </div>
+            <div>
+                <h1 className="text-5xl md:text-6xl font-black tracking-tighter text-slate-900 mb-4">Español<span className="text-red-600">Sprint</span></h1>
+                <p className="text-slate-800 font-medium text-xl md:text-2xl opacity-90">La méthode la plus rapide.</p>
+            </div>
+            <div className="space-y-3">
+                <button onClick={onStart} className="w-full bg-slate-900 text-white py-5 px-8 rounded-2xl font-bold text-xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
+                    Commencer (Débutant)
+                </button>
+                {/* BOUTON TEST */}
+                <button onClick={onTest} className="w-full bg-white/50 text-slate-900 py-4 px-8 rounded-2xl font-bold text-sm hover:bg-white hover:shadow-md transition-all flex items-center justify-center gap-2">
+                    <Target size={18}/> Faire le test de niveau
+                </button>
+            </div>
+        </div>
+    </div>
+);
 const AuthScreen = ({ onAuth, onGoogle, onBack, error }) => { const [isSignUp, setIsSignUp] = useState(false); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); return (<div className="w-full max-w-md p-8 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500"><button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold"><X size={20} /> Retour</button><div><h2 className="text-4xl font-black text-slate-900 mb-2">{isSignUp ? 'Créer un compte' : 'Bon retour !'}</h2><p className="text-slate-500">Sauvegarde ta progression ☁️</p></div>{error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold mb-4">{error}</div>}<div className="space-y-4"><button onClick={onGoogle} className="w-full bg-white border-2 border-slate-200 text-slate-800 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"><img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" /> Continuer avec Google</button><div className="flex items-center gap-4"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-sm font-bold">OU</span><div className="h-px bg-slate-200 flex-1"></div></div><input type="email" placeholder="Email" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={email} onChange={(e) => setEmail(e.target.value)} /><input type="password" placeholder="Mot de passe" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={password} onChange={(e) => setPassword(e.target.value)} /></div><button onClick={() => onAuth(email, password, isSignUp)} className="w-full bg-yellow-400 text-slate-900 py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all">{isSignUp ? "S'inscrire" : "Se connecter"}</button><div className="text-center"><button onClick={() => setIsSignUp(!isSignUp)} className="text-indigo-600 font-bold text-sm hover:underline">{isSignUp ? "J'ai déjà un compte" : "Je n'ai pas de compte"}</button></div></div>); };
 const SidebarLink = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${active ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}><Icon size={22} strokeWidth={active ? 2.5 : 2} /><span className="font-bold text-base">{label}</span></button>);
 const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUpload }) => (<div className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200 h-full p-6"><nav className="flex-1 space-y-2"><div className="flex items-center gap-2 mb-8 px-2"><Image src="/logo.png" width={45} height={45} alt="Logo"/><span className="text-xl font-black tracking-tighter">Español<span className="text-red-600">Sprint</span></span></div><SidebarLink icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} /><SidebarLink icon={MessageCircle} label="Histoires" active={currentView === 'reading' || currentView === 'story'} onClick={() => onChangeView('reading')} /><SidebarLink icon={Trophy} label="Classement" active={currentView === 'leaderboard'} onClick={() => onChangeView('leaderboard')} /><SidebarLink icon={BrainCircuit} label="Entraînement" active={currentView === 'tests' || currentView === 'quiz'} onClick={() => onChangeView('tests')} /><SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} /><SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} /></nav></div>);
+// --- COMPOSANT : TEST DE NIVEAU ---
+const LevelTest = ({ onComplete, onBack }) => {
+    const [index, setIndex] = useState(0);
+    const [score, setScore] = useState(0);
+    const [finished, setFinished] = useState(false);
+
+    const handleAnswer = (option) => {
+        const isCorrect = option === PLACEMENT_TEST[index].ans;
+        if (isCorrect) setScore(prev => prev + 1);
+
+        if (index + 1 < PLACEMENT_TEST.length) {
+            setIndex(prev => prev + 1);
+        } else {
+            finishTest(score + (isCorrect ? 1 : 0));
+        }
+    };
+
+    const finishTest = (finalScore) => {
+        setFinished(true);
+        // Calcul du niveau
+        let detectedLevel = "A1";
+        if (finalScore >= 3) detectedLevel = "A2";
+        if (finalScore >= 6) detectedLevel = "B1";
+        if (finalScore >= 9) detectedLevel = "B2";
+
+        // Petite pause pour afficher le résultat avant de valider
+        setTimeout(() => {
+            onComplete(detectedLevel);
+        }, 2500);
+    };
+
+    if (finished) {
+        return (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-white p-8 animate-in zoom-in">
+                <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-6 animate-bounce">
+                    <Check size={48} strokeWidth={3} />
+                </div>
+                <h2 className="text-3xl font-black text-slate-900 mb-2">Test Terminé !</h2>
+                <p className="text-slate-500 text-lg">Analyse de vos réponses...</p>
+            </div>
+        );
+    }
+
+    const currentQ = PLACEMENT_TEST[index];
+    const progress = ((index) / PLACEMENT_TEST.length) * 100;
+
+    return (
+        <div className="w-full max-w-md p-6 bg-white rounded-3xl shadow-xl border border-slate-100 animate-in slide-in-from-bottom-8 duration-500">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+                <button onClick={onBack} className="text-slate-400 hover:text-slate-600"><X size={24}/></button>
+                <span className="font-bold text-indigo-600">Question {index + 1} / {PLACEMENT_TEST.length}</span>
+            </div>
+
+            {/* Barre de progression */}
+            <div className="h-2 bg-slate-100 rounded-full mb-8 overflow-hidden">
+                <div className="h-full bg-indigo-500 transition-all duration-500" style={{width: `${progress}%`}}></div>
+            </div>
+
+            {/* Question */}
+            <h3 className="text-xl font-bold text-slate-900 mb-8 text-center">{currentQ.q}</h3>
+
+            {/* Options */}
+            <div className="space-y-3">
+                {currentQ.options.map((opt, idx) => (
+                    <button 
+                        key={idx} 
+                        onClick={() => handleAnswer(opt)}
+                        className="w-full p-4 rounded-xl border-2 border-slate-100 hover:border-indigo-500 hover:bg-indigo-50 font-bold text-slate-700 transition-all text-left"
+                    >
+                        {opt}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+};
 const MobileHeader = ({ userData }) => (
   <div className="md:hidden bg-white px-4 py-3 flex justify-between items-center shadow-sm z-20 sticky top-0">
     <div className="flex items-center gap-3">
@@ -865,9 +1106,6 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }
     </div>
   ); 
 };
-
-// --- NOUVEAU DASHBOARD ENTRAÎNEMENT ---
-// --- NOUVEAU DASHBOARD ENTRAÎNEMENT (Corrigé) ---
 const TestDashboard = ({ userData, onStartTest, onTriggerPremium }) => { 
     const levels = ["A1", "A2", "B1", "B2", "C1"]; 
     const currentIdx = levels.indexOf(userData.level || "A1"); 
