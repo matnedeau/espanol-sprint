@@ -45,17 +45,35 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
+// --- DONNÉES DU TEST DE NIVEAU (20 QUESTIONS) ---
 const PLACEMENT_TEST = [
-  { id: 1, q: "Comment dit-on 'Bonjour' ?", options: ["Hola", "Adiós", "Gracias", "Por favor"], ans: "Hola" }, // A1
-  { id: 2, q: "Yo ___ español.", options: ["hablo", "habla", "hablas", "hablan"], ans: "hablo" }, // A1
-  { id: 3, q: "Nosotros ___ en Madrid.", options: ["vivimos", "viven", "vivo", "vivís"], ans: "vivimos" }, // A2
-  { id: 4, q: "Ayer yo ___ al cine.", options: ["fui", "iba", "voy", "he ido"], ans: "fui" }, // A2
-  { id: 5, q: "Busco una casa que ___ grande.", options: ["sea", "es", "era", "será"], ans: "sea" }, // B1 (Subjonctif)
-  { id: 6, q: "Si ___ dinero, viajaría más.", options: ["tuviera", "tengo", "tendría", "tenga"], ans: "tuviera" }, // B1 (Imparfait Subj)
-  { id: 7, q: "Es importante que ___ a tiempo.", options: ["llegues", "llegas", "llegarás", "llegaste"], ans: "llegues" }, // B1
-  { id: 8, q: "No creo que él ___ la verdad.", options: ["sepa", "sabe", "sabrá", "supo"], ans: "sepa" }, // B2
-  { id: 9, q: "Au moment où tu arriveras (Futur)...", options: ["Cuando llegues", "Cuando llegas", "Cuando llegarás", "Cuando llegue"], ans: "Cuando llegues" }, // B2
-  { id: 10, q: "Expression : 'Tomar el pelo' signifie ?", options: ["Se moquer de qqn", "Aller chez le coiffeur", "Avoir peur", "Être chauve"], ans: "Se moquer de qqn" } // Idiome
+  // A1 (Débutant)
+  { id: 1, q: "Comment dit-on 'Bonjour' ?", options: ["Hola", "Adiós", "Gracias", "Por favor"], ans: "Hola" },
+  { id: 2, q: "Yo ___ español.", options: ["hablo", "habla", "hablas", "hablan"], ans: "hablo" },
+  { id: 3, q: "¿Cómo ___ llamas?", options: ["te", "se", "me", "le"], ans: "te" },
+  { id: 4, q: "La casa es ___.", options: ["grande", "grandes", "grando", "granda"], ans: "grande" },
+  { id: 5, q: "Ellos ___ mis amigos (Être).", options: ["son", "están", "es", "sois"], ans: "son" },
+
+  // A2 (Intermédiaire)
+  { id: 6, q: "Ayer yo ___ al cine (Aller).", options: ["fui", "iba", "voy", "he ido"], ans: "fui" },
+  { id: 7, q: "Nosotros ___ en Madrid.", options: ["vivimos", "viven", "vivo", "vivís"], ans: "vivimos" },
+  { id: 8, q: "Voy a comprar ___ manzanas.", options: ["unas", "uno", "una", "un"], ans: "unas" },
+  { id: 9, q: "¿___ hora es?", options: ["Qué", "Cuál", "Cómo", "Dónde"], ans: "Qué" },
+  { id: 10, q: "Me gusta ___ la música.", options: ["escuchar", "escucho", "escuchando", "escucha"], ans: "escuchar" },
+
+  // B1 (Avancé)
+  { id: 11, q: "Busco una persona que ___ hablar japonés (Subjonctif).", options: ["sepa", "sabe", "sabrá", "supo"], ans: "sepa" },
+  { id: 12, q: "Si ___ tiempo, viajaría más.", options: ["tuviera", "tengo", "tendría", "tenga"], ans: "tuviera" },
+  { id: 13, q: "Es importante que ___ a tiempo.", options: ["llegues", "llegas", "llegarás", "llegaste"], ans: "llegues" },
+  { id: 14, q: "Hemos ___ el trabajo (Finir).", options: ["terminado", "terminar", "terminando", "terminó"], ans: "terminado" },
+  { id: 15, q: "Expression : 'Estar en las nubes' signifie ?", options: ["Être distrait", "Être pilote", "Être mort", "Être grand"], ans: "Être distrait" },
+
+  // B2 (Expert)
+  { id: 16, q: "Aunque ___ (pleuvoir), saldré a correr.", options: ["llueva", "llueve", "lloverá", "llovía"], ans: "llueva" },
+  { id: 17, q: "No creo que él ___ la verdad.", options: ["diga", "dice", "dirá", "dijo"], ans: "diga" },
+  { id: 18, q: "Ojalá ___ (venir) mañana.", options: ["venga", "viene", "vendrá", "venía"], ans: "venga" },
+  { id: 19, q: "Expression : 'Tomar el pelo' signifie ?", options: ["Se moquer de qqn", "Aller chez le coiffeur", "Avoir peur", "Être chauve"], ans: "Se moquer de qqn" },
+  { id: 20, q: "Si hubieras estudiado, ___ el examen.", options: ["habrías aprobado", "habrás aprobado", "hubieras aprobado", "apruebas"], ans: "habrías aprobado" }
 ];
 
 // --- COMPOSANT PRINCIPAL ---
@@ -117,6 +135,47 @@ export default function EspanolSprintPro() {
   const [authError, setAuthError] = useState(""); 
   const [testMode, setTestMode] = useState(null);
   const [activeStory, setActiveStory] = useState(null);
+  const applyLevelToProfile = async (newLevel) => {
+      if (!currentUser) return;
+      setLoading(true);
+      
+      try {
+          // 1. Calculer quelles leçons valider
+          const levelsOrder = ["A1", "A2", "B1", "B2", "C1"];
+          const targetIdx = levelsOrder.indexOf(newLevel);
+          const levelsToUnlock = levelsOrder.slice(0, targetIdx); // Ex: Si B1, on prend [A1, A2]
+          
+          // On récupère les IDs des leçons
+          const lessonsToValidate = dynamicLessonsList
+              .filter(l => levelsToUnlock.includes(l.level))
+              .map(l => l.id);
+
+          // 2. Mise à jour Firebase
+          const userRef = doc(db, "users", currentUser.uid);
+          await updateDoc(userRef, {
+              level: newLevel,
+              completedLessons: arrayUnion(...lessonsToValidate),
+              xp: increment(lessonsToValidate.length * 50) // Bonus XP
+          });
+
+          // 3. Mise à jour locale
+          setUserData(prev => ({
+              ...prev,
+              level: newLevel,
+              completedLessons: [...(prev.completedLessons || []), ...lessonsToValidate],
+              xp: (prev.xp || 0) + (lessonsToValidate.length * 50)
+          }));
+
+          alert(`Bravo ! Votre niveau a été ajusté à ${newLevel}.`);
+          setView('dashboard');
+
+      } catch (e) {
+          console.error(e);
+          alert("Erreur lors de la mise à jour du niveau.");
+      } finally {
+          setLoading(false);
+      }
+  };
   const [dailyStoryContent, setDailyStoryContent] = useState(null);
   useEffect(() => {
     const initApp = async (user) => {
@@ -513,15 +572,24 @@ const handleDownloadPDF = async (lessonId) => {
                />
            )}
 
-           {/* ÉCRAN DU TEST */}
+          {/* ÉCRAN DU TEST (Compatible Visiteur & Connecté) */}
            {view === 'levelTest' && (
                <LevelTest 
-                   onBack={() => setView('landing')}
+                   onBack={() => {
+                       // Si on est connecté, retour profil, sinon retour accueil
+                       if (currentUser) setView('profile');
+                       else setView('landing');
+                   }}
                    onComplete={(level) => {
-                       // On sauvegarde le résultat du test
-                       if (typeof window !== 'undefined') localStorage.setItem('tempLevel', level);
-                       alert(`🎯 Niveau détecté : ${level}\n\nCréez votre compte pour sauvegarder ce niveau.`);
-                       setView('auth'); 
+                       if (currentUser) {
+                           // CAS 1 : Utilisateur Connecté -> On applique direct
+                           applyLevelToProfile(level);
+                       } else {
+                           // CAS 2 : Visiteur -> On sauvegarde pour l'inscription
+                           if (typeof window !== 'undefined') localStorage.setItem('tempLevel', level);
+                           alert(`🎯 Niveau détecté : ${level}\n\nCréez votre compte pour sauvegarder ce niveau et débloquer les leçons !`);
+                           setView('auth'); 
+                       }
                    }}
                />
            )}
@@ -640,6 +708,12 @@ const ProfileContent = ({ userData, email, onLogout, onUpload, onPremium, onMana
             <div><p className="text-2xl font-black text-slate-900">{userData?.streak || 0} 🔥</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Série</p></div>
             <div><p className="text-2xl font-black text-slate-900">{userData?.level || "A1"}</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Niveau</p></div>
         </div>
+        <button 
+            onClick={() => window.location.hash = 'test' || onTest()} // On utilisera une prop
+            className="w-full bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-50 transition-all mt-4"
+        >
+            <Target size={18} /> Repasser le test de niveau
+        </button>
 
         {/* ABONNEMENT */}
         <div className="space-y-4">
@@ -976,21 +1050,20 @@ const LandingPage = ({ onStart, onTest }) => (
 const AuthScreen = ({ onAuth, onGoogle, onBack, error }) => { const [isSignUp, setIsSignUp] = useState(false); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); return (<div className="w-full max-w-md p-8 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500"><button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold"><X size={20} /> Retour</button><div><h2 className="text-4xl font-black text-slate-900 mb-2">{isSignUp ? 'Créer un compte' : 'Bon retour !'}</h2><p className="text-slate-500">Sauvegarde ta progression ☁️</p></div>{error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold mb-4">{error}</div>}<div className="space-y-4"><button onClick={onGoogle} className="w-full bg-white border-2 border-slate-200 text-slate-800 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"><img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" /> Continuer avec Google</button><div className="flex items-center gap-4"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-sm font-bold">OU</span><div className="h-px bg-slate-200 flex-1"></div></div><input type="email" placeholder="Email" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={email} onChange={(e) => setEmail(e.target.value)} /><input type="password" placeholder="Mot de passe" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={password} onChange={(e) => setPassword(e.target.value)} /></div><button onClick={() => onAuth(email, password, isSignUp)} className="w-full bg-yellow-400 text-slate-900 py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all">{isSignUp ? "S'inscrire" : "Se connecter"}</button><div className="text-center"><button onClick={() => setIsSignUp(!isSignUp)} className="text-indigo-600 font-bold text-sm hover:underline">{isSignUp ? "J'ai déjà un compte" : "Je n'ai pas de compte"}</button></div></div>); };
 const SidebarLink = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${active ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}><Icon size={22} strokeWidth={active ? 2.5 : 2} /><span className="font-bold text-base">{label}</span></button>);
 const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUpload }) => (<div className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200 h-full p-6"><nav className="flex-1 space-y-2"><div className="flex items-center gap-2 mb-8 px-2"><Image src="/logo.png" width={45} height={45} alt="Logo"/><span className="text-xl font-black tracking-tighter">Español<span className="text-red-600">Sprint</span></span></div><SidebarLink icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} /><SidebarLink icon={MessageCircle} label="Histoires" active={currentView === 'reading' || currentView === 'story'} onClick={() => onChangeView('reading')} /><SidebarLink icon={Trophy} label="Classement" active={currentView === 'leaderboard'} onClick={() => onChangeView('leaderboard')} /><SidebarLink icon={BrainCircuit} label="Entraînement" active={currentView === 'tests' || currentView === 'quiz'} onClick={() => onChangeView('tests')} /><SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} /><SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} /></nav></div>);
-// --- COMPOSANT : TEST DE NIVEAU ---
+
 const LevelTest = ({ onComplete, onBack }) => {
     const [index, setIndex] = useState(0);
     const [score, setScore] = useState(0);
-    const [finished, setFinished] = useState(false);
+    const finishTest = (finalScore) => {
+        setFinished(true);
+        let detectedLevel = "A1";
+        if (finalScore >= 5) detectedLevel = "A2";
+        if (finalScore >= 10) detectedLevel = "B1";
+        if (finalScore >= 15) detectedLevel = "B2";
 
-    const handleAnswer = (option) => {
-        const isCorrect = option === PLACEMENT_TEST[index].ans;
-        if (isCorrect) setScore(prev => prev + 1);
-
-        if (index + 1 < PLACEMENT_TEST.length) {
-            setIndex(prev => prev + 1);
-        } else {
-            finishTest(score + (isCorrect ? 1 : 0));
-        }
+        setTimeout(() => {
+            onComplete(detectedLevel);
+        }, 2500);
     };
 
     const finishTest = (finalScore) => {
