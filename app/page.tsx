@@ -1066,20 +1066,6 @@ const LevelTest = ({ onComplete, onBack }) => {
         }, 2500);
     };
 
-    const finishTest = (finalScore) => {
-        setFinished(true);
-        // Calcul du niveau
-        let detectedLevel = "A1";
-        if (finalScore >= 3) detectedLevel = "A2";
-        if (finalScore >= 6) detectedLevel = "B1";
-        if (finalScore >= 9) detectedLevel = "B2";
-
-        // Petite pause pour afficher le résultat avant de valider
-        setTimeout(() => {
-            onComplete(detectedLevel);
-        }, 2500);
-    };
-
     if (finished) {
         return (
             <div className="w-full h-full flex flex-col items-center justify-center bg-white p-8 animate-in zoom-in">
