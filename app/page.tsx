@@ -650,6 +650,7 @@ const handleDownloadPDF = async (lessonId) => {
                     onUpload={uploadFullContentToCloud}
                     onPremium={() => setShowPremiumModal(true)} 
                     onManageSubscription={handlePortal}
+                    onTest={() => setView('levelTest')}
                     onDeleteAccount={handleDeleteAccount}
                   />
               )}
@@ -678,7 +679,7 @@ const handleDownloadPDF = async (lessonId) => {
 
 // --- SOUS-COMPOSANTS ---
 
-const ProfileContent = ({ userData, email, onLogout, onUpload, onPremium, onManageSubscription, onDeleteAccount }) => {
+const ProfileContent = ({ userData, email, onLogout, onUpload, onPremium, onManageSubscription,onTest, onDeleteAccount }) => {
   const isPremium = userData?.subscription?.status === 'active';
   const initial = userData?.name?.charAt(0)?.toUpperCase() || "U";
 
@@ -708,8 +709,9 @@ const ProfileContent = ({ userData, email, onLogout, onUpload, onPremium, onMana
             <div><p className="text-2xl font-black text-slate-900">{userData?.streak || 0} 🔥</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Série</p></div>
             <div><p className="text-2xl font-black text-slate-900">{userData?.level || "A1"}</p><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Niveau</p></div>
         </div>
+        
         <button 
-            onClick={() => window.location.hash = 'test' || onTest()} // On utilisera une prop
+            onClick={onTest} 
             className="w-full bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-50 transition-all mt-4"
         >
             <Target size={18} /> Repasser le test de niveau
@@ -1054,8 +1056,29 @@ const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUploa
 const LevelTest = ({ onComplete, onBack }) => {
     const [index, setIndex] = useState(0);
     const [score, setScore] = useState(0);
+    // 👇 C'était la ligne manquante !
+    const [finished, setFinished] = useState(false);
+
+    // 👇 Cette fonction manquait aussi dans ton code
+    const handleAnswer = (option) => {
+        const isCorrect = option === PLACEMENT_TEST[index].ans;
+        
+        // On calcule le nouveau score
+        const newScore = score + (isCorrect ? 1 : 0);
+        if (isCorrect) setScore(newScore);
+
+        // Passage à la suite
+        if (index + 1 < PLACEMENT_TEST.length) {
+            setIndex(prev => prev + 1);
+        } else {
+            finishTest(newScore);
+        }
+    };
+
     const finishTest = (finalScore) => {
         setFinished(true);
+        
+        // Barème sur 20 questions
         let detectedLevel = "A1";
         if (finalScore >= 5) detectedLevel = "A2";
         if (finalScore >= 10) detectedLevel = "B1";
@@ -1073,7 +1096,8 @@ const LevelTest = ({ onComplete, onBack }) => {
                     <Check size={48} strokeWidth={3} />
                 </div>
                 <h2 className="text-3xl font-black text-slate-900 mb-2">Test Terminé !</h2>
-                <p className="text-slate-500 text-lg">Analyse de vos réponses...</p>
+                <p className="text-slate-500 text-lg">Score : {score} / 20</p>
+                <p className="text-indigo-600 font-bold mt-2">Analyse du niveau...</p>
             </div>
         );
     }
