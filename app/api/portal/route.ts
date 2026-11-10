@@ -1,30 +1,20 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
+import { errorResponse, getUserData, HttpError, requireUser } from '@/app/lib/server/firebase-admin';
+import { getStripe } from '@/app/lib/server/stripe';
 
 export async function POST(req: Request) {
   try {
-    // On reçoit l'ID client directement depuis la page
-    const { customerId } = await req.json();
+    const { uid } = await requireUser(req);
+    const customerId = (await getUserData(uid))?.subscription?.customerId;
+    if (!customerId) throw new HttpError(404, 'NO_CUSTOMER');
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-        return NextResponse.json({ error: "Clé manquante" }, { status: 500 });
-    }
-    
-    if (!customerId) {
-        return NextResponse.json({ error: "Aucun identifiant client fourni" }, { status: 400 });
-    }
-
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-    // Création du lien vers le portail client
-    const session = await stripe.billingPortal.sessions.create({
+    const origin = req.headers.get('origin') || new URL(req.url).origin;
+    const session = await getStripe().billingPortal.sessions.create({
       customer: customerId,
-      return_url: `${req.headers.get('origin')}/`,
+      return_url: `${origin}/`,
     });
-
     return NextResponse.json({ url: session.url });
-  } catch (err: any) {
-    console.error("Erreur Portail:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (error) {
+    return errorResponse(error);
   }
 }

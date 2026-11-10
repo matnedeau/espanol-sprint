@@ -1,8 +1,8 @@
 import { MetadataRoute } from 'next';
+import { SITE_URL } from '@/app/lib/site';
 
 export default function robots(): MetadataRoute.Robots {
-  // Doit correspondre à l'URL définie dans sitemap.ts et layout.tsx
-  const baseUrl = 'https://espanol-sprint.vercel.app';
+  const baseUrl = SITE_URL;
 
   return {
     rules: {

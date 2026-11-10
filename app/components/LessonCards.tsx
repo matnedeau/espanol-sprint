@@ -97,14 +97,14 @@ export const InputCard = ({ data, onNext, isExam, onScore }: any) => {
 
         {status === 'error' && !isExam && (
             <div className="text-center space-y-2 animate-in slide-in-from-bottom-2 fade-in">
-                <p className="text-red-500 font-bold text-lg">Oups ! Essaie encore.</p>
+                <p className="text-red-500 font-bold text-lg">Pas tout à fait… Essaie encore !</p>
                 <p className="text-slate-400 text-sm font-medium">Indice : {data.hint}</p>
             </div>
         )}
         
         {status === 'error' && isExam && (
             <div className="text-center text-red-500 font-bold animate-in zoom-in">
-                <p>Réponse : {Array.isArray(data.answer) ? data.answer[0] : data.answer}</p>
+                <p>Bonne réponse : {Array.isArray(data.answer) ? data.answer[0] : data.answer}</p>
             </div>
         )}
     </div>
@@ -125,13 +125,13 @@ export const SwipeCard = ({ data, onNext }: any) => {
     }, [data]); 
     return (
         <div className={`w-full h-full bg-white rounded-3xl shadow-xl border-b-8 border-slate-100 flex flex-col relative transition-all duration-300 ${swiped ? 'opacity-0 translate-x-full' : ''}`}>
-            <div className="absolute top-4 right-4"><button onClick={(e) => { e.stopPropagation(); speak(data.es); }} className="p-3 bg-slate-100 rounded-full text-indigo-600"><Volume2 size={24}/></button></div>
+            <div className="absolute top-4 right-4"><button onClick={(e) => { e.stopPropagation(); speak(data.es); }} aria-label="Écouter" className="p-3 bg-slate-100 rounded-full text-indigo-600"><Volume2 size={24}/></button></div>
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6">
                 <h2 className="text-5xl font-black text-slate-800">{data.es}</h2>
                 <div className="bg-indigo-50 px-6 py-3 rounded-2xl"><p className="text-xl font-bold text-indigo-600">{data.en}</p></div>
                 <p className="text-sm text-slate-400 italic">"{data.context}"</p>
             </div>
-            <div className="p-6 flex justify-center"><button onClick={() => swipe('right')} className="w-full py-4 bg-teal-500 text-white rounded-xl font-bold text-xl shadow-lg">Compris !</button></div>
+            <div className="p-6 flex justify-center"><button onClick={() => swipe('right')} className="w-full py-4 bg-teal-500 text-white rounded-xl font-bold text-xl shadow-lg">J'ai compris !</button></div>
         </div>
     ); 
 };
@@ -142,7 +142,7 @@ export const GrammarCard = ({ data, onNext }: any) => {
     return (
         <div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
             <div className="bg-indigo-600 p-8 text-white text-center relative">
-                <button onClick={() => speak(data.title)} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full"><Volume2 size={20}/></button>
+                <button onClick={() => speak(data.verb || data.title)} aria-label="Écouter" className="absolute top-4 right-4 p-2 bg-white/20 rounded-full"><Volume2 size={20}/></button>
                 <h3 className="text-3xl font-black">{data.title}</h3>
                 <p className="text-indigo-200 mt-2">{data.description}</p>
             </div>
@@ -158,9 +158,9 @@ export const GrammarCard = ({ data, onNext }: any) => {
                         ))}
                     </div>
                 ) : (
-                    <div className="flex-1 flex items-center justify-center"><p className="text-slate-400 italic">Clique pour révéler</p></div>
+                    <div className="flex-1 flex items-center justify-center"><p className="text-slate-400 italic">Essaie de te souvenir de la conjugaison, puis vérifie.</p></div>
                 )}
-                <button onClick={rev ? onNext : () => setRev(true)} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg">{rev ? 'Continuer' : 'Voir Conjugaison'}</button>
+                <button onClick={rev ? onNext : () => setRev(true)} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg">{rev ? 'Continuer' : 'Voir la conjugaison'}</button>
             </div>
         </div>
     ); 

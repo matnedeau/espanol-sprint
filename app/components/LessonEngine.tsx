@@ -40,7 +40,7 @@ export default function LessonEngine({ lessonId, initialContent, onComplete, onE
       })
       .catch(err => {
         console.error(err);
-        setError("Impossible de charger la leçon.");
+        setError("Impossible de charger la leçon. Vérifie ta connexion et réessaie.");
         setLoading(false);
       });
   }, [lessonId, content]);
@@ -76,7 +76,7 @@ export default function LessonEngine({ lessonId, initialContent, onComplete, onE
     }
   }, [card]);
   
-  if (loading) return <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-indigo-600" size={48}/><p className="ml-2 font-bold text-indigo-600">Chargement...</p></div>;
+  if (loading) return <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-indigo-600" size={48}/><p className="ml-2 font-bold text-indigo-600">Chargement de la leçon…</p></div>;
   if (error) return <div className="h-full flex flex-col items-center justify-center"><p className="text-red-500 font-bold">{error}</p><button onClick={onExit} className="mt-4 px-4 py-2 bg-slate-200 rounded-xl font-bold">Retour</button></div>;
 
   if (!card) {
@@ -87,7 +87,7 @@ export default function LessonEngine({ lessonId, initialContent, onComplete, onE
   return (
     <div className="h-full w-full flex flex-col bg-slate-50">
         <div className="px-6 py-4 flex items-center gap-6 bg-white border-b z-10">
-            <button onClick={onExit}><X className="text-slate-400" /></button>
+            <button onClick={onExit} aria-label="Quitter la leçon"><X className="text-slate-400" /></button>
             <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
                 <div className="h-full bg-teal-500 transition-all duration-500" style={{ width: `${prog}%` }}></div>
             </div>

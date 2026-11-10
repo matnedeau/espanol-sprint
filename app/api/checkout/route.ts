@@ -1,45 +1,41 @@
-import { NextResponse, NextRequest } from 'next/server';
-import Stripe from 'stripe';
+import { NextRequest, NextResponse } from 'next/server';
+import { errorResponse, getUserData, requireUser } from '@/app/lib/server/firebase-admin';
+import { getStripe } from '@/app/lib/server/stripe';
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Vérification de la clé Secrète
-    if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('La clé STRIPE_SECRET_KEY est manquante dans .env.local');
-    }
+    const { uid, email } = await requireUser(req);
+    const { plan } = await req.json().catch(() => ({ plan: 'monthly' }));
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const price =
+      plan === 'yearly' && process.env.STRIPE_PRICE_ID_YEARLY
+        ? process.env.STRIPE_PRICE_ID_YEARLY
+        : process.env.STRIPE_PRICE_ID;
+    if (!price) throw new Error('STRIPE_PRICE_ID manquant');
 
-    // 2. Création de la session Stripe
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          // Ton ID de prix (4.99€)
-          price: process.env.STRIPE_PRICE_ID, 
-          quantity: 1,
-        },
-      ],
+    const userData = await getUserData(uid);
+    const existingCustomer = userData?.subscription?.customerId;
+    // L'essai gratuit n'est offert qu'une seule fois par compte.
+    const alreadyTried = !!userData?.subscription?.subscriptionId;
+    const origin = req.headers.get('origin') || new URL(req.url).origin;
+
+    const session = await getStripe().checkout.sessions.create({
       mode: 'subscription',
-      
-      // ✅ AJOUT ICI : Les 7 jours d'essai gratuits
+      line_items: [{ price, quantity: 1 }],
+      client_reference_id: uid,
+      metadata: { uid },
+      ...(existingCustomer ? { customer: existingCustomer } : { customer_email: email }),
       subscription_data: {
-        trial_period_days: 7,
+        metadata: { uid },
+        ...(alreadyTried ? {} : { trial_period_days: 7 }),
       },
-
-      allow_promotion_codes: true, // Toujours utile pour tes codes promos
-
-      success_url: `${req.headers.get('origin')}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get('origin')}/`,
+      allow_promotion_codes: true,
+      success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/?payment=cancel`,
     });
 
     return NextResponse.json({ url: session.url });
-
-  } catch (error: any) {
-    console.error('Erreur Stripe:', error);
-    return NextResponse.json(
-      { error: error.message || 'Erreur création session' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return errorResponse(error);
   }
 }

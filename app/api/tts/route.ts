@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getUserData, isPremiumData, requireUser } from '@/app/lib/server/firebase-admin';
 
 export async function POST(req: NextRequest) {
   try {
     // 1. Récupération du corps de la requête (Texte + ID de voix optionnel)
+    // Les voix IA (payantes à l'usage) sont réservées aux abonnés Premium.
+    // Les autres utilisateurs utilisent la synthèse vocale du navigateur (gratuite et instantanée).
+    let uid: string;
+    try { uid = (await requireUser(req)).uid; } catch { return NextResponse.json({ error: 'AUTH_REQUIRED' }, { status: 401 }); }
+    if (!isPremiumData(await getUserData(uid))) {
+      return NextResponse.json({ error: 'PREMIUM_REQUIRED' }, { status: 403 });
+    }
+
     const { text, voiceId } = await req.json();
 
-    if (!text) {
+    if (!text || typeof text !== 'string' || text.length > 600) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }
 
@@ -55,7 +64,7 @@ export async function POST(req: NextRequest) {
       headers: {
         'Content-Type': 'audio/mpeg',
         // Petit cache d'une heure pour éviter de repayer pour la même phrase
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600', 
+        'Cache-Control': 'private, max-age=86400',
       },
     });
 

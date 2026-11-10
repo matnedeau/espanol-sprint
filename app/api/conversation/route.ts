@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { errorResponse, getUserData, isPremiumData, requireUser } from '@/app/lib/server/firebase-admin';
 
 export const maxDuration = 60; 
 export const dynamic = 'force-dynamic';
@@ -13,13 +14,20 @@ export async function POST(req: Request) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     // 2. RÉCUPÉRATION DES DONNÉES
+    // Le statut Premium est vérifié en base, jamais sur la parole du client.
+    const { uid } = await requireUser(req);
+    const userData = await getUserData(uid);
+    if (!isPremiumData(userData)) {
+      return NextResponse.json({ error: "PREMIUM_REQUIRED" }, { status: 403 });
+    }
+
     const formData = await req.formData();
     const audioFile = formData.get('file') as File;
-    const isPremium = formData.get('isPremium') === 'true';
+    let history: { role: string; text: string }[] = [];
+    try { history = JSON.parse(String(formData.get('history') || '[]')).slice(-8); } catch { history = []; }
 
-    // 3. VÉRIFICATIONS DE SÉCURITÉ
-    if (!isPremium) {
-      return NextResponse.json({ error: "PREMIUM_REQUIRED" }, { status: 403 });
+    if (audioFile && audioFile.size > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: "AUDIO_TOO_LONG" }, { status: 413 });
     }
     
     if (!audioFile || audioFile.size === 0) {
@@ -69,11 +77,14 @@ export async function POST(req: Request) {
       messages: [
         { 
           role: "system", 
-          content: "Tu es un ami espagnol natif bienveillant. L'utilisateur apprend la langue. Réponds à son message oral en 1 seule phrase courte (max 15 mots). Sois naturel, dynamique et encourageant." 
+          content: `Tu es un ami espagnol natif et bienveillant. L'utilisateur apprend la langue (niveau ${userData?.level || 'A1'}). Réponds à son message oral en espagnol, en une ou deux phrases courtes (20 mots maximum), puis relance la conversation par une question. Sois naturel, dynamique et encourageant.`
         },
+        ...history
+          .filter((t) => t && typeof t.text === 'string')
+          .map((t) => ({ role: t.role === 'user' ? ('user' as const) : ('assistant' as const), content: t.text.slice(0, 400) })),
         { role: "user", content: userText }
       ],
-      max_tokens: 60,
+      max_tokens: 90,
     });
 
     const aiResponseText = completion.choices[0].message.content || "¡Hola! ¿Cómo estás?";
@@ -94,9 +105,7 @@ export async function POST(req: Request) {
       audio: `data:audio/mp3;base64,${audioBase64}` 
     });
 
-  } catch (error: any) {
-    console.error("Conversation Error:", error);
-    // On renvoie l'erreur précise pour t'aider à débugger dans les logs Vercel
-    return NextResponse.json({ error: error.message || "Erreur serveur" }, { status: 500 });
+  } catch (error) {
+    return errorResponse(error);
   }
 }

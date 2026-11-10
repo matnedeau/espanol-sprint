@@ -2,6 +2,8 @@ import { INITIAL_LESSONS_LIST } from '@/app/lib/curriculum';
 import { generateStructuredLesson } from '@/app/lib/generator';
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { SITE_URL } from '@/app/lib/site';
 
 // 1. DÉFINITION DU TYPE POUR LES LEÇONS
 interface Lesson {
@@ -35,8 +37,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const lessonInfo = ALL_LESSONS.find((l) => l.id === idNum);
   
   return {
-    title: lessonInfo ? `${lessonInfo.title} - Cours Espagnol ${lessonInfo.level}` : `Leçon ${params.id}`,
-    description: lessonInfo?.desc || `Apprenez l'espagnol rapidement avec cette leçon interactive.`,
+    title: lessonInfo ? `${lessonInfo.title} – Cours d'espagnol ${lessonInfo.level} (leçon ${lessonInfo.id})` : `Leçon ${params.id}`,
+    description: lessonInfo ? `Leçon d'espagnol gratuite de niveau ${lessonInfo.level} sur le thème « ${lessonInfo.title} » : vocabulaire, grammaire et exercices interactifs en 5 minutes.` : `Apprenez l'espagnol rapidement avec cette leçon interactive.`,
     alternates: {
       canonical: `/lecon/${params.id}`,
     },
@@ -50,8 +52,9 @@ export default async function LessonPage(props: Props) {
 
   // Correction : On génère le contenu à la volée via la fonction importée
   // Plus besoin de l'objet géant INITIAL_LESSONS_CONTENT
-  const lessonContent = generateStructuredLesson(idNum);
   const lessonInfo = ALL_LESSONS.find((l) => l.id === idNum);
+  if (!lessonInfo) notFound();
+  const lessonContent = generateStructuredLesson(idNum);
 
   // Gestion du cas où la leçon n'existe pas ou erreur de génération
   if (!lessonContent || !lessonInfo) {
@@ -76,7 +79,7 @@ export default async function LessonPage(props: Props) {
     "name": lessonInfo.title,
     "description": lessonInfo.desc,
     "educationalLevel": lessonInfo.level,
-    "url": `https://espanol-sprint.vercel.app/lecon/${params.id}`,
+    "url": `${SITE_URL}/lecon/${params.id}`,
     "isAccessibleForFree": true,
     // @ts-ignore
     "teaches": vocabulary.map((v) => v.es).join(', ')
@@ -98,10 +101,10 @@ export default async function LessonPage(props: Props) {
         </Link>
         {/* Le bouton renvoie vers le Dashboard avec l'ID de la leçon */}
         <Link 
-          href={`/dashboard?startLesson=${idNum}`} 
+          href={`/?startLesson=${idNum}`} 
           className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:scale-105 hover:bg-slate-800 transition-all shadow-lg"
         >
-          Ouvrir l'App
+          Ouvrir l'appli
         </Link>
       </nav>
 
@@ -115,7 +118,7 @@ export default async function LessonPage(props: Props) {
             {lessonInfo.title}
           </h1>
           <p className="text-xl text-slate-500 font-medium max-w-xl mx-auto">
-            {lessonInfo.desc}
+            Leçon {lessonInfo.id} du parcours {lessonInfo.level} : le vocabulaire essentiel à connaître sur ce thème.
           </p>
         </div>
 
@@ -127,7 +130,7 @@ export default async function LessonPage(props: Props) {
               Contenu de la leçon
             </h2>
             <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100">
-              {vocabulary.length} Cartes
+              {vocabulary.length} mots et expressions
             </span>
           </div>
           
@@ -169,14 +172,14 @@ export default async function LessonPage(props: Props) {
               <div>
                 <h3 className="text-2xl font-black text-white mb-2">Maîtrisez cette leçon maintenant</h3>
                 <p className="text-indigo-100 font-medium max-w-sm mx-auto">
-                  Accédez à l'audio natif, aux quiz interactifs et à la répétition espacée.
+                  Retrouvez l'audio, les exercices interactifs et la fiche PDF dans l'application, gratuitement.
                 </p>
               </div>
               <Link 
-                href={`/dashboard?startLesson=${idNum}`}
+                href={`/?startLesson=${idNum}`}
                 className="inline-flex items-center justify-center w-full sm:w-auto bg-white text-indigo-600 font-black text-lg px-8 py-4 rounded-2xl shadow-xl hover:bg-yellow-400 hover:text-yellow-900 transition-all hover:scale-[1.02] hover:shadow-2xl"
               >
-                ▶  Démarrer le Sprint
+                ▶ Commencer la leçon
               </Link>
             </div>
             
@@ -190,13 +193,15 @@ export default async function LessonPage(props: Props) {
         <div className="flex justify-between items-center text-sm font-bold text-slate-400 border-t border-slate-200 pt-8">
           {idNum > 1 ? (
             <Link href={`/lecon/${idNum - 1}`} className="flex items-center gap-2 hover:text-indigo-600 transition-colors group">
-              <span className="group-hover:-translate-x-1 transition-transform">←</span> Précédent
+              <span className="group-hover:-translate-x-1 transition-transform">←</span> Leçon précédente
             </Link>
           ) : <span></span>}
           
+          {idNum < ALL_LESSONS.length ? (
           <Link href={`/lecon/${idNum + 1}`} className="flex items-center gap-2 hover:text-indigo-600 transition-colors group">
-            Suivant <span className="group-hover:translate-x-1 transition-transform">→</span>
+            Leçon suivante <span className="group-hover:translate-x-1 transition-transform">→</span>
           </Link>
+          ) : <span></span>}
         </div>
       </main>
     </div>

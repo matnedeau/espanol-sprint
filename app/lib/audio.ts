@@ -1,80 +1,92 @@
 // app/lib/audio.ts
+import { authFetch } from './firebase-client';
 
 let currentAudio: HTMLAudioElement | null = null;
 let audioController: AbortController | null = null;
+let premiumVoices = false;
 
-export const speak = async (text: string, voiceId: string | null = null) => {
-  if (!text) return;
+// Cache mémoire : une phrase déjà entendue est rejouée instantanément (et n'est pas refacturée).
+const audioCache = new Map<string, string>();
 
-  // 1. SILENCE TOTAL
-  if (audioController) {
-      audioController.abort();
-  }
+/** Active les voix IA natives (Premium) ou la synthèse vocale du navigateur (gratuite). */
+export const setPremiumVoices = (enabled: boolean) => {
+  premiumVoices = enabled;
+};
+
+const stopAll = () => {
+  if (audioController) audioController.abort();
   audioController = new AbortController();
-
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-  }
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
   if (currentAudio) {
     currentAudio.pause();
     currentAudio.currentTime = 0;
     currentAudio = null;
   }
+};
 
-  // Fallback Robot
-  const playRobotVoice = () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+const playBrowserVoice = (text: string) => {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  const run = () => {
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
-    const esVoice = voices.find(v => 
-      (v.name.includes('Google') || v.name.includes('Microsoft')) && 
-      (v.lang.includes('es-ES') || v.lang.includes('es'))
-    ) || voices.find(v => v.lang.includes('es'));
-    
+    const esVoice =
+      voices.find((v) => (v.name.includes('Google') || v.name.includes('Microsoft')) && v.lang.startsWith('es')) ||
+      voices.find((v) => v.lang.startsWith('es'));
     if (esVoice) utterance.voice = esVoice;
-    utterance.lang = 'es-ES'; 
+    utterance.lang = 'es-ES';
     utterance.rate = 0.9;
     window.speechSynthesis.speak(utterance);
   };
+  if (window.speechSynthesis.getVoices().length === 0) {
+    window.speechSynthesis.onvoiceschanged = () => {
+      window.speechSynthesis.onvoiceschanged = null;
+      run();
+    };
+  } else {
+    run();
+  }
+};
 
-  // 2. API Call
-  try {
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Timeout")), 4000)
-    );
+const playUrl = (url: string, text: string) => {
+  const audio = new Audio(url);
+  currentAudio = audio;
+  audio.onerror = () => playBrowserVoice(text);
+  audio.play().catch((e) => console.warn('Lecture automatique bloquée :', e));
+};
 
-    const apiPromise = fetch('/api/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, voiceId }),
-      signal: audioController.signal,
-    });
+export const speak = async (text: string, voiceId: string | null = null) => {
+  if (!text) return;
+  stopAll();
 
-    const response: any = await Promise.race([apiPromise, timeoutPromise]);
-
-    if (response.ok) {
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      
-      currentAudio = audio;
-      
-      audio.onerror = () => { playRobotVoice(); };
-      
-      if (audioController && !audioController.signal.aborted) {
-          audio.play().catch(e => console.warn("Autoplay bloqué :", e));
-      }
-      return; 
-    }
-  } catch (error: any) {
-    if (error.name === 'AbortError') return;
-    playRobotVoice();
+  if (!premiumVoices) {
+    playBrowserVoice(text);
+    return;
   }
 
-  // 3. Fallback immédiat si API échoue
-  if (typeof window !== 'undefined' && window.speechSynthesis.getVoices().length === 0) {
-    window.speechSynthesis.onvoiceschanged = playRobotVoice;
-  } else {
-    playRobotVoice();
+  const key = `${voiceId || 'default'}|${text}`;
+  const cached = audioCache.get(key);
+  if (cached) {
+    playUrl(cached, text);
+    return;
+  }
+
+  const controller = audioController!;
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  try {
+    const response = await authFetch('/api/tts', {
+      method: 'POST',
+      body: JSON.stringify({ text, voiceId }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (!response.ok) throw new Error(`TTS ${response.status}`);
+    const url = URL.createObjectURL(await response.blob());
+    audioCache.set(key, url);
+    if (!controller.signal.aborted) playUrl(url, text);
+  } catch (error: any) {
+    clearTimeout(timeout);
+    // Abandon volontaire (nouvelle phrase lancée) : on ne joue rien.
+    if (error?.name === 'AbortError' && audioController !== controller) return;
+    playBrowserVoice(text);
   }
 };

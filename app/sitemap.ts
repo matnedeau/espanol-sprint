@@ -1,11 +1,11 @@
 import { MetadataRoute } from 'next';
 import { INITIAL_LESSONS_LIST } from '@/app/lib/curriculum'; // <-- Import corrigé (Liste des IDs)
 import { STORIES_DATA } from '@/app/lib/stories';       // <-- Import corrigé
-import { BLOG_POSTS } from '@/app/data/blog-content';   // Celui-ci ne change pas
+import { BLOG_POSTS } from '@/app/data/blog-content';
+import { SITE_URL } from '@/app/lib/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  // Votre URL de production (Vérifiez si c'est avec ou sans tiret selon votre Vercel)
-  const baseUrl = 'https://espanolsprint.vercel.app'; 
+  const baseUrl = SITE_URL;
 
   // 1. La Page d'Accueil & Blog (Priorité Maximale)
   const staticPages: MetadataRoute.Sitemap = [
@@ -14,6 +14,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 1,
+    },
+    {
+      url: `${baseUrl}/tuteur-ia`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/blog`,

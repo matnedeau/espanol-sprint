@@ -1,28 +1,28 @@
 export const CONTENT_PART_1 = {
   1: [
-    { id: 101, type: "swipe", es: "Hola", en: "Bonjour", context: "Salutation universelle", sentence: "Hola, ¿cómo estás?", sentence_trans: "Bonjour, comment vas-tu ?" },
-    { id: 102, type: "grammar", title: "Être (Ser)", description: "Identité & Origine", verb: "Ser", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }] },
-    { id: 103, type: "input", question: "Traduis 'Je suis'", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
-    { id: 104, type: "structure", title: "La Phrase Simple", formula: "Sujet + Verbe", example: "Soy Pablo", note: "Le sujet est souvent omis." },
+    { id: 101, type: "swipe", es: "Hola", en: "Bonjour / Salut", context: "Salutation universelle", sentence: "Hola, ¿cómo estás?", sentence_trans: "Bonjour, comment vas-tu ?" },
+    { id: 102, type: "grammar", title: "Être (ser)", description: "Identité et origine", verb: "Ser", conjugation: [{ pronoun: "Yo", verb: "soy", fr: "Je suis" }, { pronoun: "Tú", verb: "eres", fr: "Tu es" }] },
+    { id: 103, type: "input", question: "Traduis : « je suis »", answer: ["yo soy", "soy"], hint: "Verbe Ser" },
+    { id: 104, type: "structure", title: "La phrase simple", formula: "Sujet + verbe", example: "Soy Pablo.", note: "Le pronom sujet est souvent omis." },
     { id: 105, type: "swipe", es: "Gracias", en: "Merci", context: "Politesse", sentence: "Muchas gracias por todo.", sentence_trans: "Merci beaucoup pour tout." },
     { id: 106, type: "swipe", es: "Adiós", en: "Au revoir", context: "Départ", sentence: "Adiós, hasta mañana.", sentence_trans: "Au revoir, à demain." }
   ],
   2: [
     { id: 201, type: "swipe", es: "La familia", en: "La famille", context: "Groupe social", sentence: "Amo a mi familia.", sentence_trans: "J'aime ma famille." },
-    { id: 202, type: "grammar", title: "Avoir (Tener)", description: "Possession", verb: "Tener", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }] },
-    { id: 203, type: "input", question: "J'ai", answer: ["tengo"], hint: "T..." },
+    { id: 202, type: "grammar", title: "Avoir (tener)", description: "Possession", verb: "Tener", conjugation: [{ pronoun: "Yo", verb: "tengo", fr: "J'ai" }, { pronoun: "Tú", verb: "tienes", fr: "Tu as" }] },
+    { id: 203, type: "input", question: "Traduis : « j'ai »", answer: ["tengo", "yo tengo"], hint: "Verbe tener" },
     { id: 204, type: "swipe", es: "Madre", en: "Mère", context: "Parent", sentence: "Mi madre es amable.", sentence_trans: "Ma mère est gentille." },
     { id: 205, type: "swipe", es: "Padre", en: "Père", context: "Parent", sentence: "Mi padre trabaja mucho.", sentence_trans: "Mon père travaille beaucoup." },
-    { id: 206, type: "structure", title: "Possession", formula: "Mi + Nom", example: "Mi casa", note: "Pas d'article devant" }
+    { id: 206, type: "structure", title: "Possession", formula: "Mi + nom", example: "Mi casa", note: "Pas d'article devant le possessif." }
   ],
   20: [
-    { id: 2001, type: "structure", title: "BILAN A1", formula: "Bravo !", example: "Niveau 1 validé", note: "Prêt pour A2 ?" },
-    { id: 2002, type: "input", question: "Où habites-tu ?", answer: ["dónde vives", "¿dónde vives?"], hint: "D..." },
-    { id: 2003, type: "input", question: "Il fait chaud", answer: ["hace calor"], hint: "Hace..." },
-    { id: 2004, type: "input", question: "Mon ami", answer: ["mi amigo"], hint: "Mi..." },
-    { id: 2005, type: "input", question: "Je ne mange pas", answer: ["no como"], hint: "No..." },
-    { id: 2006, type: "input", question: "Nous parlons", answer: ["hablamos"], hint: "-amos" },
-    { id: 2007, type: "input", question: "Je suis fatigué", answer: ["estoy cansado"], hint: "Estar" },
+    { id: 2001, type: "structure", title: "Bilan A1", formula: "Dernière ligne droite !", example: "7 questions de révision", note: "Prêt pour le niveau A2 ?" },
+    { id: 2002, type: "input", question: "Traduis : « Où habites-tu ? »", answer: ["dónde vives", "¿dónde vives?"], hint: "¿Dónde…?" },
+    { id: 2003, type: "input", question: "Traduis : « Il fait chaud »", answer: ["hace calor"], hint: "Hace…" },
+    { id: 2004, type: "input", question: "Traduis : « mon ami »", answer: ["mi amigo"], hint: "Mi…" },
+    { id: 2005, type: "input", question: "Traduis : « Je ne mange pas »", answer: ["no como", "yo no como"], hint: "No + verbe" },
+    { id: 2006, type: "input", question: "Traduis : « nous parlons »", answer: ["hablamos", "nosotros hablamos"], hint: "Terminaison en -amos" },
+    { id: 2007, type: "input", question: "Traduis : « Je suis fatigué »", answer: ["estoy cansado", "estoy cansada"], hint: "Verbe estar" },
     { id: 2008, type: "swipe", es: "¡Vamos!", en: "On y va !", context: "Motivation", sentence: "¡Vamos a la playa!", sentence_trans: "Allons à la plage !" }
   ]
 };
@@ -39,6 +39,12 @@ export const DATA_BANK = {
     { levels: ["A2"], es: "Querer", en: "Vouloir", conjugation: [{ pronoun: "Yo", verb: "quiero", fr: "Je veux" }, { pronoun: "Tú", verb: "quieres", fr: "Tu veux" }, { pronoun: "Él", verb: "quiere", fr: "Il veut" }, { pronoun: "Nosotros", verb: "queremos", fr: "Nous voulons" }, { pronoun: "Vosotros", verb: "queréis", fr: "Vous voulez" }, { pronoun: "Ellos", verb: "quieren", fr: "Ils veulent" }] },
     { levels: ["B1"], es: "Creer", en: "Croire", conjugation: [{ pronoun: "Yo", verb: "creo", fr: "Je crois" }, { pronoun: "Tú", verb: "crees", fr: "Tu crois" }, { pronoun: "Él", verb: "cree", fr: "Il croit" }, { pronoun: "Nosotros", verb: "creemos", fr: "Nous croyons" }, { pronoun: "Vosotros", verb: "creéis", fr: "Vous croyez" }, { pronoun: "Ellos", verb: "creen", fr: "Ils croient" }] },
     { levels: ["B1"], es: "Pensar", en: "Penser", conjugation: [{ pronoun: "Yo", verb: "pienso", fr: "Je pense" }, { pronoun: "Tú", verb: "piensas", fr: "Tu penses" }, { pronoun: "Él", verb: "piensa", fr: "Il pense" }, { pronoun: "Nosotros", verb: "pensamos", fr: "Nous pensons" }, { pronoun: "Vosotros", verb: "pensáis", fr: "Vous pensez" }, { pronoun: "Ellos", verb: "piensan", fr: "Ils pensent" }] },
+    { levels: ["A2", "B1"], es: "Haber", en: "Avoir (auxiliaire)", conjugation: [{ pronoun: "Yo", verb: "he", fr: "J'ai" }, { pronoun: "Tú", verb: "has", fr: "Tu as" }, { pronoun: "Él", verb: "ha", fr: "Il a" }, { pronoun: "Nosotros", verb: "hemos", fr: "Nous avons" }, { pronoun: "Vosotros", verb: "habéis", fr: "Vous avez" }, { pronoun: "Ellos", verb: "han", fr: "Ils ont" }] },
+    { levels: ["A2", "B1"], es: "Salir", en: "Sortir", conjugation: [{ pronoun: "Yo", verb: "salgo", fr: "Je sors" }, { pronoun: "Tú", verb: "sales", fr: "Tu sors" }, { pronoun: "Él", verb: "sale", fr: "Il sort" }, { pronoun: "Nosotros", verb: "salimos", fr: "Nous sortons" }, { pronoun: "Vosotros", verb: "salís", fr: "Vous sortez" }, { pronoun: "Ellos", verb: "salen", fr: "Ils sortent" }] },
+    { levels: ["A2", "B1"], es: "Venir", en: "Venir", conjugation: [{ pronoun: "Yo", verb: "vengo", fr: "Je viens" }, { pronoun: "Tú", verb: "vienes", fr: "Tu viens" }, { pronoun: "Él", verb: "viene", fr: "Il vient" }, { pronoun: "Nosotros", verb: "venimos", fr: "Nous venons" }, { pronoun: "Vosotros", verb: "venís", fr: "Vous venez" }, { pronoun: "Ellos", verb: "vienen", fr: "Ils viennent" }] },
+    { levels: ["B1", "B2"], es: "Sentir", en: "Sentir, ressentir", conjugation: [{ pronoun: "Yo", verb: "siento", fr: "Je ressens" }, { pronoun: "Tú", verb: "sientes", fr: "Tu ressens" }, { pronoun: "Él", verb: "siente", fr: "Il ressent" }, { pronoun: "Nosotros", verb: "sentimos", fr: "Nous ressentons" }, { pronoun: "Vosotros", verb: "sentís", fr: "Vous ressentez" }, { pronoun: "Ellos", verb: "sienten", fr: "Ils ressentent" }] },
+    { levels: ["B1", "B2"], es: "Pedir", en: "Demander", conjugation: [{ pronoun: "Yo", verb: "pido", fr: "Je demande" }, { pronoun: "Tú", verb: "pides", fr: "Tu demandes" }, { pronoun: "Él", verb: "pide", fr: "Il demande" }, { pronoun: "Nosotros", verb: "pedimos", fr: "Nous demandons" }, { pronoun: "Vosotros", verb: "pedís", fr: "Vous demandez" }, { pronoun: "Ellos", verb: "piden", fr: "Ils demandent" }] },
+    { levels: ["B2", "C1"], es: "Dudar", en: "Douter", conjugation: [{ pronoun: "Yo", verb: "dudo", fr: "Je doute" }, { pronoun: "Tú", verb: "dudas", fr: "Tu doutes" }, { pronoun: "Él", verb: "duda", fr: "Il doute" }, { pronoun: "Nosotros", verb: "dudamos", fr: "Nous doutons" }, { pronoun: "Vosotros", verb: "dudáis", fr: "Vous doutez" }, { pronoun: "Ellos", verb: "dudan", fr: "Ils doutent" }] }
   ],
 
   nouns: {
@@ -52,7 +58,13 @@ export const DATA_BANK = {
       { levels: ["A2"], es: "La lámpara", en: "La lampe", sentence: "Enciende la lámpara.", sentence_trans: "Allume la lampe." },
       { levels: ["A2"], es: "El espejo", en: "Le miroir", sentence: "El espejo está roto.", sentence_trans: "Le miroir est cassé." },
       { levels: ["A2"], es: "La cocina", en: "La cuisine", sentence: "Mi cocina es pequeña.", sentence_trans: "Ma cuisine est petite." },
-      { levels: ["B1"], es: "El techo", en: "Le plafond", sentence: "El techo es alto.", sentence_trans: "Le plafond est haut." }
+      { levels: ["B1"], es: "El techo", en: "Le plafond", sentence: "El techo es alto.", sentence_trans: "Le plafond est haut." },
+      { levels: ["B2"], es: "La vivienda", en: "Le logement", sentence: "El precio de la vivienda sigue subiendo.", sentence_trans: "Le prix du logement continue d'augmenter." },
+      { levels: ["B2"], es: "El alquiler", en: "Le loyer", sentence: "Pagamos el alquiler a principios de mes.", sentence_trans: "Nous payons le loyer en début de mois." },
+      { levels: ["B2"], es: "La reforma", en: "Les travaux de rénovation", sentence: "La reforma del piso duró tres meses.", sentence_trans: "La rénovation de l'appartement a duré trois mois." },
+      { levels: ["C1"], es: "La hipoteca", en: "Le prêt immobilier", sentence: "Tardaron veinte años en pagar la hipoteca.", sentence_trans: "Ils ont mis vingt ans à rembourser le prêt immobilier." },
+      { levels: ["C1"], es: "El hogar", en: "Le foyer", sentence: "No hay nada como el calor del hogar.", sentence_trans: "Rien ne vaut la chaleur du foyer." },
+      { levels: ["C1"], es: "El inquilino", en: "Le locataire", sentence: "El inquilino exige que se respete el contrato.", sentence_trans: "Le locataire exige que le contrat soit respecté." }
     ],
     city: [
       { levels: ["A1"], es: "La calle", en: "La rue", sentence: "Vivo en esta calle.", sentence_trans: "J'habite dans cette rue." },
@@ -63,7 +75,13 @@ export const DATA_BANK = {
       { levels: ["A2"], es: "El hospital", en: "L'hôpital", sentence: "El hospital está cerca.", sentence_trans: "L'hôpital est proche." },
       { levels: ["A2"], es: "La estación", en: "La gare", sentence: "El tren llega a la estación.", sentence_trans: "Le train arrive à la gare." },
       { levels: ["B1"], es: "El puente", en: "Le pont", sentence: "Cruzamos el puente.", sentence_trans: "Nous traversons le pont." },
-      { levels: ["B1"], es: "El edificio", en: "Le bâtiment", sentence: "Es un edificio moderno.", sentence_trans: "C'est un bâtiment moderne." }
+      { levels: ["B1"], es: "El edificio", en: "Le bâtiment", sentence: "Es un edificio moderno.", sentence_trans: "C'est un bâtiment moderne." },
+      { levels: ["B2"], es: "El ayuntamiento", en: "La mairie", sentence: "El ayuntamiento aprobó el nuevo plan urbano.", sentence_trans: "La mairie a approuvé le nouveau plan d'urbanisme." },
+      { levels: ["B2"], es: "El barrio", en: "Le quartier", sentence: "Es un barrio muy animado por la noche.", sentence_trans: "C'est un quartier très animé le soir." },
+      { levels: ["B2"], es: "El atasco", en: "L'embouteillage", sentence: "Llegué tarde por culpa de un atasco.", sentence_trans: "Je suis arrivé en retard à cause d'un embouteillage." },
+      { levels: ["C1"], es: "El patrimonio", en: "Le patrimoine", sentence: "Hay que proteger el patrimonio histórico de la ciudad.", sentence_trans: "Il faut protéger le patrimoine historique de la ville." },
+      { levels: ["C1"], es: "Las afueras", en: "La banlieue", sentence: "Cada vez más familias se mudan a las afueras.", sentence_trans: "De plus en plus de familles déménagent en banlieue." },
+      { levels: ["C1"], es: "El casco antiguo", en: "La vieille ville", sentence: "El casco antiguo fue restaurado con gran esmero.", sentence_trans: "La vieille ville a été restaurée avec le plus grand soin." }
     ],
     travel: [
       { levels: ["A1"], es: "El coche", en: "La voiture", sentence: "Tengo un coche rojo.", sentence_trans: "J'ai une voiture rouge." },
@@ -73,7 +91,13 @@ export const DATA_BANK = {
       { levels: ["A2"], es: "El billete", en: "Le billet", sentence: "Compré el billete online.", sentence_trans: "J'ai acheté le billet en ligne." },
       { levels: ["A2"], es: "La maleta", en: "La valise", sentence: "Hago mi maleta.", sentence_trans: "Je fais ma valise." },
       { levels: ["B1"], es: "El pasaporte", en: "Le passeport", sentence: "Olvidé mi pasaporte.", sentence_trans: "J'ai oublié mon passeport." },
-      { levels: ["B1"], es: "El viaje", en: "Le voyage", sentence: "Fue un viaje largo.", sentence_trans: "C'était un long voyage." }
+      { levels: ["B1"], es: "El viaje", en: "Le voyage", sentence: "Fue un viaje largo.", sentence_trans: "C'était un long voyage." },
+      { levels: ["B2"], es: "El alojamiento", en: "L'hébergement", sentence: "Reservamos el alojamiento con antelación.", sentence_trans: "Nous avons réservé l'hébergement à l'avance." },
+      { levels: ["B2"], es: "La aduana", en: "La douane", sentence: "Pasamos la aduana sin ningún problema.", sentence_trans: "Nous avons passé la douane sans aucun problème." },
+      { levels: ["B2"], es: "El retraso", en: "Le retard", sentence: "El vuelo salió con dos horas de retraso.", sentence_trans: "Le vol est parti avec deux heures de retard." },
+      { levels: ["C1"], es: "La travesía", en: "La traversée", sentence: "La travesía del océano duró tres semanas.", sentence_trans: "La traversée de l'océan a duré trois semaines." },
+      { levels: ["C1"], es: "El yacimiento", en: "Le site archéologique", sentence: "El yacimiento atrae a miles de visitantes cada año.", sentence_trans: "Le site archéologique attire des milliers de visiteurs chaque année." },
+      { levels: ["C1"], es: "El hallazgo", en: "La découverte", sentence: "El hallazgo cambió lo que sabíamos de esa civilización.", sentence_trans: "Cette découverte a changé ce que nous savions de cette civilisation." }
     ],
     tech: [
       { levels: ["A1"], es: "El móvil", en: "Le portable", sentence: "Mi móvil no tiene batería.", sentence_trans: "Mon portable n'a plus de batterie." },
@@ -82,7 +106,13 @@ export const DATA_BANK = {
       { levels: ["A2"], es: "La pantalla", en: "L'écran", sentence: "La pantalla es táctil.", sentence_trans: "L'écran est tactile." },
       { levels: ["A2"], es: "El mensaje", en: "Le message", sentence: "Te envié un mensaje.", sentence_trans: "Je t'ai envoyé un message." },
       { levels: ["B1"], es: "La red", en: "Le réseau", sentence: "La red está lenta.", sentence_trans: "Le réseau est lent." },
-      { levels: ["B1"], es: "El archivo", en: "Le fichier", sentence: "Guarda el archivo.", sentence_trans: "Sauvegarde le fichier." }
+      { levels: ["B1"], es: "El archivo", en: "Le fichier", sentence: "Guarda el archivo.", sentence_trans: "Sauvegarde le fichier." },
+      { levels: ["B2"], es: "La herramienta", en: "L'outil", sentence: "Es una herramienta imprescindible para el equipo.", sentence_trans: "C'est un outil indispensable pour l'équipe." },
+      { levels: ["B2"], es: "El avance", en: "L'avancée", sentence: "Este avance tecnológico ahorra mucho tiempo.", sentence_trans: "Cette avancée technologique fait gagner beaucoup de temps." },
+      { levels: ["B2"], es: "El usuario", en: "L'utilisateur", sentence: "El usuario debe aceptar las condiciones.", sentence_trans: "L'utilisateur doit accepter les conditions." },
+      { levels: ["C1"], es: "La inteligencia artificial", en: "L'intelligence artificielle", sentence: "La inteligencia artificial plantea dilemas éticos.", sentence_trans: "L'intelligence artificielle soulève des dilemmes éthiques." },
+      { levels: ["C1"], es: "El desarrollo", en: "Le développement", sentence: "El desarrollo del proyecto superó todas las expectativas.", sentence_trans: "Le développement du projet a dépassé toutes les attentes." },
+      { levels: ["C1"], es: "La brecha digital", en: "La fracture numérique", sentence: "La brecha digital sigue aumentando las desigualdades.", sentence_trans: "La fracture numérique continue d'accroître les inégalités." }
     ],
     food_fruit: [
       { levels: ["A1"], es: "La manzana", en: "La pomme", sentence: "Como una manzana roja.", sentence_trans: "Je mange une pomme rouge." },
@@ -90,7 +120,13 @@ export const DATA_BANK = {
       { levels: ["A1"], es: "La naranja", en: "L'orange", sentence: "Bebo jugo de naranja.", sentence_trans: "Je bois du jus d'orange." },
       { levels: ["A2"], es: "La fresa", en: "La fraise", sentence: "Me gustan las fresas.", sentence_trans: "J'aime les fraises." },
       { levels: ["A2"], es: "El tomate", en: "La tomate", sentence: "El tomate es para la ensalada.", sentence_trans: "La tomate est pour la salade." },
-      { levels: ["A2"], es: "La patata", en: "La pomme de terre", sentence: "Patatas fritas.", sentence_trans: "Pommes frites." }
+      { levels: ["A2"], es: "La patata", en: "La pomme de terre", sentence: "Patatas fritas.", sentence_trans: "Pommes frites." },
+      { levels: ["B2"], es: "La dieta", en: "Le régime alimentaire", sentence: "Sigue una dieta equilibrada desde hace un año.", sentence_trans: "Il suit un régime équilibré depuis un an." },
+      { levels: ["B2"], es: "El alimento", en: "L'aliment", sentence: "Es un alimento rico en vitaminas.", sentence_trans: "C'est un aliment riche en vitamines." },
+      { levels: ["B2"], es: "La cosecha", en: "La récolte", sentence: "Este año la cosecha ha sido excelente.", sentence_trans: "Cette année, la récolte a été excellente." },
+      { levels: ["C1"], es: "El ingrediente", en: "L'ingrédient", sentence: "El ingrediente secreto es la paciencia.", sentence_trans: "L'ingrédient secret, c'est la patience." },
+      { levels: ["C1"], es: "La escasez", en: "La pénurie", sentence: "La sequía provocó una escasez de alimentos.", sentence_trans: "La sécheresse a provoqué une pénurie alimentaire." },
+      { levels: ["C1"], es: "El abastecimiento", en: "L'approvisionnement", sentence: "El abastecimiento de la ciudad depende del puerto.", sentence_trans: "L'approvisionnement de la ville dépend du port." }
     ],
     food_meal: [
       { levels: ["A1"], es: "El pan", en: "Le pain", sentence: "Pan con queso.", sentence_trans: "Pain au fromage." },
@@ -100,7 +136,13 @@ export const DATA_BANK = {
       { levels: ["A2"], es: "El pollo", en: "Le poulet", sentence: "Pollo asado.", sentence_trans: "Poulet rôti." },
       { levels: ["A2"], es: "El pescado", en: "Le poisson", sentence: "Pescado fresco.", sentence_trans: "Poisson frais." },
       { levels: ["B1"], es: "La cena", en: "Le dîner", sentence: "La cena está lista.", sentence_trans: "Le dîner est prêt." },
-      { levels: ["B1"], es: "El desayuno", en: "Le petit-déjeuner", sentence: "Desayuno fuerte.", sentence_trans: "Petit-déjeuner copieux." }
+      { levels: ["B1"], es: "El desayuno", en: "Le petit-déjeuner", sentence: "Desayuno fuerte.", sentence_trans: "Petit-déjeuner copieux." },
+      { levels: ["B2"], es: "La receta", en: "La recette", sentence: "Esta receta es de mi abuela.", sentence_trans: "Cette recette vient de ma grand-mère." },
+      { levels: ["B2"], es: "El sabor", en: "La saveur", sentence: "Tiene un sabor muy intenso.", sentence_trans: "Il a une saveur très intense." },
+      { levels: ["B2"], es: "La cuenta", en: "L'addition", sentence: "¿Nos trae la cuenta, por favor?", sentence_trans: "Vous nous apportez l'addition, s'il vous plaît ?" },
+      { levels: ["C1"], es: "El paladar", en: "Le palais", sentence: "Es un plato para paladares exigentes.", sentence_trans: "C'est un plat pour les palais exigeants." },
+      { levels: ["C1"], es: "La degustación", en: "La dégustation", sentence: "El menú de degustación incluye siete platos.", sentence_trans: "Le menu dégustation comprend sept plats." },
+      { levels: ["C1"], es: "El maridaje", en: "L'accord mets-vins", sentence: "El maridaje realza los sabores del plato.", sentence_trans: "L'accord mets-vins rehausse les saveurs du plat." }
     ],
     clothing: [
       { levels: ["A1"], es: "La ropa", en: "Les vêtements", sentence: "Compro ropa nueva.", sentence_trans: "J'achète des vêtements neufs." },
@@ -109,7 +151,13 @@ export const DATA_BANK = {
       { levels: ["A2"], es: "El pantalón", en: "Le pantalon", sentence: "El pantalón es largo.", sentence_trans: "Le pantalon est long." },
       { levels: ["A2"], es: "El abrigo", en: "Le manteau", sentence: "Hace frío, ponte el abrigo.", sentence_trans: "Il fait froid, mets ton manteau." },
       { levels: ["B1"], es: "El vestido", en: "La robe", sentence: "Un vestido elegante.", sentence_trans: "Une robe élégante." },
-      { levels: ["B1"], es: "Las gafas", en: "Les lunettes", sentence: "Gafas de sol.", sentence_trans: "Lunettes de soleil." }
+      { levels: ["B1"], es: "Las gafas", en: "Les lunettes", sentence: "Gafas de sol.", sentence_trans: "Lunettes de soleil." },
+      { levels: ["B2"], es: "La moda", en: "La mode", sentence: "La moda cambia cada temporada.", sentence_trans: "La mode change à chaque saison." },
+      { levels: ["B2"], es: "La talla", en: "La taille", sentence: "¿Tiene esta camisa en otra talla?", sentence_trans: "Avez-vous cette chemise dans une autre taille ?" },
+      { levels: ["B2"], es: "La marca", en: "La marque", sentence: "Es una marca conocida en todo el mundo.", sentence_trans: "C'est une marque connue dans le monde entier." },
+      { levels: ["C1"], es: "El lujo", en: "Le luxe", sentence: "El mercado del lujo no conoce la crisis.", sentence_trans: "Le marché du luxe ne connaît pas la crise." },
+      { levels: ["C1"], es: "La artesanía", en: "L'artisanat", sentence: "La artesanía local da trabajo a todo el pueblo.", sentence_trans: "L'artisanat local fait vivre tout le village." },
+      { levels: ["C1"], es: "La tendencia", en: "La tendance", sentence: "Esta tendencia marcará la próxima década.", sentence_trans: "Cette tendance marquera la prochaine décennie." }
     ],
     nature: [
       { levels: ["A1"], es: "El sol", en: "Le soleil", sentence: "Hace sol.", sentence_trans: "Il fait soleil." },
@@ -119,7 +167,13 @@ export const DATA_BANK = {
       { levels: ["A2"], es: "La flor", en: "La fleur", sentence: "Una flor bonita.", sentence_trans: "Une jolie fleur." },
       { levels: ["A2"], es: "La playa", en: "La plage", sentence: "Arena de playa.", sentence_trans: "Sable de plage." },
       { levels: ["B1"], es: "El mar", en: "La mer", sentence: "Nado en el mar.", sentence_trans: "Je nage dans la mer." },
-      { levels: ["B1"], es: "La montaña", en: "La montagne", sentence: "Aire de montaña.", sentence_trans: "Air de montagne." }
+      { levels: ["B1"], es: "La montaña", en: "La montagne", sentence: "Aire de montaña.", sentence_trans: "Air de montagne." },
+      { levels: ["B2"], es: "El medio ambiente", en: "L'environnement", sentence: "Debemos cuidar el medio ambiente.", sentence_trans: "Nous devons prendre soin de l'environnement." },
+      { levels: ["B2"], es: "La sequía", en: "La sécheresse", sentence: "La sequía afecta a toda la región.", sentence_trans: "La sécheresse touche toute la région." },
+      { levels: ["B2"], es: "El planeta", en: "La planète", sentence: "Solo tenemos un planeta.", sentence_trans: "Nous n'avons qu'une seule planète." },
+      { levels: ["C1"], es: "El calentamiento global", en: "Le réchauffement climatique", sentence: "El calentamiento global amenaza a numerosas especies.", sentence_trans: "Le réchauffement climatique menace de nombreuses espèces." },
+      { levels: ["C1"], es: "La sostenibilidad", en: "La durabilité", sentence: "La sostenibilidad debe guiar nuestras decisiones.", sentence_trans: "La durabilité doit guider nos décisions." },
+      { levels: ["C1"], es: "El deshielo", en: "La fonte des glaces", sentence: "El deshielo de los polos se acelera.", sentence_trans: "La fonte des glaces aux pôles s'accélère." }
     ],
     job: [
       { levels: ["A2"], es: "El trabajo", en: "Le travail", sentence: "Busco trabajo.", sentence_trans: "Je cherche du travail." },
@@ -128,16 +182,28 @@ export const DATA_BANK = {
       { levels: ["B1"], es: "La empresa", en: "L'entreprise", sentence: "Una empresa grande.", sentence_trans: "Une grande entreprise." },
       { levels: ["B1"], es: "El cliente", en: "Le client", sentence: "Llamo al cliente.", sentence_trans: "J'appelle le client." },
       { levels: ["B1"], es: "El proyecto", en: "Le projet", sentence: "Nuevo proyecto.", sentence_trans: "Nouveau projet." },
-      { levels: ["B2"], es: "La reunión", en: "La réunion", sentence: "Estamos en una reunión.", sentence_trans: "Nous sommes en réunion." }
+      { levels: ["B2"], es: "La reunión", en: "La réunion", sentence: "Estamos en una reunión.", sentence_trans: "Nous sommes en réunion." },
+      { levels: ["B2"], es: "El acuerdo", en: "L'accord", sentence: "Llegamos a un acuerdo tras horas de negociación.", sentence_trans: "Nous sommes parvenus à un accord après des heures de négociation." },
+      { levels: ["B2"], es: "La empresa emergente", en: "La start-up", sentence: "Fundó una empresa emergente con dos amigos.", sentence_trans: "Il a fondé une start-up avec deux amis." },
+      { levels: ["B2"], es: "El sueldo", en: "Le salaire", sentence: "Pidió un aumento de sueldo.", sentence_trans: "Il a demandé une augmentation de salaire." },
+      { levels: ["C1"], es: "La inversión", en: "L'investissement", sentence: "Es una inversión arriesgada pero rentable.", sentence_trans: "C'est un investissement risqué mais rentable." },
+      { levels: ["C1"], es: "El rendimiento", en: "Le rendement", sentence: "El rendimiento de la bolsa ha caído este trimestre.", sentence_trans: "Le rendement de la Bourse a chuté ce trimestre." },
+      { levels: ["C1"], es: "El embajador", en: "L'ambassadeur", sentence: "El embajador fue recibido con todos los honores.", sentence_trans: "L'ambassadeur a été reçu avec tous les honneurs." }
     ],
     family: [
       { levels: ["A1"], es: "La madre", en: "La mère", sentence: "Amo a mi madre.", sentence_trans: "J'aime ma mère." },
       { levels: ["A1"], es: "El padre", en: "Le père", sentence: "Mi padre es fuerte.", sentence_trans: "Mon père est fort." },
       { levels: ["A1"], es: "El hermano", en: "Le frère", sentence: "Tengo un hermano.", sentence_trans: "J'ai un frère." },
-      { levels: ["A1"], es: "La hermana", en: "La soeur", sentence: "Mi hermana lee.", sentence_trans: "Ma soeur lit." },
+      { levels: ["A1"], es: "La hermana", en: "La sœur", sentence: "Mi hermana lee.", sentence_trans: "Ma soeur lit." },
       { levels: ["A2"], es: "El abuelo", en: "Le grand-père", sentence: "Visito a mi abuelo.", sentence_trans: "Je rends visite à mon grand-père." },
       { levels: ["A2"], es: "El amigo", en: "L'ami", sentence: "Salgo con mi amigo.", sentence_trans: "Je sors avec mon ami." },
-      { levels: ["B1"], es: "El vecino", en: "Le voisin", sentence: "Mi vecino saluda.", sentence_trans: "Mon voisin salue." }
+      { levels: ["B1"], es: "El vecino", en: "Le voisin", sentence: "Mi vecino saluda.", sentence_trans: "Mon voisin salue." },
+      { levels: ["B2"], es: "El voluntario", en: "Le bénévole", sentence: "Trabaja como voluntario en una asociación.", sentence_trans: "Il travaille comme bénévole dans une association." },
+      { levels: ["B2"], es: "La pareja", en: "Le couple", sentence: "Son una pareja muy unida.", sentence_trans: "C'est un couple très uni." },
+      { levels: ["B2"], es: "El malentendido", en: "Le malentendu", sentence: "Todo fue un simple malentendido.", sentence_trans: "Tout cela n'était qu'un simple malentendu." },
+      { levels: ["C1"], es: "El vínculo", en: "Le lien", sentence: "El vínculo entre hermanos es muy fuerte.", sentence_trans: "Le lien entre frères et sœurs est très fort." },
+      { levels: ["C1"], es: "La costumbre", en: "La coutume", sentence: "Cada pueblo conserva sus propias costumbres.", sentence_trans: "Chaque peuple conserve ses propres coutumes." },
+      { levels: ["C1"], es: "El antepasado", en: "L'ancêtre", sentence: "Sus antepasados emigraron a América.", sentence_trans: "Ses ancêtres ont émigré en Amérique." }
     ],
     abstract: [
       { levels: ["A1"], es: "El nombre", en: "Le nom", sentence: "Mi nombre es Juan.", sentence_trans: "Mon nom est Juan." },
@@ -145,39 +211,75 @@ export const DATA_BANK = {
       { levels: ["A2"], es: "La vida", en: "La vie", sentence: "La vida es bella.", sentence_trans: "La vie est belle." },
       { levels: ["B1"], es: "La verdad", en: "La vérité", sentence: "Dime la verdad.", sentence_trans: "Dis-moi la vérité." },
       { levels: ["B1"], es: "El miedo", en: "La peur", sentence: "No tengo miedo.", sentence_trans: "Je n'ai pas peur." },
-      { levels: ["B1"], es: "La suerte", en: "La chance", sentence: "Buena suerte.", sentence_trans: "Bonne chance." }
+      { levels: ["B1"], es: "La suerte", en: "La chance", sentence: "Buena suerte.", sentence_trans: "Bonne chance." },
+      { levels: ["B2"], es: "El matiz", en: "La nuance", sentence: "Hay un matiz importante entre las dos palabras.", sentence_trans: "Il y a une nuance importante entre les deux mots." },
+      { levels: ["B2"], es: "El comportamiento", en: "Le comportement", sentence: "Su comportamiento sorprendió a todos.", sentence_trans: "Son comportement a surpris tout le monde." },
+      { levels: ["B2"], es: "El reto", en: "Le défi", sentence: "Aprender un idioma es un reto apasionante.", sentence_trans: "Apprendre une langue est un défi passionnant." },
+      { levels: ["C1"], es: "El planteamiento", en: "L'approche", sentence: "Su planteamiento del problema es muy original.", sentence_trans: "Son approche du problème est très originale." },
+      { levels: ["C1"], es: "La elocuencia", en: "L'éloquence", sentence: "Convenció al público con su elocuencia.", sentence_trans: "Il a convaincu le public par son éloquence." },
+      { levels: ["C1"], es: "El razonamiento", en: "Le raisonnement", sentence: "Su razonamiento no admite réplica.", sentence_trans: "Son raisonnement est sans réplique." }
     ],
     health: [
       { levels: ["A2"], es: "El cuerpo", en: "Le corps", sentence: "Mueve el cuerpo.", sentence_trans: "Bouge ton corps." },
       { levels: ["A2"], es: "La mano", en: "La main", sentence: "Dame la mano.", sentence_trans: "Donne-moi la main." },
       { levels: ["A2"], es: "El dolor", en: "La douleur", sentence: "Siento dolor.", sentence_trans: "Je ressens de la douleur." },
       { levels: ["B1"], es: "El médico", en: "Le médecin", sentence: "Cita con el médico.", sentence_trans: "Rendez-vous avec le médecin." },
-      { levels: ["B1"], es: "La salud", en: "La santé", sentence: "Salud y amor.", sentence_trans: "Santé et amour." }
+      { levels: ["B1"], es: "La salud", en: "La santé", sentence: "Salud y amor.", sentence_trans: "Santé et amour." },
+      { levels: ["B2"], es: "El tratamiento", en: "Le traitement", sentence: "El tratamiento dura seis meses.", sentence_trans: "Le traitement dure six mois." },
+      { levels: ["B2"], es: "El síntoma", en: "Le symptôme", sentence: "La fiebre es el síntoma más frecuente.", sentence_trans: "La fièvre est le symptôme le plus fréquent." },
+      { levels: ["B2"], es: "La cirugía", en: "La chirurgie", sentence: "La cirugía fue todo un éxito.", sentence_trans: "L'opération a été une vraie réussite." },
+      { levels: ["C1"], es: "El cerebro", en: "Le cerveau", sentence: "El cerebro humano sigue siendo un misterio.", sentence_trans: "Le cerveau humain reste un mystère." },
+      { levels: ["C1"], es: "El ensayo clínico", en: "L'essai clinique", sentence: "El ensayo clínico dio resultados prometedores.", sentence_trans: "L'essai clinique a donné des résultats prometteurs." },
+      { levels: ["C1"], es: "La bioética", en: "La bioéthique", sentence: "La bioética estudia los límites de la ciencia.", sentence_trans: "La bioéthique étudie les limites de la science." }
     ],
     school: [
       { levels: ["A1"], es: "El libro", en: "Le livre", sentence: "Leo un libro.", sentence_trans: "Je lis un livre." },
       { levels: ["A2"], es: "El papel", en: "Le papier", sentence: "Escribe en el papel.", sentence_trans: "Écris sur le papier." },
       { levels: ["A2"], es: "La palabra", en: "Le mot", sentence: "Una palabra nueva.", sentence_trans: "Un mot nouveau." },
       { levels: ["B1"], es: "El examen", en: "L'examen", sentence: "Tengo un examen.", sentence_trans: "J'ai un examen." },
-      { levels: ["B1"], es: "La clase", en: "Le cours", sentence: "Empieza la clase.", sentence_trans: "Le cours commence." }
+      { levels: ["B1"], es: "La clase", en: "Le cours", sentence: "Empieza la clase.", sentence_trans: "Le cours commence." },
+      { levels: ["B2"], es: "El ensayo", en: "L'essai", sentence: "Escribió un ensayo sobre la novela moderna.", sentence_trans: "Il a écrit un essai sur le roman moderne." },
+      { levels: ["B2"], es: "El idioma", en: "La langue", sentence: "Domina tres idiomas.", sentence_trans: "Il maîtrise trois langues." },
+      { levels: ["B2"], es: "El aprendizaje", en: "L'apprentissage", sentence: "El aprendizaje requiere constancia.", sentence_trans: "L'apprentissage demande de la régularité." },
+      { levels: ["C1"], es: "La traducción", en: "La traduction", sentence: "Una buena traducción respeta el tono del original.", sentence_trans: "Une bonne traduction respecte le ton de l'original." },
+      { levels: ["C1"], es: "El verso", en: "Le vers", sentence: "Recitó de memoria los versos de Lorca.", sentence_trans: "Il a récité par cœur les vers de Lorca." },
+      { levels: ["C1"], es: "La obra maestra", en: "Le chef-d'œuvre", sentence: "«El Quijote» es una obra maestra de la literatura.", sentence_trans: "« Don Quichotte » est un chef-d'œuvre de la littérature." }
     ],
     society: [
       { levels: ["A2"], es: "El dinero", en: "L'argent", sentence: "No tengo dinero.", sentence_trans: "Je n'ai pas d'argent." },
       { levels: ["A2"], es: "La tarjeta", en: "La carte", sentence: "Pago con tarjeta.", sentence_trans: "Je paie par carte." },
       { levels: ["A2"], es: "El banco", en: "La banque", sentence: "Voy al banco.", sentence_trans: "Je vais à la banque." },
       { levels: ["B1"], es: "La ley", en: "La loi", sentence: "Respeto la ley.", sentence_trans: "Je respecte la loi." },
-      { levels: ["B1"], es: "La policía", en: "La police", sentence: "Llama a la policía.", sentence_trans: "Appelle la police." }
+      { levels: ["B1"], es: "La policía", en: "La police", sentence: "Llama a la policía.", sentence_trans: "Appelle la police." },
+      { levels: ["B2"], es: "El derecho", en: "Le droit", sentence: "Todos tenemos derecho a la educación.", sentence_trans: "Nous avons tous droit à l'éducation." },
+      { levels: ["B2"], es: "El juicio", en: "Le procès", sentence: "El juicio comenzará la semana que viene.", sentence_trans: "Le procès commencera la semaine prochaine." },
+      { levels: ["B2"], es: "La igualdad", en: "L'égalité", sentence: "Luchan por la igualdad de oportunidades.", sentence_trans: "Ils luttent pour l'égalité des chances." },
+      { levels: ["C1"], es: "El periodismo de investigación", en: "Le journalisme d'investigation", sentence: "El periodismo de investigación destapó el escándalo.", sentence_trans: "Le journalisme d'investigation a révélé le scandale." },
+      { levels: ["C1"], es: "La soberanía", en: "La souveraineté", sentence: "El tratado respeta la soberanía de cada país.", sentence_trans: "Le traité respecte la souveraineté de chaque pays." },
+      { levels: ["C1"], es: "El desafío", en: "L'enjeu", sentence: "El gran desafío del siglo es la desigualdad.", sentence_trans: "Le grand enjeu du siècle, ce sont les inégalités." }
     ],
     objects: [
       { levels: ["A1"], es: "El bolígrafo", en: "Le stylo", sentence: "Escribe con bolígrafo.", sentence_trans: "Écris au stylo." },
       { levels: ["A1"], es: "La mochila", en: "Le sac à dos", sentence: "Mi mochila pesa.", sentence_trans: "Mon sac à dos est lourd." },
       { levels: ["A2"], es: "La caja", en: "La boîte", sentence: "Abre la caja.", sentence_trans: "Ouvre la boîte." },
-      { levels: ["A2"], es: "El regalo", en: "Le cadeau", sentence: "Es un regalo.", sentence_trans: "C'est un cadeau." }
+      { levels: ["A2"], es: "El regalo", en: "Le cadeau", sentence: "Es un regalo.", sentence_trans: "C'est un cadeau." },
+      { levels: ["B2"], es: "El aparato", en: "L'appareil", sentence: "Este aparato consume poca energía.", sentence_trans: "Cet appareil consomme peu d'énergie." },
+      { levels: ["B2"], es: "El recipiente", en: "Le récipient", sentence: "Guarda la salsa en un recipiente cerrado.", sentence_trans: "Conserve la sauce dans un récipient fermé." },
+      { levels: ["B2"], es: "El envase", en: "L'emballage", sentence: "El envase es totalmente reciclable.", sentence_trans: "L'emballage est entièrement recyclable." },
+      { levels: ["C1"], es: "El utensilio", en: "L'ustensile", sentence: "Encontraron utensilios de la Edad de Bronce.", sentence_trans: "Ils ont trouvé des ustensiles de l'âge du bronze." },
+      { levels: ["C1"], es: "La pieza", en: "La pièce", sentence: "Es una pieza única del siglo quince.", sentence_trans: "C'est une pièce unique du quinzième siècle." },
+      { levels: ["C1"], es: "El artefacto", en: "L'artefact", sentence: "El artefacto se expone hoy en el museo.", sentence_trans: "L'artefact est aujourd'hui exposé au musée." }
     ],
     leisure: [
       { levels: ["A1"], es: "El juego", en: "Le jeu", sentence: "Es un juego.", sentence_trans: "C'est un jeu." },
       { levels: ["A2"], es: "La fiesta", en: "La fête", sentence: "Vamos a la fiesta.", sentence_trans: "Allons à la fête." },
-      { levels: ["B1"], es: "El deporte", en: "Le sport", sentence: "Hago deporte.", sentence_trans: "Je fais du sport." }
+      { levels: ["B1"], es: "El deporte", en: "Le sport", sentence: "Hago deporte.", sentence_trans: "Je fais du sport." },
+      { levels: ["B2"], es: "El guion", en: "Le scénario", sentence: "El guion de la película es brillante.", sentence_trans: "Le scénario du film est brillant." },
+      { levels: ["B2"], es: "La exposición", en: "L'exposition", sentence: "La exposición reúne cien cuadros.", sentence_trans: "L'exposition réunit cent tableaux." },
+      { levels: ["B2"], es: "El rodaje", en: "Le tournage", sentence: "El rodaje duró cuatro meses.", sentence_trans: "Le tournage a duré quatre mois." },
+      { levels: ["C1"], es: "El escenario", en: "La scène", sentence: "El actor domina el escenario como nadie.", sentence_trans: "L'acteur occupe la scène comme personne." },
+      { levels: ["C1"], es: "La partitura", en: "La partition", sentence: "El director estudia la partitura durante horas.", sentence_trans: "Le chef d'orchestre étudie la partition pendant des heures." },
+      { levels: ["C1"], es: "El estreno", en: "La première", sentence: "El estreno de la obra fue un éxito rotundo.", sentence_trans: "La première de la pièce a été un succès éclatant." }
     ]
   },
 
@@ -193,29 +295,38 @@ export const DATA_BANK = {
   ],
 
   connectors: [
-    { es: "Y", en: "Et" },
-    { es: "Pero", en: "Mais" },
-    { es: "O", en: "Ou" },
-    { es: "Porque", en: "Parce que" },
-    { es: "Si", en: "Si" },
-    { es: "Cuando", en: "Quand" }
+    { es: "Y", en: "Et", sentence: "Estudio y trabajo.", sentence_trans: "J'étudie et je travaille." },
+    { es: "Pero", en: "Mais", sentence: "Es difícil, pero interesante.", sentence_trans: "C'est difficile, mais intéressant." },
+    { es: "O", en: "Ou", sentence: "¿Quieres té o café?", sentence_trans: "Tu veux du thé ou du café ?" },
+    { es: "Porque", en: "Parce que", sentence: "Estudio porque quiero viajar.", sentence_trans: "J'étudie parce que je veux voyager." },
+    { es: "Si", en: "Si", sentence: "Si puedo, voy contigo.", sentence_trans: "Si je peux, je viens avec toi." },
+    { es: "Cuando", en: "Quand", sentence: "Leo cuando tengo tiempo.", sentence_trans: "Je lis quand j'ai le temps." },
+    { es: "Sin embargo", en: "Cependant", sentence: "Es caro; sin embargo, vale la pena.", sentence_trans: "C'est cher ; cependant, ça vaut la peine." },
+    { es: "Además", en: "De plus", sentence: "Es simpático y, además, muy trabajador.", sentence_trans: "Il est sympathique et, de plus, très travailleur." },
+    { es: "Aunque", en: "Bien que", sentence: "Salgo aunque llueva.", sentence_trans: "Je sors même s'il pleut." },
+    { es: "Por lo tanto", en: "Par conséquent", sentence: "Llueve; por lo tanto, me quedo en casa.", sentence_trans: "Il pleut ; par conséquent, je reste à la maison." }
   ],
 
   tips: [
-    "Astuce : 'H' est toujours muet en espagnol.",
-    "Astuce : Ser = permanent, Estar = temporaire.",
-    "Astuce : Les adjectifs s'accordent en genre/nombre.",
-    "Astuce : 'Hay' (il y a) est invariable.",
-    "Astuce : On tutoie plus facilement en Espagne."
+    "La lettre « h » est toujours muette en espagnol : « hola » se prononce « ola ».",
+    "« Ser » exprime ce qui définit (identité, origine, métier) ; « estar » exprime un état ou un lieu.",
+    "L'adjectif s'accorde en genre et en nombre avec le nom : « la casa blanca », « los coches blancos ».",
+    "« Hay » (il y a) est invariable : « hay un libro », « hay dos libros ».",
+    "En Espagne, on tutoie beaucoup plus facilement qu'en France, même des inconnus.",
+    "Les questions et les exclamations s'ouvrent par un signe inversé : « ¿Qué tal? », « ¡Hola! ».",
+    "Le pronom sujet est souvent omis : « hablo español » suffit pour dire « je parle espagnol ».",
+    "Le « v » et le « b » se prononcent presque de la même façon : « vino » sonne comme « bino ».",
+    "Les mots terminés par une voyelle, « n » ou « s » sont accentués sur l'avant-dernière syllabe.",
+    "« Usted » (vous de politesse) se conjugue à la troisième personne : « ¿Cómo está usted? »."
   ]
 };
 
 export const SENTENCE_STRUCTURES = [
-  { id: 1, title: "La Phrase Simple", formula: "Sujet + Verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Sujet souvent omis." },
-  { id: 2, title: "La Négation", formula: "No + Verbe", example_es: "No hablo.", example_en: "Je ne parle pas.", explanation: "'No' se place avant le verbe." },
-  { id: 3, title: "L'Accord", formula: "Nom + Adjectif", example_es: "Casa roja.", example_en: "Maison rouge.", explanation: "Accord en genre et nombre." },
-  { id: 4, title: "Gustar", formula: "Me gusta...", example_es: "Me gusta el pan.", example_en: "J'aime le pain.", explanation: "Verbe spécial." },
-  { id: 5, title: "Futur Proche", formula: "Ir a + Infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Pour le futur immédiat." }
+  { id: 1, title: "La phrase simple", formula: "Sujet + verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Le pronom sujet est souvent omis : la terminaison du verbe suffit." },
+  { id: 2, title: "La négation", formula: "No + verbe", example_es: "No hablo.", example_en: "Je ne parle pas.", explanation: "« No » se place juste avant le verbe." },
+  { id: 3, title: "L'accord", formula: "Nom + adjectif", example_es: "La casa roja.", example_en: "La maison rouge.", explanation: "L'adjectif suit le nom et s'accorde en genre et en nombre." },
+  { id: 4, title: "Gustar", formula: "Me gusta...", example_es: "Me gusta el pan.", example_en: "J'aime le pain.", explanation: "Littéralement « le pain me plaît » : le verbe s'accorde avec ce que l'on aime." },
+  { id: 5, title: "Le futur proche", formula: "Ir a + infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Pour parler d'une action imminente ou d'un projet." }
 ];
 
 export const DAILY_READINGS = [

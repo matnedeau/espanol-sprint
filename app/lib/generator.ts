@@ -1,6 +1,17 @@
 import { DATA_BANK, DAILY_READINGS, CONTENT_PART_1 } from './data-bank';
 import { CURRICULUM_LOGIC } from './curriculum';
 
+// Accorde l'adjectif avec le nom (genre et nombre) : « La casa » + « Nuevo » → « La casa nueva »
+const agree = (noun: string, adjective: string) => {
+  const article = noun.split(' ')[0].toLowerCase();
+  let adj = adjective.toLowerCase();
+  const feminine = ['la', 'las', 'una'].includes(article) || noun.toLowerCase() === 'el agua';
+  const plural = article === 'los' || article === 'las';
+  if (feminine && adj.endsWith('o')) adj = adj.slice(0, -1) + 'a';
+  if (plural) adj = /[aeiouáéíóú]$/.test(adj) ? adj + 's' : adj.replace(/z$/, 'c') + 'es';
+  return `${noun} ${adj}`;
+};
+
 // --- CŒUR DU GÉNÉRATEUR ---
 
 export const generateStructuredLesson = (id: number) => {
@@ -82,26 +93,26 @@ export const generateStructuredLesson = (id: number) => {
 
   let cardId = id * 1000;
   const isPlural = id % 2 === 0;
-  const grammarQuestionText = isPlural ? `Conjugue : Nosotros (${randVerb.es})` : `Conjugue : Tú (${randVerb.es})`;
+  const grammarQuestionText = isPlural ? `Conjugue « ${randVerb.es.toLowerCase()} » avec nosotros` : `Conjugue « ${randVerb.es.toLowerCase()} » avec tú`;
   const targetPronoun = isPlural ? "Nos" : "Tú";
   const conjFn = randVerb.conjugation.find(c => c.pronoun.includes(targetPronoun) || (targetPronoun === "Nos" && c.pronoun.includes("Nosotros")));
   const grammarAnswer = conjFn ? [conjFn.verb] : [randVerb.conjugation[0].verb];
 
-  const c1 = { ...card1Noun, context: "Mot clé", sentence: card1Noun.sentence, sentence_trans: card1Noun.sentence_trans };
+  const c1 = { ...card1Noun, context: "Mot-clé", sentence: card1Noun.sentence, sentence_trans: card1Noun.sentence_trans };
   const c2 = { ...card2Noun, context: "Contexte", sentence: card2Noun.sentence, sentence_trans: card2Noun.sentence_trans };
   const c3 = { ...card3Noun, context: "Exemple", sentence: card3Noun.sentence, sentence_trans: card3Noun.sentence_trans };
 
   return [
-    { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Verbe focus : ${randVerb.es}`, note: `Niveau ${level}` },
+    { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Verbe clé : ${randVerb.es}`, note: `Objectif de la leçon (niveau ${level})` },
     { id: cardId++, type: "swipe", es: c1.es, en: c1.en, context: c1.context, sentence: c1.sentence, sentence_trans: c1.sentence_trans },
     { id: cardId++, type: "grammar", title: `Verbe : ${randVerb.es}`, description: randVerb.en, verb: randVerb.es, conjugation: randVerb.conjugation },
     { id: cardId++, type: "input", question: grammarQuestionText, answer: grammarAnswer, hint: `Verbe ${randVerb.es}` },
     { id: cardId++, type: "swipe", es: c2.es, en: c2.en, context: c2.context, sentence: c2.sentence, sentence_trans: c2.sentence_trans },
-    { id: cardId++, type: "structure", title: "L'Accord", formula: "Nom + Adjectif", example: `${c1.es} ${adj.es.toLowerCase()}`, note: "L'adjectif s'accorde." },
+    { id: cardId++, type: "structure", title: "L'accord", formula: "Nom + adjectif", example: agree(c1.es, adj.es), note: "En espagnol, l'adjectif se place après le nom et s'accorde avec lui." },
     { id: cardId++, type: "swipe", es: c3.es, en: c3.en, context: c3.context, sentence: c3.sentence, sentence_trans: c3.sentence_trans },
-    { id: cardId++, type: "swipe", es: conn.es, en: conn.en, context: "Liaison", sentence: `${conn.es}, es importante.`, sentence_trans: `${conn.en}, c'est important.` },
-    { id: cardId++, type: "structure", title: "Astuce", formula: "Bon à savoir", example: tip, note: "Culture" },
-    { id: cardId++, type: "input", question: `Traduis : "${c1.sentence_trans}"`, answer: [c1.sentence.toLowerCase().replace(/[¿¡!.,]/g, '')], hint: "Utilise le vocabulaire vu." }
+    { id: cardId++, type: "swipe", es: conn.es, en: conn.en, context: "Mot de liaison", sentence: conn.sentence, sentence_trans: conn.sentence_trans },
+    { id: cardId++, type: "structure", title: "Astuce", formula: "Bon à savoir", example: tip, note: "À retenir" },
+    { id: cardId++, type: "input", question: `Traduis : "${c1.sentence_trans}"`, answer: [c1.sentence.toLowerCase().replace(/[¿¡!.,]/g, '')], hint: "Utilise le vocabulaire de la leçon." }
   ];
 };
 
@@ -114,11 +125,11 @@ export const generateExamContent = (allContent: any, startId: number, endId: num
       pool = [...pool, ...allContent[i].filter((c: any) => c.type === 'swipe' || c.type === 'input')];
     }
   }
-  if (pool.length < 10) return [{ id: examId, type: "structure", title: "Erreur", formula: "...", example: "...", note: "Contacte le support." }];
+  if (pool.length < 10) return [{ id: examId, type: "structure", title: "Examen indisponible", formula: "Contenu en cours de chargement", example: "Réessaie dans un instant", note: "Si le problème persiste, contacte le support." }];
   const selected = pool.sort(() => 0.5 - Math.random()).slice(0, 20);
   
   return [
-    { id: examId, type: "structure", title: `EXAMEN ${levelName}`, formula: "Test Final", example: "20 Questions", note: "Objectif 16/20" },
+    { id: examId, type: "structure", title: `Examen ${levelName}`, formula: "Test final", example: "20 questions", note: "Objectif : 16 bonnes réponses sur 20" },
     ...selected.map((item: any, idx: number) => {
         if (item.type === 'input') return { ...item, id: examId + idx + 1 };
         const questionText = item.sentence_trans ? `Traduis : "${item.sentence_trans}"` : `Traduis : "${item.en}"`;
@@ -129,7 +140,7 @@ export const generateExamContent = (allContent: any, startId: number, endId: num
             type: 'input',
             question: questionText,
             answer: [answerText.toLowerCase().replace(/[¿¡!.,]/g, '').trim()],
-            hint: item.context || "..."
+            hint: item.context || "Pense au vocabulaire du niveau."
         };
     })
   ];

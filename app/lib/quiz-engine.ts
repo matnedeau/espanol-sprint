@@ -21,9 +21,9 @@ export function generateSuperQuiz(lessonsContent: any, userData: any) {
     return [{
       id: 'error',
       type: 'input',
-      question: "Aucune leçon terminée.",
+      question: "Aucune leçon terminée pour l'instant.",
       answer: ["ok"],
-      hint: "Fais d'abord une leçon !"
+      hint: "Termine d'abord une leçon !"
     }];
   }
 
@@ -39,7 +39,7 @@ export function generateSuperQuiz(lessonsContent: any, userData: any) {
       return {
         id: `q_${index}_listen`,
         type: 'listening',
-        question: "Écoute et écris",
+        question: "Écoute et écris ce que tu entends",
         audioText: item.es,
         correctAnswer: item.es,
         hint: item.en // Indice : la traduction française
@@ -51,9 +51,9 @@ export function generateSuperQuiz(lessonsContent: any, userData: any) {
       return {
         id: `q_${index}_sentence`,
         type: 'input',
-        question: `Traduis : "${item.sentence_trans}"`,
+        question: `Traduis : « ${item.sentence_trans} »`,
         answer: [item.sentence],
-        hint: "Phrase complète en espagnol"
+        hint: "Écris la phrase complète en espagnol."
       };
     }
 
@@ -63,7 +63,7 @@ export function generateSuperQuiz(lessonsContent: any, userData: any) {
     return {
       id: `q_${index}_vocab`,
       type: 'input',
-      question: `Comment dit-on "${item.en}"${contextString} ?`,
+      question: `Comment dit-on « ${item.en} »${contextString} ?`,
       answer: [item.es],
       hint: item.context || "Mot de vocabulaire"
     };

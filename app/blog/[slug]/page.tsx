@@ -1,4 +1,5 @@
-import { BLOG_POSTS, BlogPost } from '@/app/data/blog-content';
+import { BLOG_POSTS, formatDate } from '@/app/data/blog-content';
+import { SITE_URL } from '@/app/lib/site';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -23,8 +24,10 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   if (!post) return { title: 'Article introuvable' };
 
   return {
-    title: `${post.title} | Blog EspañolSprint`,
+    title: post.title,
     description: post.excerpt,
+    alternates: { canonical: `/blog/${post.slug}` },
+    openGraph: { title: post.title, description: post.excerpt, type: 'article', publishedTime: post.date },
   };
 }
 
@@ -37,8 +40,21 @@ export default async function BlogPostPage(props: Props) {
     notFound();
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.date,
+    inLanguage: "fr",
+    author: { "@type": "Organization", name: "EspañolSprint" },
+    mainEntityOfPage: `${SITE_URL}/blog/${post.slug}`,
+  };
+  const otherPosts = BLOG_POSTS.filter((p) => p.slug !== post.slug).slice(0, 3);
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Navigation retour */}
       <nav className="max-w-3xl mx-auto px-6 py-6">
         <Link href="/blog" className="inline-flex items-center text-slate-500 hover:text-indigo-600 font-bold text-sm transition-colors gap-1">
@@ -54,7 +70,7 @@ export default async function BlogPostPage(props: Props) {
               <Tag size={14} className="text-indigo-500" /> {post.category}
             </span>
             <span className="flex items-center gap-1">
-              <Calendar size={14} /> {post.date}
+              <Calendar size={14} /> {formatDate(post.date)}
             </span>
           </div>
           <h1 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-6">
@@ -66,9 +82,8 @@ export default async function BlogPostPage(props: Props) {
         </header>
 
         {/* Contenu de l'article */}
-        <article className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-200 prose prose-slate prose-lg max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-a:text-indigo-600 hover:prose-a:text-indigo-500 prose-strong:text-indigo-900">
-           {/* Injection sécurisée du HTML */}
-           <div dangerouslySetInnerHTML={{ __html: post.content }} />
+        <article className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-200">
+           <div className="article-content" dangerouslySetInnerHTML={{ __html: post.content }} />
         </article>
 
         {/* CTA Fin d'article */}
@@ -76,14 +91,14 @@ export default async function BlogPostPage(props: Props) {
           <div className="relative z-10 space-y-6">
             <h2 className="text-3xl font-black">Cet article vous a plu ?</h2>
             <p className="text-indigo-100 text-lg max-w-lg mx-auto">
-              Ne restez pas sur la théorie ! Passez à la pratique dès maintenant avec nos leçons interactives.
+              Ne restez pas sur la théorie : passez à la pratique dès maintenant avec nos leçons interactives de 5 minutes.
             </p>
             <Link 
-              href="/" 
+              href="/?signup=true" 
               className="inline-flex items-center gap-2 bg-yellow-400 text-indigo-900 px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-yellow-300 hover:scale-105 transition-all"
             >
               <Rocket size={20} />
-              Lancez votre 1ère leçon gratuite
+              Lancer ma première leçon gratuite
             </Link>
           </div>
           
@@ -94,6 +109,19 @@ export default async function BlogPostPage(props: Props) {
             </svg>
           </div>
         </div>
+
+        {/* Autres articles */}
+        <section className="mt-12">
+          <h2 className="text-xl font-black text-slate-900 mb-4">À lire aussi</h2>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {otherPosts.map((p) => (
+              <Link key={p.slug} href={`/blog/${p.slug}`} className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-indigo-300 hover:shadow-md transition-all">
+                <span className="text-xs font-bold text-indigo-600 uppercase">{p.category}</span>
+                <p className="font-bold text-slate-900 mt-1 leading-snug">{p.title}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
 
       </main>
     </div>

@@ -2,26 +2,27 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
+import { SITE_URL } from "@/app/lib/site";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 // 1. CONFIGURATION VIEWPORT (Mobile Friendly)
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: "#facc15", // Jaune Espagnol
-  maximumScale: 1,
 };
 
 // 2. METADONNÉES SEO & OPENGRAPH
 export const metadata: Metadata = {
-  metadataBase: new URL("https://espanolsprint.vercel.app"), // Remplacez par votre URL Vercel finale si différente
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "EspañolSprint - Apprenez l'espagnol en vitesse éclair",
+    default: "EspañolSprint – Apprendre l'espagnol en 5 minutes par jour",
     template: "%s | EspañolSprint",
   },
-  description: "La méthode la plus rapide pour passer de A1 à C1. 5 minutes par jour, gamification style Vision Pro et Audio IA.",
-  keywords: ["espagnol", "apprendre espagnol", "cours espagnol gratuit", "vocabulaire espagnol", "application langue", "sprint", "bilingue espagnol 3 mois"],
+  description: "Apprenez l'espagnol gratuitement, du niveau A1 au niveau C1 : leçons de 5 minutes, histoires audio, test de niveau et coach IA disponible 24 h/24.",
+  keywords: ["apprendre l'espagnol", "cours d'espagnol gratuit", "espagnol débutant", "vocabulaire espagnol", "test de niveau espagnol", "application pour apprendre l'espagnol"],
+  alternates: { canonical: "/" },
   authors: [{ name: "EspañolSprint Team" }],
   creator: "EspañolSprint",
   
@@ -38,9 +39,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    url: "https://espanolsprint.vercel.app",
-    title: "EspañolSprint - Devenez bilingue rapidement",
-    description: "N'apprenez pas l'espagnol, vivez-le. Méthode interactive avec Audio IA et Répétition Espacée.",
+    url: SITE_URL,
+    title: "EspañolSprint – Apprendre l'espagnol en 5 minutes par jour",
+    description: "N'apprenez pas seulement l'espagnol : vivez-le. Leçons éclair, histoires audio et coach IA.",
     siteName: "EspañolSprint",
     images: [
       {
@@ -54,7 +55,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "EspañolSprint 🇪🇸",
-    description: "Le Duolingo killer ? Apprenez l'espagnol avec une UX incroyable.",
+    description: "Leçons de 5 minutes, histoires audio et coach IA pour apprendre l'espagnol rapidement.",
     images: ["/opengraph-image"],
   },
   

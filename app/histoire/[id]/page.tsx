@@ -2,6 +2,7 @@ import { STORIES_DATA } from '@/app/lib/stories'; // <-- CORRECTION ICI
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { SITE_URL } from '@/app/lib/site';
 import { Play, MessageCircle, BookOpen, ArrowLeft } from 'lucide-react';
 
 // 1. DÉFINITION DES TYPES
@@ -51,14 +52,14 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   }
 
   return {
-    title: `Histoire Espagnol : ${story.title} (${story.level})`,
+    title: `Histoire en espagnol : ${story.title} (${story.level})`,
     description: `Lisez et écoutez l'histoire interactive "${story.title}". Améliorez votre espagnol avec ce dialogue de niveau ${story.level}.`,
     alternates: {
       canonical: `/histoire/${story.id}`,
     },
     openGraph: {
-      title: `Histoire Espagnol : ${story.title}`,
-      description: `Une histoire interactive pour apprendre l'espagnol (Niveau ${story.level}).`,
+      title: `Histoire en espagnol : ${story.title}`,
+      description: `Une histoire interactive pour apprendre l'espagnol (niveau ${story.level}).`,
       type: 'article',
     },
   };
@@ -89,7 +90,7 @@ export default async function StoryPage(props: Props) {
       "@type": "Organization",
       "name": "EspañolSprint"
     },
-    "url": `https://espanolsprint.vercel.app/histoire/${story.id}`,
+    "url": `${SITE_URL}/histoire/${story.id}`,
     "character": Object.values(story.characters).map(c => c.name)
   };
 
@@ -115,7 +116,7 @@ export default async function StoryPage(props: Props) {
         {/* EN-TÊTE DE L'HISTOIRE */}
         <div className="text-center mb-10 space-y-4">
           <span className="inline-block bg-indigo-100 text-indigo-700 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
-            Mode Histoire • Niveau {story.level}
+            Histoire • Niveau {story.level}
           </span>
           <h1 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight">
             {story.title}
@@ -135,10 +136,10 @@ export default async function StoryPage(props: Props) {
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-center md:text-left space-y-2">
               <h2 className="text-2xl font-bold flex items-center justify-center md:justify-start gap-2">
-                <Play className="fill-white" size={24} /> Mode Interactif
+                <Play className="fill-white" size={24} /> Mode interactif
               </h2>
               <p className="text-indigo-100 max-w-md">
-                Ne vous contentez pas de lire ! Écoutez les voix IA natives, répondez aux questions et améliorez votre prononciation.
+                Ne vous contentez pas de lire ! Écoutez le dialogue, répondez aux questions de compréhension et progressez à l'oral.
               </p>
             </div>
             {/* Lien qui renvoie vers le Dashboard avec le paramètre startStory */}
@@ -158,7 +159,7 @@ export default async function StoryPage(props: Props) {
         {/* SCRIPT THÉÂTRAL (SEO & LECTURE) */}
         <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12">
           <h3 className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-8 flex items-center gap-2">
-            <BookOpen size={16} /> Script de l'histoire
+            <BookOpen size={16} /> Texte de l'histoire
           </h3>
 
           <div className="space-y-8">
@@ -198,7 +199,7 @@ export default async function StoryPage(props: Props) {
 
         {/* FOOTER CTA */}
         <div className="mt-12 text-center">
-          <p className="text-slate-500 mb-4">Vous avez lu le script ? Maintenant, pratiquez l'écoute.</p>
+          <p className="text-slate-500 mb-4">Vous avez lu le dialogue ? Passez maintenant à l'écoute.</p>
           <Link 
             href={`/?startStory=${story.id}`}
             className="inline-flex items-center gap-2 text-indigo-600 font-black hover:underline text-lg"
