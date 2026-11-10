@@ -601,12 +601,12 @@ const handleDownloadPDF = async (lessonId) => {
         </div>
       ) : (
         <>
-          <SidebarDesktop userData={userData} currentView={view} onChangeView={setView} onLogout={handleLogout} />
+          <SidebarDesktop userData={userData} currentView={view} onChangeView={setView} onPremium={() => setShowPremiumModal(true)} />
           <main className="flex-1 h-full overflow-hidden relative flex flex-col">
             <MobileHeader userData={userData} />
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
               
-              {view === 'dashboard' && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} onDownloadPDF={handleDownloadPDF}/>}
+              {view === 'dashboard' && <DashboardContent userData={userData} allLessons={dynamicLessonsList} onStartLesson={startLesson} onDownloadPDF={handleDownloadPDF} onGoTo={setView} onPremium={() => setShowPremiumModal(true)} />}
               {view === 'notebook' && <NotebookContent userVocab={userData.vocab} />}
               {view === 'conversation' && <ConversationMode onExit={() => setView('tests')} onPremiumRequired={() => { setView('tests'); setShowPremiumModal(true); }} />}
               {view === 'quiz' && (
@@ -626,8 +626,8 @@ const handleDownloadPDF = async (lessonId) => {
                   />
               )}
               {view === 'reading' && (
-                <div className="p-6 pb-24 space-y-8 max-w-2xl mx-auto min-h-screen flex flex-col">
-                    <div className="text-center space-y-2"><span className="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Mode histoire</span><h2 className="text-3xl font-black text-slate-900">L'histoire du jour</h2></div>
+                <div className="p-5 md:p-10 pb-28 space-y-6 max-w-3xl mx-auto w-full flex flex-col">
+                    <div><h2 className="text-3xl font-black text-slate-900">Histoires</h2><p className="text-slate-500 mt-1">Chaque jour, un dialogue à écouter et un texte à lire à ton niveau.</p></div>
                     <div className="flex-1 flex flex-col items-center justify-center">
                         {dailyStoryContent ? (
                             <div onClick={() => startStory(dailyStoryContent.id)} className="w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 cursor-pointer group hover:border-pink-200 hover:shadow-md transition-all relative overflow-hidden">
@@ -689,7 +689,7 @@ const ProfileContent = ({ userData, email, onLogout, onUpload, onPremium, onMana
   const initial = userData?.name?.charAt(0)?.toUpperCase() || "U";
 
   return (
-    <div className="max-w-2xl mx-auto w-full p-6 md:p-12 pb-32 space-y-8">
+    <div className="max-w-3xl mx-auto w-full p-5 md:p-10 pb-28 space-y-6">
       <h2 className="text-3xl font-black text-slate-900">Mon compte</h2>
 
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-8">
@@ -1027,7 +1027,7 @@ const ListeningCard = ({ data, onNext, onScore }) => {
     return (<div className="bg-white p-8 rounded-3xl shadow-xl flex flex-col items-center gap-6 w-full animate-in zoom-in"><span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-xs font-bold uppercase">Écoute</span><button onClick={() => speak(data.audioText)} aria-label="Réécouter" className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 active:scale-95 transition-all"><Volume2 size={28} /></button>{revealed && <p className="text-2xl font-black text-purple-600 text-center">{data.audioText}</p>}<form onSubmit={check} className="w-full space-y-4"><input value={val} onChange={e => setVal(e.target.value)} placeholder="Écris ce que tu entends…" className={`w-full p-4 border-2 rounded-xl text-center font-bold outline-none ${status === 'error' ? 'border-red-400 bg-red-50' : status === 'success' ? 'border-green-400 bg-green-50' : 'border-slate-200 focus:border-purple-400'}`} disabled={revealed && status === 'success'} /><button type="submit" disabled={!val} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold">{status === 'error' ? 'Continuer' : 'Vérifier'}</button>{status === 'error' && <button type="button" onClick={onNext} className="w-full py-2 text-slate-400 font-bold">Passer</button>}</form></div>); 
 };
 
-const LeaderboardView = ({ userData }) => { const rivals = [{ name: "Maria L.", xp: 1450, avatar: "👩" }, { name: "Thomas B.", xp: 1200, avatar: "👨" }, { name: userData?.name + " (Toi)", xp: userData?.xp || 0, avatar: "😎", isMe: true }, { name: "Juan P.", xp: 850, avatar: "🧔" }].sort((a, b) => b.xp - a.xp); return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-6"><div className="text-center space-y-2 mb-8"><div className="inline-block p-4 bg-yellow-100 rounded-full text-yellow-600 mb-2"><Trophy size={40} /></div><h2 className="text-3xl font-black text-slate-900">Classement</h2><p className="text-slate-500 font-medium">Gagne des XP à chaque leçon pour grimper sur le podium.</p></div><div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">{rivals.map((user, idx) => (<div key={idx} className={`flex items-center gap-4 p-4 border-b border-slate-50 ${user.isMe ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''}`}><div className="font-black text-slate-300 w-6">{idx + 1}</div><div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-xl">{user.avatar}</div><div className="flex-1 font-bold text-slate-800">{user.name}</div><div className="font-black text-slate-900">{user.xp} XP</div></div>))}</div></div>); };
+const LeaderboardView = ({ userData }) => { const rivals = [{ name: "Maria L.", xp: 1450, avatar: "👩" }, { name: "Thomas B.", xp: 1200, avatar: "👨" }, { name: userData?.name + " (Toi)", xp: userData?.xp || 0, avatar: "😎", isMe: true }, { name: "Juan P.", xp: 850, avatar: "🧔" }].sort((a, b) => b.xp - a.xp); return (<div className="max-w-3xl mx-auto w-full p-5 md:p-10 pb-28 space-y-6"><div><h2 className="text-3xl font-black text-slate-900">Classement</h2><p className="text-slate-500 mt-1">Gagne des XP à chaque leçon pour grimper sur le podium.</p></div><div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">{rivals.map((user, idx) => (<div key={idx} className={`flex items-center gap-4 p-4 border-b border-slate-50 ${user.isMe ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''}`}><div className="font-black text-slate-300 w-6">{idx + 1}</div><div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-xl">{user.avatar}</div><div className="flex-1 font-bold text-slate-800">{user.name}</div><div className="font-black text-slate-900">{user.xp} XP</div></div>))}</div></div>); };
 const LessonComplete = ({ result, streak, isPremium, onHome, onDownload, onPremium }) => {
   const failed = result.isTest && !result.passed;
   return (
@@ -1161,8 +1161,37 @@ const LandingPage = ({ onStart, onLogin, onTest }) => (
 );
 const GoogleIcon = () => (<svg viewBox="0 0 48 48" className="w-6 h-6" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>);
 const AuthScreen = ({ onAuth, onGoogle, onBack, onResetPassword, startWithSignUp, busy, error }) => { const [isSignUp, setIsSignUp] = useState(!!startWithSignUp); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); return (<div className="w-full max-w-md p-8 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500"><button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold"><X size={20} /> Retour</button><div><h2 className="text-4xl font-black text-slate-900 mb-2">{isSignUp ? 'Crée ton compte' : 'Bon retour !'}</h2><p className="text-slate-500">{isSignUp ? "C'est gratuit, et ta progression est sauvegardée ☁️" : "Reprends là où tu t'étais arrêté ☁️"}</p></div>{error && <div role="alert" className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold">{error}</div>}<form onSubmit={(e) => { e.preventDefault(); onAuth(email, password, isSignUp); }} className="space-y-4"><button type="button" onClick={onGoogle} className="w-full bg-white border-2 border-slate-200 text-slate-800 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"><GoogleIcon /> Continuer avec Google</button><div className="flex items-center gap-4"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-sm font-bold">OU</span><div className="h-px bg-slate-200 flex-1"></div></div><input type="email" autoComplete="email" aria-label="Adresse e-mail" placeholder="Adresse e-mail" className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={email} onChange={(e) => setEmail(e.target.value)} /><input type="password" autoComplete={isSignUp ? "new-password" : "current-password"} aria-label="Mot de passe" placeholder={isSignUp ? "Mot de passe (6 caractères minimum)" : "Mot de passe"} className="w-full p-4 rounded-xl border-2 border-slate-100 bg-slate-50 outline-none focus:border-yellow-400" value={password} onChange={(e) => setPassword(e.target.value)} />{!isSignUp && <div className="text-right -mt-2"><button type="button" onClick={() => onResetPassword(email)} className="text-slate-400 font-bold text-xs hover:text-indigo-600">Mot de passe oublié ?</button></div>}<button type="submit" disabled={busy} className="w-full bg-yellow-400 text-slate-900 py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2">{busy && <Loader2 size={20} className="animate-spin" />}{isSignUp ? "Créer mon compte" : "Me connecter"}</button></form><div className="text-center"><button onClick={() => setIsSignUp(!isSignUp)} className="text-indigo-600 font-bold text-sm hover:underline">{isSignUp ? "J'ai déjà un compte" : "Je n'ai pas encore de compte"}</button></div></div>); };
-const SidebarLink = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${active ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}><Icon size={22} strokeWidth={active ? 2.5 : 2} /><span className="font-bold text-base">{label}</span></button>);
-const SidebarDesktop = ({ userData, currentView, onChangeView, onLogout, onUpload }) => (<div className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200 h-full p-6"><nav className="flex-1 space-y-2"><div className="flex items-center gap-2 mb-8 px-2"><Image src="/logo.png" width={45} height={45} alt="Logo"/><span className="text-xl font-black tracking-tighter">Español<span className="text-red-600">Sprint</span></span></div><SidebarLink icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} /><SidebarLink icon={MessageCircle} label="Histoires" active={currentView === 'reading' || currentView === 'story'} onClick={() => onChangeView('reading')} /><SidebarLink icon={Trophy} label="Classement" active={currentView === 'leaderboard'} onClick={() => onChangeView('leaderboard')} /><SidebarLink icon={BrainCircuit} label="Entraînement" active={currentView === 'tests' || currentView === 'quiz'} onClick={() => onChangeView('tests')} /><SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} /><SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} /></nav></div>);
+const SidebarLink = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} aria-current={active ? 'page' : undefined} className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all ${active ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><Icon size={20} strokeWidth={active ? 2.5 : 2} /><span className="font-bold text-[15px]">{label}</span></button>);
+const SidebarDesktop = ({ userData, currentView, onChangeView, onPremium }) => {
+  const isPremium = userData?.subscription?.status === 'active';
+  return (
+    <div className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-full p-5 shrink-0">
+      <div className="flex items-center gap-2 mb-8 px-2"><Image src="/logo.png" width={36} height={36} alt="" /><span className="text-lg font-black tracking-tighter">Español<span className="text-red-600">Sprint</span></span></div>
+      <nav className="flex-1 space-y-1" aria-label="Navigation principale">
+        <SidebarLink icon={LayoutDashboard} label="Parcours" active={['dashboard', 'lesson', 'complete'].includes(currentView)} onClick={() => onChangeView('dashboard')} />
+        <SidebarLink icon={MessageCircle} label="Histoires" active={currentView === 'reading' || currentView === 'story'} onClick={() => onChangeView('reading')} />
+        <SidebarLink icon={BrainCircuit} label="Entraînement" active={['tests', 'quiz', 'conversation'].includes(currentView)} onClick={() => onChangeView('tests')} />
+        <SidebarLink icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} />
+        <SidebarLink icon={Trophy} label="Classement" active={currentView === 'leaderboard'} onClick={() => onChangeView('leaderboard')} />
+        <SidebarLink icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} />
+      </nav>
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-2 text-center">
+          <div className="bg-orange-50 rounded-xl py-2"><p className="font-black text-orange-600 flex items-center justify-center gap-1"><Flame size={15} className="fill-orange-500" /> {userData?.streak || 0}</p><p className="text-[10px] font-bold text-orange-400 uppercase">{(userData?.streak || 0) > 1 ? 'jours' : 'jour'}</p></div>
+          <div className="bg-indigo-50 rounded-xl py-2"><p className="font-black text-indigo-600">{userData?.xp || 0}</p><p className="text-[10px] font-bold text-indigo-400 uppercase">XP</p></div>
+        </div>
+        {isPremium ? (
+          <div className="bg-yellow-50 border border-yellow-100 rounded-2xl px-4 py-3 text-sm font-bold text-yellow-800 flex items-center gap-2"><Crown size={16} /> Premium actif</div>
+        ) : (
+          <button onClick={onPremium} className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-2xl p-4 text-left transition-colors">
+            <p className="font-black flex items-center gap-2"><Crown size={16} /> Passer Premium</p>
+            <p className="text-xs font-medium mt-1 text-slate-800">Leçons illimitées et coach oral. 7 jours offerts.</p>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const LevelTest = ({ onComplete, onBack }) => {
     const [index, setIndex] = useState(0);
@@ -1269,34 +1298,107 @@ const MobileHeader = ({ userData }) => (
 );
 const MobileBottomNav = ({ currentView, onChangeView }) => (<div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30"><NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} /><NavBtn icon={MessageCircle} label="Histoires" active={currentView === 'reading' || currentView === 'story'} onClick={() => onChangeView('reading')} /><NavBtn icon={BrainCircuit} label="Entraînement" active={currentView === 'tests' || currentView === 'quiz'} onClick={() => onChangeView('tests')} /><NavBtn icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} /><NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} /></div>);
 const NavBtn = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex flex-col items-center p-2 transition-colors ${active ? 'text-indigo-600' : 'hover:text-slate-600'}`}><Icon size={24} strokeWidth={active ? 2.5 : 2} /><span className="text-[10px] font-bold mt-1">{label}</span></button>);
-const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }) => { 
-  const levels = ["A1", "A2", "B1", "B2", "C1"]; 
-  const safeLevel = (userData.level && levels.includes(userData.level)) ? userData.level : "A1"; 
-  const currentLevelIndex = levels.indexOf(safeLevel); 
+const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF, onGoTo, onPremium }) => {
+  const safeLevel = LEVELS.includes(userData.level) ? userData.level : "A1";
+  const currentIdx = LEVELS.indexOf(safeLevel);
+  const [selectedLevel, setSelectedLevel] = useState(safeLevel);
+  useEffect(() => { setSelectedLevel(safeLevel); }, [safeLevel]);
+
+  const done = userData.completedLessons || [];
+  const isPremium = userData?.subscription?.status === 'active';
+  const currentLessons = allLessons.filter(l => l.level === safeLevel);
+  const doneInLevel = currentLessons.filter(l => done.includes(l.id)).length;
+  const nextLesson = currentLessons.find(l => !done.includes(l.id));
+  const today = new Date().toDateString();
+  const usedToday = userData?.dailyLimit?.date === today ? userData.dailyLimit.count : 0;
+  const livesLeft = Math.max(0, FREE_LESSONS_PER_DAY - usedToday);
+
+  const selectedIdx = LEVELS.indexOf(selectedLevel);
+  const levelLocked = selectedIdx > currentIdx;
+  const levelCompleted = selectedIdx < currentIdx;
+  const lessons = allLessons.filter(l => l.level === selectedLevel);
+  const firstName = (userData?.name || '').split(/[ .@]/)[0];
+
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="p-6 md:p-8 shrink-0 flex justify-between items-end">
-        <div><h2 className="text-3xl font-black text-slate-900 mb-2">Ton parcours</h2><p className="text-slate-500">Niveau actuel : <span className="text-indigo-600 font-bold">{safeLevel}</span></p></div>
-        <div className="hidden md:block"><LivesCounter userData={userData}/></div>
+    <div className="max-w-3xl mx-auto w-full p-5 md:p-10 pb-28 space-y-8">
+      <div>
+        <h2 className="text-3xl font-black text-slate-900">¡Hola{firstName ? `, ${firstName}` : ''}!</h2>
+        <p className="text-slate-500 mt-1">Niveau {safeLevel} · {doneInLevel} leçon{doneInLevel > 1 ? 's' : ''} sur {currentLessons.length} terminée{doneInLevel > 1 ? 's' : ''}</p>
+        <div className="h-2.5 bg-slate-200 rounded-full overflow-hidden mt-4" role="progressbar" aria-valuenow={doneInLevel} aria-valuemin={0} aria-valuemax={currentLessons.length} aria-label={`Progression du niveau ${safeLevel}`}>
+          <div className="h-full bg-yellow-400 rounded-full transition-all duration-500" style={{ width: `${(doneInLevel / Math.max(currentLessons.length, 1)) * 100}%` }} />
+        </div>
       </div>
-      <div className="flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 pb-6 snap-x snap-mandatory flex gap-6 md:gap-10 items-start">
-        {levels.map((level, index) => { 
-          const isLocked = index > currentLevelIndex; 
-          const isCurrent = index === currentLevelIndex; 
-          const isCompleted = index < currentLevelIndex; 
-          const levelLessons = allLessons.filter(l => l.level === level); 
-          return (
-            <div key={level} className={`snap-center shrink-0 w-[85vw] md:w-[380px] h-[calc(100dvh-240px)] md:h-[calc(100vh-200px)] flex flex-col rounded-3xl border-4 ${isCurrent ? 'border-yellow-400 bg-white' : isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 opacity-60'} p-5 md:p-6 relative overflow-hidden transition-all shadow-sm`}>
-              <div className="flex justify-between items-center mb-5 shrink-0"><div><h3 className="text-2xl font-black text-slate-800">Niveau {level}</h3><p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{isCompleted ? 'Terminé' : isCurrent ? 'En cours' : 'Verrouillé'}</p></div>{isLocked && <Lock size={24} className="text-slate-400" />}{isCompleted && <div className="bg-green-500 text-white p-1.5 rounded-full"><Check size={18} /></div>}</div>
-              <div className="flex-1 overflow-y-auto space-y-3 pb-4 pr-2 custom-scrollbar">{levelLessons.map((lesson) => { const isLessonDone = userData.completedLessons.includes(lesson.id); const isAccessible = isCurrent && (isLessonDone || userData.completedLessons.includes(lesson.id - 1) || lesson.id === levelLessons[0].id); if (isCompleted) { return (<div key={lesson.id} className="w-full flex gap-2 group"><button onClick={() => onStartLesson(lesson.id)} className="flex-1 p-4 rounded-2xl bg-green-100 text-green-800 flex items-center gap-3 hover:bg-green-200 transition-colors"><CheckCircle size={18} className="shrink-0" /><span className="text-sm font-bold truncate flex-1 text-left">{lesson.title}</span><span className="text-[10px] uppercase font-bold opacity-60 group-hover:opacity-100 hidden sm:inline">Réviser</span></button><button onClick={() => onDownloadPDF(lesson.id)} className="p-4 rounded-2xl bg-white border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all" title="Télécharger la fiche PDF" aria-label="Télécharger la fiche PDF"><Download size={20} /></button></div>); } return (<button key={lesson.id} disabled={!isAccessible} onClick={() => onStartLesson(lesson.id)} className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${isLessonDone ? 'bg-green-500 text-white shadow-md' : isAccessible ? 'bg-yellow-400 text-slate-900 shadow-lg scale-[1.02] font-bold ring-4 ring-yellow-100' : 'bg-slate-200 text-slate-400'}`}><div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">{isLessonDone ? <Check size={16} /> : lesson.id}</div><div className="flex-1 min-w-0"><p className="text-sm font-bold truncate">{lesson.title}</p></div>{isAccessible && !isLessonDone && <PlayCircle size={22} className="shrink-0" />}</button>); })}</div>
-              {isLocked && (<div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[2px] flex items-center justify-center z-10"><div className="bg-white p-6 rounded-2xl shadow-xl text-center border border-slate-100"><Lock size={32} className="mx-auto text-slate-300 mb-2" /><h4 className="font-bold text-slate-800">Niveau verrouillé</h4><p className="text-xs text-slate-400 mt-1">Réussis l'examen du niveau précédent</p></div></div>)}
-            </div>
-          ); 
-        })}
-        <div className="w-4 shrink-0"></div>
+
+      {/* Prochaine étape : une seule action évidente */}
+      <div className="bg-slate-900 text-white rounded-3xl p-6 md:p-8 flex flex-col sm:flex-row sm:items-center gap-5">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-bold uppercase tracking-wider text-yellow-400 mb-1">{nextLesson ? "Ta prochaine leçon" : "Niveau terminé"}</p>
+          <h3 className="text-2xl font-black truncate">{nextLesson ? `${nextLesson.id}. ${nextLesson.title}` : `Bravo, tu as fini le niveau ${safeLevel} !`}</h3>
+          <p className="text-slate-400 text-sm mt-1">
+            {!nextLesson ? "Passe l'examen pour débloquer le niveau suivant." : isPremium ? "Environ 5 minutes · leçons illimitées" : livesLeft > 0 ? `Environ 5 minutes · ${livesLeft} nouvelle${livesLeft > 1 ? 's' : ''} leçon${livesLeft > 1 ? 's' : ''} gratuite${livesLeft > 1 ? 's' : ''} aujourd'hui` : "Tu as fini tes leçons gratuites du jour."}
+          </p>
+        </div>
+        {nextLesson ? (
+          (isPremium || livesLeft > 0)
+            ? <button onClick={() => onStartLesson(nextLesson.id)} className="bg-yellow-400 text-slate-900 font-bold px-7 py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-yellow-300 active:scale-95 transition-all shrink-0"><PlayCircle size={20} /> Commencer</button>
+            : <button onClick={onPremium} className="bg-yellow-400 text-slate-900 font-bold px-7 py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-yellow-300 transition-all shrink-0"><Infinity size={20} /> Continuer sans limite</button>
+        ) : (
+          <button onClick={() => onGoTo('tests')} className="bg-yellow-400 text-slate-900 font-bold px-7 py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-yellow-300 transition-all shrink-0"><Target size={20} /> Passer l'examen</button>
+        )}
+      </div>
+
+      {/* Parcours */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <h3 className="text-xl font-black text-slate-900">Ton parcours</h3>
+          <div className="flex gap-1 bg-slate-100 p-1 rounded-xl" role="tablist" aria-label="Niveaux">
+            {LEVELS.map((level, i) => (
+              <button key={level} role="tab" aria-selected={selectedLevel === level} onClick={() => setSelectedLevel(level)} className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1 transition-all ${selectedLevel === level ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                {i < currentIdx && <Check size={13} className="text-green-500" />}{i > currentIdx && <Lock size={11} />}{level}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {levelLocked && (
+          <div className="bg-slate-100 text-slate-500 text-sm font-medium rounded-2xl px-4 py-3 flex items-center gap-2"><Lock size={16} className="shrink-0" /> Ce niveau s'ouvrira quand tu auras réussi l'examen du niveau {LEVELS[selectedIdx - 1]}. Voici son programme :</div>
+        )}
+
+        <ol className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {lessons.map((lesson, i) => {
+            const isDone = done.includes(lesson.id);
+            const isOpen = !levelLocked && (levelCompleted || isDone || i === 0 || done.includes(lessons[i - 1].id));
+            const isNext = !levelLocked && !levelCompleted && nextLesson?.id === lesson.id;
+            return (
+              <li key={lesson.id} className="flex gap-2">
+                <button
+                  disabled={!isOpen}
+                  onClick={() => onStartLesson(lesson.id)}
+                  className={`flex-1 min-w-0 flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 text-left transition-all ${
+                    isNext ? 'bg-yellow-50 border-yellow-400 shadow-sm hover:bg-yellow-100'
+                    : isDone || (levelCompleted && isOpen) ? 'bg-white border-slate-100 hover:border-green-300'
+                    : isOpen ? 'bg-white border-slate-200 hover:border-slate-400'
+                    : 'bg-slate-50 border-transparent cursor-not-allowed'}`}
+                >
+                  <span className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black shrink-0 ${isDone ? 'bg-green-100 text-green-600' : isNext ? 'bg-yellow-400 text-slate-900' : isOpen ? 'bg-slate-100 text-slate-600' : 'bg-slate-100 text-slate-300'}`}>
+                    {isDone ? <Check size={18} strokeWidth={3} /> : isOpen ? lesson.id : <Lock size={14} />}
+                  </span>
+                  <span className="flex-1 min-w-0">
+                    <span className={`block font-bold truncate ${isOpen ? 'text-slate-800' : 'text-slate-400'}`}>{lesson.title}</span>
+                    <span className={`block text-xs font-medium ${isNext ? 'text-yellow-700' : 'text-slate-400'}`}>{isDone ? 'Terminée · réviser' : isNext ? 'À faire maintenant' : isOpen ? `Leçon ${lesson.id}` : `Leçon ${lesson.id} · verrouillée`}</span>
+                  </span>
+                  {isOpen && <ChevronRight size={18} className={isNext ? 'text-yellow-600' : 'text-slate-300'} />}
+                </button>
+                {isDone && (
+                  <button onClick={() => onDownloadPDF(lesson.id)} title="Télécharger la fiche PDF" aria-label={`Télécharger la fiche PDF de la leçon ${lesson.title}`} className="px-3 rounded-2xl border-2 border-slate-100 bg-white text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all"><Download size={18} /></button>
+                )}
+              </li>
+            );
+          })}
+        </ol>
       </div>
     </div>
-  ); 
+  );
 };
 const TestDashboard = ({ userData, onStartTest, onTriggerPremium }) => { 
     const levels = ["A1", "A2", "B1", "B2", "C1"]; 
@@ -1307,20 +1409,20 @@ const TestDashboard = ({ userData, onStartTest, onTriggerPremium }) => {
     const isPremium = userData?.subscription?.status === 'active';
     
     return (
-        <div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-8">
-            <div className="text-center">
-                <h2 className="text-3xl font-black text-slate-900 mb-2">Entraînement</h2>
-                <p className="text-slate-500">Révise, parle et valide ton niveau.</p>
+        <div className="max-w-3xl mx-auto w-full p-5 md:p-10 pb-28 space-y-5">
+            <div className="mb-3">
+                <h2 className="text-3xl font-black text-slate-900">Entraînement</h2>
+                <p className="text-slate-500 mt-1">Révise, parle et valide ton niveau.</p>
             </div>
             
             {/* CARTE 1: Entraînement Rapide (Gratuit) */}
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all cursor-pointer group" onClick={() => onStartTest('training')}>
-                <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                        <BrainCircuit size={32} />
+            <div className="bg-white p-5 md:p-6 rounded-3xl border-2 border-slate-100 hover:border-slate-300 transition-all cursor-pointer group" onClick={() => onStartTest('training')}>
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                        <BrainCircuit size={24} />
                     </div>
                     <div className="flex-1">
-                        <h3 className="text-xl font-bold text-slate-900">Entraînement rapide</h3>
+                        <h3 className="text-lg font-bold text-slate-900">Entraînement rapide</h3>
                         <p className="text-sm text-slate-500 mt-1">10 questions pour réviser ce que tu as appris.</p>
                     </div>
                     <ChevronRight className="text-slate-300" />
@@ -1329,7 +1431,7 @@ const TestDashboard = ({ userData, onStartTest, onTriggerPremium }) => {
 
             {/* CARTE 2: COACH ORAL (Premium Uniquement) */}
             <div 
-                className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all cursor-pointer group relative overflow-hidden" 
+                className="bg-white p-5 md:p-6 rounded-3xl border-2 border-slate-100 hover:border-slate-300 transition-all cursor-pointer group relative overflow-hidden" 
                 onClick={() => {
                     if (isPremium) {
                         onStartTest('conversation'); // ✅ Si Premium, on entre
@@ -1338,12 +1440,12 @@ const TestDashboard = ({ userData, onStartTest, onTriggerPremium }) => {
                     }
                 }}
             >
-                <div className="flex items-center gap-6 relative z-10">
-                    <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
-                        {isPremium ? <Mic size={32} /> : <Lock size={32} />} {/* Icône Cadenas si gratuit */}
+                <div className="flex items-center gap-4 relative z-10">
+                    <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+                        {isPremium ? <Mic size={24} /> : <Lock size={24} />} {/* Icône Cadenas si gratuit */}
                     </div>
                     <div className="flex-1">
-                        <h3 className="text-xl font-bold text-slate-900">Coach oral IA</h3>
+                        <h3 className="text-lg font-bold text-slate-900">Coach oral IA</h3>
                         <p className="text-sm text-slate-500 mt-1">Discute à voix haute et gagne en aisance.</p>
                     </div>
                     {/* Flèche ou Cadenas selon le statut */}
@@ -1354,13 +1456,13 @@ const TestDashboard = ({ userData, onStartTest, onTriggerPremium }) => {
             </div>
 
             {/* CARTE 3: EXAMEN PASSAGE DE NIVEAU */}
-            <div className={`bg-white p-8 rounded-3xl shadow-sm border border-slate-200 transition-all relative overflow-hidden ${!canTakeExam ? 'opacity-60 grayscale' : 'cursor-pointer hover:shadow-md group'}`} onClick={() => canTakeExam && onStartTest('levelup')}>
-                <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center text-yellow-600 group-hover:rotate-6 transition-transform">
-                        <Target size={32} />
+            <div className={`bg-white p-5 md:p-6 rounded-3xl border-2 border-slate-100 transition-all relative overflow-hidden ${!canTakeExam ? 'opacity-70' : 'cursor-pointer hover:border-slate-300 group'}`} onClick={() => canTakeExam && onStartTest('levelup')}>
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-yellow-100 rounded-2xl flex items-center justify-center text-yellow-600 group-hover:rotate-6 transition-transform">
+                        <Target size={24} />
                     </div>
                     <div className="flex-1">
-                        <h3 className="text-xl font-bold text-slate-900">{nextLevel ? `Examen ${nextLevel}` : "Examen final"}</h3>
+                        <h3 className="text-lg font-bold text-slate-900">{nextLevel ? `Examen ${nextLevel}` : "Examen final"}</h3>
                         <p className="text-sm text-slate-500 mt-1">20 questions, 16 bonnes réponses pour passer au niveau suivant.</p>
                     </div>
                     {canTakeExam ? <ChevronRight className="text-slate-300" /> : <Lock className="text-slate-300" />}
@@ -1370,7 +1472,7 @@ const TestDashboard = ({ userData, onStartTest, onTriggerPremium }) => {
         </div>
     ); 
 };
-const StructuresContent = ({ structures, userVocab }) => { const safeList = Array.isArray(userVocab) ? userVocab : []; const learnedStructures = safeList.filter(item => item && item.type === 'structure'); const allStructures = [...structures, ...learnedStructures]; const uniqueStructures = allStructures.filter((item, index, self) => index === self.findIndex((t) => t.title === item.title)); return (<div className="max-w-3xl mx-auto w-full p-6 pb-24"><h2 className="text-3xl font-black text-slate-900 mb-8">Structures de phrases 🏗️</h2><div className="space-y-6">{uniqueStructures.map((struct, idx) => (<div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4">{struct.example_es ? (<><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_fr || struct.example_en}</p></>) : (<><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example}</p></>)}</div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation || struct.note}</p></div>))}{uniqueStructures.length === 0 && (<div className="text-center text-slate-400 py-10"><p>Aucune structure découverte pour le moment.</p><p className="text-sm">Avance dans les leçons pour en débloquer !</p></div>)}</div></div>); };
+const StructuresContent = ({ structures, userVocab }) => { const safeList = Array.isArray(userVocab) ? userVocab : []; const learnedStructures = safeList.filter(item => item && item.type === 'structure'); const allStructures = [...structures, ...learnedStructures]; const uniqueStructures = allStructures.filter((item, index, self) => index === self.findIndex((t) => t.title === item.title)); return (<div className="max-w-3xl mx-auto w-full p-6 pb-24"><h2 className="text-3xl font-black text-slate-900 mb-8">Structures de phrases 🏗️</h2><div className="space-y-6">{uniqueStructures.map((struct, idx) => (<div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-lg font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4">{struct.example_es ? (<><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_fr || struct.example_en}</p></>) : (<><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example}</p></>)}</div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation || struct.note}</p></div>))}{uniqueStructures.length === 0 && (<div className="text-center text-slate-400 py-10"><p>Aucune structure découverte pour le moment.</p><p className="text-sm">Avance dans les leçons pour en débloquer !</p></div>)}</div></div>); };
 const NotebookContent = ({ userVocab }) => {
   const [activeTab, setActiveTab] = useState(() => (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab')) || 'vocab');
   const items = cleanVocab(userVocab);
@@ -1378,7 +1480,7 @@ const NotebookContent = ({ userVocab }) => {
   const tabs = [['vocab', 'Vocabulaire'], ['grammar', 'Verbes'], ['structure', 'Structures']];
   const Empty = ({ text }) => <p className="text-slate-400 text-center py-12 col-span-full">{text}</p>;
   return (
-    <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24 space-y-6">
+    <div className="max-w-3xl mx-auto w-full p-5 md:p-10 pb-28 space-y-6">
       <div><h2 className="text-3xl font-black text-slate-900">Mon lexique</h2><p className="text-slate-500 text-sm mt-1">Tout ce que tu as appris dans tes leçons, classé pour réviser facilement.</p></div>
       <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
         {tabs.map(([key, label]) => (
