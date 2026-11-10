@@ -13,7 +13,7 @@ import { InputCard } from '@/app/components/LessonCards';
 
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 import { 
   Flame, ChevronRight, X, Check, Trophy, User, LogOut, PlayCircle, Lock, 
@@ -128,7 +128,7 @@ export default function EspanolSprintPro() {
   const [dynamicLessonsContent, setDynamicLessonsContent] = useState({});
   const lessonsListRef = useRef(INITIAL_LESSONS_LIST);
   const demoMode = useRef(false);
-  const saveUser = async (update) => { if (demoMode.current || !currentUser) return; await saveUser(update); };
+  const saveUser = async (update) => { if (demoMode.current || !currentUser) return; await updateDoc(doc(db, "users", currentUser.uid), update); };
   const pendingIntent = useRef(null); // Lien profond : /?startLesson=3, /?startStory=..., /?signup=true
 
   // --- ÉTATS TUTEUR IA (WIDGET) ---
@@ -591,7 +591,7 @@ const handleDownloadPDF = async (lessonId) => {
                    onComplete={(level) => {
                        if (currentUser) {
                            // CAS 1 : Utilisateur Connecté -> On applique direct
-                           applyLevelToProfile(level);
+                           return applyLevelToProfile(level);
                        } else {
                            // CAS 2 : Visiteur -> On sauvegarde pour l'inscription
                            if (typeof window !== 'undefined') localStorage.setItem('tempLevel', level);
@@ -826,12 +826,13 @@ const ConversationMode = ({ onExit, onPremiumRequired }) => {
       mediaRecorder.ondataavailable = (event) => { if (event.data.size > 0) audioChunksRef.current.push(event.data); };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType.split(';')[0] });
         if (audioBlob.size < 1000) { setStatus("idle"); return; }
         await processAudio(audioBlob, mimeType);
       };
 
-      mediaRecorder.start(200); 
+      // Sans découpage : Safari produit sinon un MP4 fragmenté que la transcription refuse (« Invalid file format »).
+      mediaRecorder.start();
       setIsRecording(true);
       setStatus("recording");
     } catch (err) { console.error("Erreur micro:", err); alert("Impossible d'accéder au micro. Autorise-le dans les réglages de ton navigateur."); setStatus("idle"); }
@@ -854,6 +855,7 @@ const ConversationMode = ({ onExit, onPremiumRequired }) => {
     const formData = new FormData();
     let extension = "webm";
     if (mimeType.includes("mp4") || mimeType.includes("aac")) extension = "mp4";
+    else if (mimeType.includes("ogg")) extension = "ogg";
     
     formData.append('file', audioBlob, `input.${extension}`);
     formData.append('history', JSON.stringify(history.slice(-8)));
@@ -863,7 +865,7 @@ const ConversationMode = ({ onExit, onPremiumRequired }) => {
       const data = await res.json();
 
       if (data.error === "PREMIUM_REQUIRED") { setStatus("idle"); onPremiumRequired?.(); return; }
-      if (data.error) { setStatus("idle"); return; }
+      if (data.error) { setStatus("idle"); alert(data.error === "AUDIO_UNREADABLE" ? "Je n'ai pas réussi à lire ton enregistrement. Réessaie en parlant un peu plus longtemps." : "Le coach n'a pas pu répondre. Réessaie dans un instant."); return; }
       if (!data.userText || data.userText.includes("Silence détecté")) { setStatus("idle"); return; }
 
       setHistory(prev => [...prev, { role: 'user', text: data.userText }, { role: 'ai', text: data.aiText }]);
@@ -1200,59 +1202,54 @@ const SidebarDesktop = ({ userData, currentView, onChangeView, onPremium }) => {
 const LevelTest = ({ onComplete, onBack }) => {
     const [index, setIndex] = useState(0);
     const [score, setScore] = useState(0);
-    const [finished, setFinished] = useState(false);
+    const [detectedLevel, setDetectedLevel] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+
+    // Les réponses sont mélangées une fois par test : la bonne réponse n'est plus toujours la première.
+    const questions = useMemo(() => PLACEMENT_TEST.map(q => ({ ...q, options: [...q.options].sort(() => Math.random() - 0.5) })), []);
 
     const handleAnswer = (option) => {
-        const isCorrect = option === PLACEMENT_TEST[index].ans;
-        
-        // On calcule le nouveau score
-        const newScore = score + (isCorrect ? 1 : 0);
-        if (isCorrect) setScore(newScore);
-
-        // Passage à la suite
-        if (index + 1 < PLACEMENT_TEST.length) {
-            setIndex(prev => prev + 1);
-        } else {
-            finishTest(newScore);
-        }
-    };
-
-    const finishTest = (finalScore) => {
-        setFinished(true);
-        
+        const newScore = score + (option === questions[index].ans ? 1 : 0);
+        setScore(newScore);
+        if (index + 1 < questions.length) { setIndex(index + 1); return; }
         // Barème sur 20 questions
-        let detectedLevel = "A1";
-        if (finalScore >= 5) detectedLevel = "A2";
-        if (finalScore >= 10) detectedLevel = "B1";
-        if (finalScore >= 15) detectedLevel = "B2";
-
-        setTimeout(() => {
-            onComplete(detectedLevel);
-        }, 2500);
+        let level = "A1";
+        if (newScore >= 5) level = "A2";
+        if (newScore >= 10) level = "B1";
+        if (newScore >= 15) level = "B2";
+        setDetectedLevel(level);
     };
 
-    if (finished) {
+    if (detectedLevel) {
         return (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-white p-8 animate-in zoom-in">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-6">
+            <div className="w-full max-w-md p-8 bg-white rounded-3xl shadow-xl border border-slate-100 text-center animate-in zoom-in">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-6 mx-auto">
                     <Check size={32} strokeWidth={3} />
                 </div>
                 <h2 className="text-3xl font-black text-slate-900 mb-2">Test terminé !</h2>
-                <p className="text-slate-500 text-lg">Score : {score} / 20</p>
-                <p className="text-indigo-600 font-bold mt-2">Analyse de ton niveau…</p>
+                <p className="text-slate-500 text-lg">Score : {score} / {questions.length}</p>
+                <p className="text-slate-900 font-bold mt-6">Ton niveau</p>
+                <p className="text-6xl font-black text-indigo-600 my-2">{detectedLevel}</p>
+                <button
+                    onClick={async () => { setSubmitting(true); try { await onComplete(detectedLevel); } finally { setSubmitting(false); } }}
+                    disabled={submitting}
+                    className="mt-6 w-full p-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold transition-all"
+                >
+                    {submitting ? "Enregistrement…" : "Continuer"}
+                </button>
             </div>
         );
     }
 
-    const currentQ = PLACEMENT_TEST[index];
-    const progress = ((index) / PLACEMENT_TEST.length) * 100;
+    const currentQ = questions[index];
+    const progress = ((index) / questions.length) * 100;
 
     return (
         <div className="w-full max-w-md p-6 bg-white rounded-3xl shadow-xl border border-slate-100 animate-in slide-in-from-bottom-8 duration-500">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <button onClick={onBack} aria-label="Quitter le test" className="text-slate-400 hover:text-slate-600"><X size={24}/></button>
-                <span className="font-bold text-indigo-600">Question {index + 1} / {PLACEMENT_TEST.length}</span>
+                <span className="font-bold text-indigo-600">Question {index + 1} / {questions.length}</span>
             </div>
 
             {/* Barre de progression */}

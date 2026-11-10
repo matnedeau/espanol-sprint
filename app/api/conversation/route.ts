@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import OpenAI, { toFile } from 'openai';
 import { errorResponse, getUserData, isPremiumData, requireUser } from '@/app/lib/server/firebase-admin';
 
 export const maxDuration = 60; 
@@ -42,12 +42,27 @@ export async function POST(req: Request) {
 
     // 4. TRANSCRIPTION (Whisper)
     // Note : On passe l'objet File directement, OpenAI gère le format grâce au nom (ex: input.mp4)
-    const transcription = await openai.audio.transcriptions.create({
-      file: audioFile,
-      model: "whisper-1",
-      language: "es", 
-      prompt: "Une conversation informelle en espagnol.", 
-    });
+    // Certains navigateurs (Safari surtout) envoient un conteneur que l'extension décrit mal :
+    // en cas de refus « Invalid file format », on réessaie sous les autres extensions plausibles.
+    const bytes = Buffer.from(await audioFile.arrayBuffer());
+    const original = (audioFile.name.split('.').pop() || 'webm').toLowerCase();
+    const extensions = [original, ...['m4a', 'mp4', 'webm', 'ogg'].filter((e) => e !== original)];
+    let transcription: { text: string } | null = null;
+    for (const ext of extensions) {
+      try {
+        transcription = await openai.audio.transcriptions.create({
+          file: await toFile(bytes, `input.${ext}`),
+          model: "whisper-1",
+          language: "es",
+          prompt: "Una conversación informal en español.",
+        });
+        break;
+      } catch (err: any) {
+        if (err?.status !== 400) throw err;
+        console.warn(`Transcription refusée en .${ext} (${audioFile.type}, ${audioFile.size} octets)`);
+      }
+    }
+    if (!transcription) return NextResponse.json({ error: "AUDIO_UNREADABLE" }, { status: 422 });
 
     let userText = transcription.text.trim();
     console.log("📝 Transcription brute :", userText);
