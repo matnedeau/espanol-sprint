@@ -33,6 +33,21 @@ const YEARLY_ENABLED = process.env.NEXT_PUBLIC_STRIPE_YEARLY_ENABLED === 'true';
 const YEARLY_PRICE = process.env.NEXT_PUBLIC_YEARLY_PRICE_LABEL || "39,99 €";
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "").split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
 
+// Clé d'unicité d'une fiche du lexique (évite les doublons : même verbe, même structure, même mot)
+const itemKey = (item) => `${item.type}:${(item.type === 'grammar' ? (item.verb || item.title) : item.type === 'structure' ? item.title : item.es || '').trim().toLowerCase()}`;
+const isLegacyNoise = (item) => item.type === 'structure' && (/^(leçon \d+|astuce|bilan|examen|le saviez-vous)/i.test(item.title || '') || item.formula === 'Bon à savoir');
+const cleanVocab = (vocab) => { const seen = new Set(); return (Array.isArray(vocab) ? vocab : []).filter(item => { if (!item || !item.type || isLegacyNoise(item)) return false; const k = itemKey(item); if (seen.has(k)) return false; seen.add(k); return true; }); };
+
+const DEMO_PROFILE = (premium) => ({ name: "Démo", email: "demo@example.com", xp: 450, streak: 3, level: "A1", lastActive: dayKey(), completedLessons: [1, 2, 3], dailyLimit: { date: new Date().toDateString(), count: 1 }, dailyStory: { date: "", storyId: "" }, readStories: [], subscription: { status: premium ? 'active' : 'free' },
+  vocab: [
+    { id: 1, type: 'swipe', es: 'Hola', en: 'Bonjour', context: 'Salutations' }, { id: 2, type: 'swipe', es: 'La mesa', en: 'La table', context: 'La Maison' },
+    { id: 3, type: 'grammar', title: 'Être (Ser)', description: 'Identité & Origine', verb: 'Ser', conjugation: [{ pronoun: 'Yo', verb: 'soy', fr: 'Je suis' }, { pronoun: 'Tú', verb: 'eres', fr: 'Tu es' }] },
+    { id: 4, type: 'grammar', title: 'Verbe : Ser', description: 'Être (Identité)', verb: 'Ser', conjugation: [{ pronoun: 'Yo', verb: 'soy', fr: 'Je suis' }, { pronoun: 'Tú', verb: 'eres', fr: 'Tu es' }, { pronoun: 'Él', verb: 'es', fr: 'Il est' }] },
+    { id: 5, type: 'structure', title: 'Leçon 3 : La Maison', formula: 'Hay (Il y a)', example: 'Verbe focus : Ser', note: 'Niveau A1' },
+    { id: 6, type: 'structure', title: "L'Accord", formula: 'Nom + Adjectif', example: 'La mesa grande', note: "L'adjectif s'accorde." },
+    { id: 7, type: 'structure', title: "L'Accord", formula: 'Nom + Adjectif', example: 'La silla nuevo', note: "L'adjectif s'accorde." },
+  ] });
+
 const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const yesterdayKey = () => { const d = new Date(); d.setDate(d.getDate() - 1); return dayKey(d); };
 
@@ -109,9 +124,11 @@ export default function EspanolSprintPro() {
 
   // Contenu (chargé à la demande pour ne pas ralentir l'accueil)
   const [lib, setLib] = useState(null);
-  const [dynamicLessonsList, setDynamicLessonsList] = useState(INITIAL_LESSONS_LIST);
+  const dynamicLessonsList = INITIAL_LESSONS_LIST;
   const [dynamicLessonsContent, setDynamicLessonsContent] = useState({});
   const lessonsListRef = useRef(INITIAL_LESSONS_LIST);
+  const demoMode = useRef(false);
+  const saveUser = async (update) => { if (demoMode.current || !currentUser) return; await saveUser(update); };
   const pendingIntent = useRef(null); // Lien profond : /?startLesson=3, /?startStory=..., /?signup=true
 
   // --- ÉTATS TUTEUR IA (WIDGET) ---
@@ -159,7 +176,7 @@ export default function EspanolSprintPro() {
 
           const update = { level: newLevel, xp: increment(bonusXP) };
           if (newlyValidated.length) update.completedLessons = arrayUnion(...newlyValidated);
-          await updateDoc(doc(db, "users", currentUser.uid), update);
+          await saveUser(update);
 
           setUserData(prev => ({ ...prev, level: newLevel, completedLessons: [...alreadyDone, ...newlyValidated], xp: (prev.xp || 0) + bonusXP }));
           notify(`Bravo ! Ton niveau est maintenant ${newLevel}.`);
@@ -187,18 +204,23 @@ export default function EspanolSprintPro() {
 
     const loadLessons = async () => {
       try {
-        const [content, roadmapSnap, lessonsSnapshot] = await Promise.all([
-          loadContent(),
-          getDoc(doc(db, "meta", "roadmap")).catch(() => null),
-          getDocs(collection(db, "lessons")).catch(() => null),
-        ]);
+        const content = await loadContent();
         setLib(content);
-        if (roadmapSnap?.exists()) { lessonsListRef.current = roadmapSnap.data().lessons; setDynamicLessonsList(roadmapSnap.data().lessons); }
-        const lessonsData = {};
-        lessonsSnapshot?.forEach((d) => { lessonsData[d.id] = d.data().content; });
-        setDynamicLessonsContent({ ...content.generateAllContent(), ...lessonsData });
+        setDynamicLessonsContent(content.generateAllContent());
       } catch (e) { console.error("Erreur de chargement du contenu", e); }
     };
+
+    // Mode démo (développement local uniquement) : /?demo=1 affiche l'appli avec un profil fictif, sans rien écrire en base.
+    if (process.env.NODE_ENV === 'development' && params.get('demo')) {
+      demoMode.current = true;
+      setCurrentUser({ uid: 'demo', email: 'demo@example.com' });
+      setUserData(DEMO_PROFILE(params.get('demo') === 'premium'));
+      if (params.get('id')) setActiveLessonId(parseInt(params.get('id')));
+      if (params.get('view') === 'complete') setLastResult({ xp: 150, isTest: false, passed: true, score: 0 });
+      setView(params.get('view') || 'dashboard');
+      loadLessons();
+      return;
+    }
 
     const initApp = async (user) => {
       if (!user) {
@@ -229,6 +251,7 @@ export default function EspanolSprintPro() {
         let profile;
         if (userSnap.exists()) {
             profile = userSnap.data();
+            profile = { ...profile, vocab: cleanVocab(profile.vocab), completedLessons: profile.completedLessons || [] };
             // Série interrompue : aucun jour d'activité hier ni aujourd'hui
             if (profile.lastActive && profile.lastActive !== dayKey() && profile.lastActive !== yesterdayKey()) profile = { ...profile, streak: 0 };
         } else {
@@ -284,7 +307,7 @@ export default function EspanolSprintPro() {
         if (candidates.length === 0) return;
         const randomStory = candidates[Math.floor(Math.random() * candidates.length)];
         try {
-            await updateDoc(doc(db, "users", currentUser.uid), { dailyStory: { date: today, storyId: randomStory.id }, readStories: arrayUnion(randomStory.id) });
+            await saveUser({ dailyStory: { date: today, storyId: randomStory.id }, readStories: arrayUnion(randomStory.id) });
             setUserData(prev => ({ ...prev, dailyStory: { date: today, storyId: randomStory.id }, readStories: [...(prev.readStories || []), randomStory.id] }));
             setDailyStoryContent(randomStory);
         } catch (e) { console.error("Erreur histoire du jour :", e); }
@@ -419,18 +442,18 @@ export default function EspanolSprintPro() {
               if (passed && currentUser) {
                   const currentIdx = LEVELS.indexOf(userData?.level || "A1");
                   const nextLevel = (currentIdx >= 0 && currentIdx < LEVELS.length - 1) ? LEVELS[currentIdx + 1] : LEVELS[Math.max(currentIdx, 0)];
-                  await updateDoc(doc(db, "users", currentUser.uid), { xp: increment(500), level: nextLevel });
+                  await saveUser({ xp: increment(500), level: nextLevel });
                   setUserData(prev => ({ ...prev, level: nextLevel, xp: (prev?.xp || 0) + 500 }));
               }
               return;
           }
-          if (!currentUser) return;
           const safeContent = Array.isArray(lessonContent) ? lessonContent : [];
-          const newItemsWithSRS = safeContent.filter(item => item && ['swipe', 'grammar', 'structure'].includes(item.type)).map(item => ({ ...item, grade: 0, interval: 1, lastReview: new Date().toISOString() }));
+          const newItemsWithSRS = safeContent.filter(item => item && item.save !== false && ['swipe', 'grammar', 'structure'].includes(item.type) && !isLegacyNoise(item)).map(({ save, ...item }) => item).map(item => ({ ...item, grade: 0, interval: 1, lastReview: new Date().toISOString() }));
           const today = new Date().toDateString();
           const currentVocab = Array.isArray(userData?.vocab) ? userData.vocab : [];
           const currentDaily = userData?.dailyLimit || { date: today, count: 0 };
-          const uniqueNewItems = newItemsWithSRS.filter(newItem => !currentVocab.some(existing => existing.id === newItem.id || (existing.es && newItem.es && existing.es.trim().toLowerCase() === newItem.es.trim().toLowerCase())));
+          const knownKeys = new Set(currentVocab.map(itemKey));
+          const uniqueNewItems = newItemsWithSRS.filter(newItem => { const k = itemKey(newItem); if (knownKeys.has(k)) return false; knownKeys.add(k); return true; });
           const isNew = !(userData.completedLessons || []).includes(lessonId);
           const baseCount = currentDaily.date === today ? currentDaily.count : 0;
           const newCount = isNew ? baseCount + 1 : baseCount;
@@ -442,7 +465,7 @@ export default function EspanolSprintPro() {
           setUserData(prev => ({ ...prev, xp: (prev?.xp || 0) + xp, streak: newStreak, lastActive: dayKey(), vocab: [...currentVocab, ...uniqueNewItems], completedLessons: isNew ? [...(prev.completedLessons || []), lessonId] : prev.completedLessons, dailyLimit: { date: today, count: newCount } }));
           const update = { xp: increment(xp), streak: newStreak, lastActive: dayKey(), completedLessons: arrayUnion(lessonId), dailyLimit: { date: today, count: newCount } };
           if (uniqueNewItems.length) update.vocab = arrayUnion(...uniqueNewItems);
-          await updateDoc(doc(db, "users", currentUser.uid), update);
+          await saveUser(update);
       } catch (error) { console.error("Erreur de sauvegarde :", error); notify("Ta progression n'a pas pu être sauvegardée. Vérifie ta connexion.", 'error'); } finally { proceedToCompleteScreen(); }
   };
 
@@ -465,9 +488,6 @@ const handleDownloadPDF = async (lessonId) => {
     } catch (e) { console.error(e); notify("La création du PDF a échoué. Réessaie.", 'error'); }
   };
 
-  const isAdmin = !!currentUser?.email && ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
-  const uploadFullContentToCloud = async () => { if (!isAdmin || !lib) return; if (!confirm("ADMIN : réinitialiser tout le contenu des leçons dans la base ?")) return; try { await setDoc(doc(db, "meta", "roadmap"), { lessons: INITIAL_LESSONS_LIST }); const contentToUpload = lib.generateAllContent(); for (const [id, content] of Object.entries(contentToUpload)) { await setDoc(doc(db, "lessons", id), { content: content }); } alert("✅ Contenu réinitialisé."); window.location.reload(); } catch (e) { alert("Erreur : " + e.message); } };
-
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-yellow-400" role="status" aria-label="Chargement"><Loader2 size={48} className="animate-spin text-white" /></div>;
 
   return (
@@ -481,7 +501,7 @@ const handleDownloadPDF = async (lessonId) => {
       {showLimitModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center space-y-6 relative overflow-hidden shadow-2xl border-2 border-red-100">
-            <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500 mb-2 animate-pulse"><Heart size={48} className="fill-red-500" /></div>
+            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500"><Heart size={26} className="fill-red-500" /></div>
             <div><h3 className="text-2xl font-black text-slate-900">Plus de vies pour aujourd'hui 💔</h3><p className="text-slate-500 mt-2 font-medium">Tu as terminé tes {FREE_LESSONS_PER_DAY} nouvelles leçons gratuites du jour. Tu peux encore réviser les leçons déjà validées, ou continuer sans limite avec Premium.</p></div>
             <div className="space-y-3 pt-4 border-t border-slate-100">
                <button onClick={() => { setShowLimitModal(false); setShowPremiumModal(true); }} className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2"><Infinity size={20} /> Passer en illimité</button>
@@ -497,7 +517,7 @@ const handleDownloadPDF = async (lessonId) => {
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center relative overflow-hidden shadow-2xl border-2 border-yellow-100 animate-in zoom-in-95 duration-300">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 to-red-500"></div>
             <button onClick={() => {setShowPremiumModal(false); setShowPromoInput(false);}} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><X size={24}/></button>
-            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto text-yellow-600 mb-4 animate-bounce"><Crown size={40} strokeWidth={2.5} /></div>
+            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto text-yellow-600 mb-3"><Crown size={24} strokeWidth={2.5} /></div>
             <h3 className="text-2xl font-black text-slate-900 mb-1">EspañolSprint <span className="text-indigo-600">Premium</span></h3>
             <p className="text-slate-500 mb-5 text-sm">Apprends sans limite et parle espagnol plus vite.</p>
             {!showPromoInput ? (
@@ -581,7 +601,7 @@ const handleDownloadPDF = async (lessonId) => {
         </div>
       ) : (
         <>
-          <SidebarDesktop userData={userData} currentView={view} onChangeView={setView} onLogout={handleLogout} onUpload={uploadFullContentToCloud}/>
+          <SidebarDesktop userData={userData} currentView={view} onChangeView={setView} onLogout={handleLogout} />
           <main className="flex-1 h-full overflow-hidden relative flex flex-col">
             <MobileHeader userData={userData} />
             <div className="flex-1 overflow-y-auto bg-slate-50 relative scroll-smooth">
@@ -607,14 +627,14 @@ const handleDownloadPDF = async (lessonId) => {
               )}
               {view === 'reading' && (
                 <div className="p-6 pb-24 space-y-8 max-w-2xl mx-auto min-h-screen flex flex-col">
-                    <div className="text-center space-y-2"><span className="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Mode histoire</span><h2 className="text-3xl font-black text-slate-900">L'histoire du jour 📖</h2></div>
+                    <div className="text-center space-y-2"><span className="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Mode histoire</span><h2 className="text-3xl font-black text-slate-900">L'histoire du jour</h2></div>
                     <div className="flex-1 flex flex-col items-center justify-center">
                         {dailyStoryContent ? (
-                            <div onClick={() => startStory(dailyStoryContent.id)} className="w-full bg-white p-8 rounded-[2rem] shadow-xl border-4 border-slate-100 cursor-pointer group hover:border-pink-200 hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 font-bold px-4 py-2 rounded-bl-2xl z-10">Niveau {dailyStoryContent.level}</div>
+                            <div onClick={() => startStory(dailyStoryContent.id)} className="w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 cursor-pointer group hover:border-pink-200 hover:shadow-md transition-all relative overflow-hidden">
+                                <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 font-bold text-xs px-3 py-1.5 rounded-bl-xl z-10">Niveau {dailyStoryContent.level}</div>
                                 <div className="flex flex-col items-center text-center space-y-6 relative z-10">
-                                    <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center text-5xl group-hover:scale-110 transition-transform duration-500 shadow-inner border-4 border-white">💬</div>
-                                    <div><h3 className="text-2xl font-black text-slate-800 mb-2 group-hover:text-pink-600 transition-colors">{dailyStoryContent.title}</h3><p className="text-slate-400 font-medium flex items-center justify-center gap-2"><Calendar size={16}/> Jour {dailyStoryContent.day || 1}</p></div>
+                                    <div className="w-14 h-14 bg-pink-50 rounded-full flex items-center justify-center text-2xl">💬</div>
+                                    <div><h3 className="text-2xl font-black text-slate-800 mb-2 group-hover:text-pink-600 transition-colors">{dailyStoryContent.title}</h3><p className="text-slate-400 font-medium">Un dialogue à écouter, avec des questions de compréhension.</p></div>
                                     <button className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg shadow-lg group-hover:bg-pink-600 transition-colors flex items-center justify-center gap-2">Lire maintenant <ChevronRight size={20}/></button>
                                 </div>
                             </div>
@@ -632,12 +652,10 @@ const handleDownloadPDF = async (lessonId) => {
                     userData={userData} 
                     email={currentUser.email} 
                     onLogout={handleLogout} 
-                    onUpload={uploadFullContentToCloud}
                     onPremium={() => setShowPremiumModal(true)} 
                     onManageSubscription={handlePortal}
                     onTest={() => setView('levelTest')}
                     onDeleteAccount={handleDeleteAccount}
-                    isAdmin={isAdmin}
                   />
               )}
               
@@ -678,7 +696,7 @@ const ProfileContent = ({ userData, email, onLogout, onUpload, onPremium, onMana
         
         {/* En-tête */}
         <div className="flex items-center gap-6">
-          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center text-3xl font-bold text-indigo-600 border-4 border-white shadow-sm">
+          <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center text-xl font-bold text-indigo-600 shrink-0">
             {initial}
           </div>
           <div>
@@ -727,11 +745,6 @@ const ProfileContent = ({ userData, email, onLogout, onUpload, onPremium, onMana
 
         {/* Actions */}
         <div className="space-y-3 pt-4 border-t border-slate-50">
-            {isAdmin && (
-            <button onClick={onUpload} className="w-full bg-indigo-50 text-indigo-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors border border-indigo-100 text-sm">
-                <CloudUpload size={18} /> Réinitialiser le contenu (admin)
-            </button>
-            )}
             <button onClick={onLogout} className="w-full text-slate-500 font-bold py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-sm">
                 <LogOut size={18} /> Se déconnecter
             </button>
@@ -774,7 +787,7 @@ const AITutorWidget = ({ isOpen, onToggle, history, onSend, isLoading, isPremium
           <form onSubmit={handleSubmit} className="p-3 bg-white border-t border-slate-100 flex gap-2"><input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Pose ta question…" aria-label="Ta question pour le coach" className="flex-1 bg-slate-100 border-0 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 font-medium" /><button type="submit" disabled={isLoading || !input.trim()} className="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"><ArrowRight size={20} /></button></form>
         </div>
       )}
-      <button onClick={onToggle} aria-label={isOpen ? "Fermer le coach IA" : "Ouvrir le coach IA"} className={`w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 ${isOpen ? 'bg-slate-700 rotate-90' : 'bg-gradient-to-tr from-indigo-600 to-purple-500 '}`}>{isOpen ? <X color="white" size={24} /> : <Bot color="white" size={28} />}</button>
+      <button onClick={onToggle} aria-label={isOpen ? "Fermer le coach IA" : "Ouvrir le coach IA"} className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 ${isOpen ? 'bg-slate-700 rotate-90' : 'bg-gradient-to-tr from-indigo-600 to-purple-500 '}`}>{isOpen ? <X color="white" size={20} /> : <Bot color="white" size={22} />}</button>
     </div>
   );
 };
@@ -887,7 +900,7 @@ const ConversationMode = ({ onExit, onPremiumRequired }) => {
       <div className="flex-1 overflow-y-auto p-6 space-y-6 pt-16">
          {history.length === 0 && (
            <div className="text-center mt-20 opacity-50 space-y-4">
-             <div className="w-24 h-24 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto"><Mic size={40}/></div>
+             <div className="w-14 h-14 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto"><Mic size={24}/></div>
              <p>Maintiens le bouton micro enfoncé et parle en espagnol.</p>
              <p className="text-sm">Relâche pour entendre la réponse.</p>
            </div>
@@ -908,7 +921,7 @@ const ConversationMode = ({ onExit, onPremiumRequired }) => {
         {status === "waiting_play" ? (
              <button 
                 onClick={playPendingAudio}
-                className="w-auto px-8 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-2xl animate-bounce gap-2 font-bold text-lg"
+                className="w-auto px-8 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-xl gap-2 font-bold"
              >
                 <Volume2 size={24} /> Écouter la réponse
              </button>
@@ -921,13 +934,13 @@ const ConversationMode = ({ onExit, onPremiumRequired }) => {
                 onTouchStart={(e) => { e.preventDefault(); startRecording(); }} 
                 onTouchEnd={(e) => { e.preventDefault(); stopRecording(); }} 
                 disabled={status === "processing" || status === "speaking"}
-                className={`w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-all select-none touch-none 
+                className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-all select-none touch-none 
                     ${status === 'recording' ? 'bg-red-500 scale-110 ring-4 ring-red-500/30' : 
                       status === 'speaking' ? 'bg-green-500' : 'bg-indigo-600 hover:scale-105'}
                     ${(status === "processing" || status === "speaking") ? 'opacity-50 cursor-not-allowed' : ''}
                 `}
             >
-                {status === 'speaking' ? <Volume2 size={40} className="animate-pulse"/> : <Mic size={40} className="fill-white"/>}
+                {status === 'speaking' ? <Volume2 size={30}/> : <Mic size={30} className="fill-white"/>}
             </button>
         )}
       </div>
@@ -1011,7 +1024,7 @@ const ListeningCard = ({ data, onNext, onScore }) => {
     const [val, setVal] = useState(''); const [status, setStatus] = useState('idle'); const [revealed, setRevealed] = useState(false); 
     useEffect(() => { speak(data.audioText); }, [data]); 
     const check = (e) => { e.preventDefault(); const cleanVal = val.trim().toLowerCase().replace(/[¿¡!.,]/g, ''); const cleanAns = data.correctAnswer.toLowerCase().replace(/[¿¡!.,]/g, ''); const correct = cleanVal === cleanAns; setStatus(correct ? 'success' : 'error'); setRevealed(true); if(onScore) onScore(correct); if (correct) { setTimeout(onNext, 1500); } }; 
-    return (<div className="bg-white p-8 rounded-3xl shadow-xl flex flex-col items-center gap-6 w-full animate-in zoom-in"><span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-xs font-bold uppercase">Écoute</span><button onClick={() => speak(data.audioText)} className="w-24 h-24 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 active:scale-95 transition-all animate-pulse"><Ear size={40} /></button>{revealed && <p className="text-2xl font-black text-purple-600 text-center">{data.audioText}</p>}<form onSubmit={check} className="w-full space-y-4"><input value={val} onChange={e => setVal(e.target.value)} placeholder="Écris ce que tu entends…" className={`w-full p-4 border-2 rounded-xl text-center font-bold outline-none ${status === 'error' ? 'border-red-400 bg-red-50' : status === 'success' ? 'border-green-400 bg-green-50' : 'border-slate-200 focus:border-purple-400'}`} disabled={revealed && status === 'success'} /><button type="submit" disabled={!val} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold">{status === 'error' ? 'Continuer' : 'Vérifier'}</button>{status === 'error' && <button type="button" onClick={onNext} className="w-full py-2 text-slate-400 font-bold">Passer</button>}</form></div>); 
+    return (<div className="bg-white p-8 rounded-3xl shadow-xl flex flex-col items-center gap-6 w-full animate-in zoom-in"><span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-xs font-bold uppercase">Écoute</span><button onClick={() => speak(data.audioText)} aria-label="Réécouter" className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 active:scale-95 transition-all"><Volume2 size={28} /></button>{revealed && <p className="text-2xl font-black text-purple-600 text-center">{data.audioText}</p>}<form onSubmit={check} className="w-full space-y-4"><input value={val} onChange={e => setVal(e.target.value)} placeholder="Écris ce que tu entends…" className={`w-full p-4 border-2 rounded-xl text-center font-bold outline-none ${status === 'error' ? 'border-red-400 bg-red-50' : status === 'success' ? 'border-green-400 bg-green-50' : 'border-slate-200 focus:border-purple-400'}`} disabled={revealed && status === 'success'} /><button type="submit" disabled={!val} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold">{status === 'error' ? 'Continuer' : 'Vérifier'}</button>{status === 'error' && <button type="button" onClick={onNext} className="w-full py-2 text-slate-400 font-bold">Passer</button>}</form></div>); 
 };
 
 const LeaderboardView = ({ userData }) => { const rivals = [{ name: "Maria L.", xp: 1450, avatar: "👩" }, { name: "Thomas B.", xp: 1200, avatar: "👨" }, { name: userData?.name + " (Toi)", xp: userData?.xp || 0, avatar: "😎", isMe: true }, { name: "Juan P.", xp: 850, avatar: "🧔" }].sort((a, b) => b.xp - a.xp); return (<div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-6"><div className="text-center space-y-2 mb-8"><div className="inline-block p-4 bg-yellow-100 rounded-full text-yellow-600 mb-2"><Trophy size={40} /></div><h2 className="text-3xl font-black text-slate-900">Classement</h2><p className="text-slate-500 font-medium">Gagne des XP à chaque leçon pour grimper sur le podium.</p></div><div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">{rivals.map((user, idx) => (<div key={idx} className={`flex items-center gap-4 p-4 border-b border-slate-50 ${user.isMe ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''}`}><div className="font-black text-slate-300 w-6">{idx + 1}</div><div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-xl">{user.avatar}</div><div className="flex-1 font-bold text-slate-800">{user.name}</div><div className="font-black text-slate-900">{user.xp} XP</div></div>))}</div></div>); };
@@ -1019,11 +1032,11 @@ const LessonComplete = ({ result, streak, isPremium, onHome, onDownload, onPremi
   const failed = result.isTest && !result.passed;
   return (
     <div className={`min-h-full w-full flex flex-col items-center justify-center p-8 text-center space-y-8 animate-in zoom-in ${failed ? 'bg-slate-100' : 'bg-yellow-400'}`}>
-      <div className="bg-white p-10 rounded-[3rem] shadow-2xl rotate-3 hover:rotate-6 transition-transform">
-        {failed ? <RotateCcw size={100} className="text-slate-400" /> : <Trophy size={100} className="text-yellow-500 fill-yellow-500" />}
+      <div className="bg-white p-6 rounded-3xl shadow-xl">
+        {failed ? <RotateCcw size={56} className="text-slate-400" /> : <Trophy size={56} className="text-yellow-500 fill-yellow-500" />}
       </div>
       <div>
-        <h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-4">{failed ? "Presque !" : result.isTest ? "Examen réussi !" : "¡Increíble!"}</h2>
+        <h2 className="text-4xl font-black text-slate-900 mb-3">{failed ? "Presque !" : result.isTest ? "Examen réussi !" : "¡Increíble!"}</h2>
         <p className="text-xl text-slate-800 font-bold opacity-80">
           {failed ? `Tu as obtenu ${result.score}/20. Il faut 16 bonnes réponses : révise un peu et retente ta chance !` : result.isTest ? `${result.score}/20 : niveau validé !` : "Leçon terminée !"}
         </p>
@@ -1188,8 +1201,8 @@ const LevelTest = ({ onComplete, onBack }) => {
     if (finished) {
         return (
             <div className="w-full h-full flex flex-col items-center justify-center bg-white p-8 animate-in zoom-in">
-                <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-6 animate-bounce">
-                    <Check size={48} strokeWidth={3} />
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-6">
+                    <Check size={32} strokeWidth={3} />
                 </div>
                 <h2 className="text-3xl font-black text-slate-900 mb-2">Test terminé !</h2>
                 <p className="text-slate-500 text-lg">Score : {score} / 20</p>
@@ -1254,7 +1267,7 @@ const MobileHeader = ({ userData }) => (
     </div>
   </div>
 );
-const MobileBottomNav = ({ currentView, onChangeView }) => (<div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30"><NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} /><NavBtn icon={MessageCircle} label="Histoires" active={currentView === 'reading' || currentView === 'story'} onClick={() => onChangeView('reading')} /><NavBtn icon={BrainCircuit} label="Entraînement" active={currentView === 'tests' || currentView === 'quiz'} onClick={() => onChangeView('tests')} /><NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} /></div>);
+const MobileBottomNav = ({ currentView, onChangeView }) => (<div className="md:hidden bg-white border-t border-slate-100 p-2 pb-6 flex justify-around items-center text-slate-400 z-30"><NavBtn icon={LayoutDashboard} label="Parcours" active={currentView === 'dashboard'} onClick={() => onChangeView('dashboard')} /><NavBtn icon={MessageCircle} label="Histoires" active={currentView === 'reading' || currentView === 'story'} onClick={() => onChangeView('reading')} /><NavBtn icon={BrainCircuit} label="Entraînement" active={currentView === 'tests' || currentView === 'quiz'} onClick={() => onChangeView('tests')} /><NavBtn icon={Library} label="Lexique" active={currentView === 'notebook'} onClick={() => onChangeView('notebook')} /><NavBtn icon={User} label="Profil" active={currentView === 'profile'} onClick={() => onChangeView('profile')} /></div>);
 const NavBtn = ({ icon: Icon, label, active, onClick }) => (<button onClick={onClick} className={`flex flex-col items-center p-2 transition-colors ${active ? 'text-indigo-600' : 'hover:text-slate-600'}`}><Icon size={24} strokeWidth={active ? 2.5 : 2} /><span className="text-[10px] font-bold mt-1">{label}</span></button>);
 const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF }) => { 
   const levels = ["A1", "A2", "B1", "B2", "C1"]; 
@@ -1296,7 +1309,7 @@ const TestDashboard = ({ userData, onStartTest, onTriggerPremium }) => {
     return (
         <div className="max-w-2xl mx-auto w-full p-6 pb-24 space-y-8">
             <div className="text-center">
-                <h2 className="text-3xl font-black text-slate-900 mb-2">Entraînement 🧠</h2>
+                <h2 className="text-3xl font-black text-slate-900 mb-2">Entraînement</h2>
                 <p className="text-slate-500">Révise, parle et valide ton niveau.</p>
             </div>
             
@@ -1352,10 +1365,69 @@ const TestDashboard = ({ userData, onStartTest, onTriggerPremium }) => {
                     </div>
                     {canTakeExam ? <ChevronRight className="text-slate-300" /> : <Lock className="text-slate-300" />}
                 </div>
-                {!canTakeExam && <div className="absolute bottom-2 right-4 text-xs font-bold text-red-400 bg-red-50 px-2 py-1 rounded">Termine d'abord toutes les leçons du niveau</div>}
+                {!canTakeExam && <p className="mt-4 text-xs font-bold text-slate-500 bg-slate-100 px-3 py-2 rounded-lg text-center">🔒 Termine d'abord toutes les leçons de ton niveau ({Math.min(lessonsDone, (currentIdx + 1) * 20) - currentIdx * 20 < 0 ? 0 : Math.max(0, lessonsDone - currentIdx * 20)}/20)</p>}
             </div>
         </div>
     ); 
 };
 const StructuresContent = ({ structures, userVocab }) => { const safeList = Array.isArray(userVocab) ? userVocab : []; const learnedStructures = safeList.filter(item => item && item.type === 'structure'); const allStructures = [...structures, ...learnedStructures]; const uniqueStructures = allStructures.filter((item, index, self) => index === self.findIndex((t) => t.title === item.title)); return (<div className="max-w-3xl mx-auto w-full p-6 pb-24"><h2 className="text-3xl font-black text-slate-900 mb-8">Structures de phrases 🏗️</h2><div className="space-y-6">{uniqueStructures.map((struct, idx) => (<div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"><div className="flex items-center gap-3 mb-4"><div className="p-2 bg-yellow-100 rounded-lg text-yellow-700"><Hammer size={20} /></div><h3 className="text-xl font-bold text-slate-900">{struct.title}</h3></div><div className="bg-slate-50 p-4 rounded-xl font-mono text-sm text-indigo-600 font-bold mb-4 text-center border border-slate-100">{struct.formula}</div><div className="space-y-2 mb-4">{struct.example_es ? (<><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example_es}</p><p className="text-sm text-slate-400">🇫🇷 {struct.example_fr || struct.example_en}</p></>) : (<><p className="text-lg font-medium text-slate-800">🇪🇸 {struct.example}</p></>)}</div><p className="text-sm text-slate-500 bg-yellow-50 p-3 rounded-lg border border-yellow-100">💡 {struct.explanation || struct.note}</p></div>))}{uniqueStructures.length === 0 && (<div className="text-center text-slate-400 py-10"><p>Aucune structure découverte pour le moment.</p><p className="text-sm">Avance dans les leçons pour en débloquer !</p></div>)}</div></div>); };
-const NotebookContent = ({ userVocab }) => { const [activeTab, setActiveTab] = useState('vocab'); const safeVocab = Array.isArray(userVocab) ? userVocab : []; const vocabItems = safeVocab.filter(item => item.type === 'swipe'); const grammarItems = safeVocab.filter(item => item.type === 'grammar'); const structureItems = safeVocab.filter(item => item.type === 'structure'); return (<div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24 space-y-6"><h2 className="text-3xl font-black text-slate-900">Mon lexique 📚</h2><div className="flex space-x-2 bg-slate-100 p-1 rounded-xl">{['vocab', 'grammar', 'structure'].map(tab => (<button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{tab === 'vocab' && 'Vocabulaire'}{tab === 'grammar' && 'Grammaire'}{tab === 'structure' && 'Structures'}</button>))}</div>{activeTab === 'vocab' && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4">{vocabItems.length > 0 ? vocabItems.map((item, idx) => (<div key={idx} className="bg-white p-4 rounded-xl border border-slate-100 flex justify-between items-center"><div><p className="font-bold text-slate-800">{item.es}</p><p className="text-xs text-slate-400 italic">{item.context}</p></div><p className="text-indigo-600 font-medium">{item.en}</p></div>)) : <p className="text-slate-400 text-center col-span-2 py-10">Ton lexique est vide pour l'instant. Termine une leçon pour le remplir !</p>}</div>)}{activeTab === 'grammar' && (<div className="space-y-4">{grammarItems.length > 0 ? grammarItems.map((item, idx) => (<div key={idx} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm"><h4 className="font-bold text-lg text-indigo-600 mb-2">{item.title}</h4><p className="text-slate-600 mb-4 text-sm">{item.description}</p><div className="grid grid-cols-2 gap-2 text-sm">{item.conjugation && item.conjugation.map((row, rIdx) => (<div key={rIdx} className="flex justify-between bg-slate-50 p-2 rounded"><span className="text-slate-400">{row.pronoun}</span><span className="font-bold text-slate-800">{row.verb}</span></div>))}</div></div>)) : <p className="text-slate-400 text-center py-10">Aucune règle de grammaire enregistrée pour l'instant.</p>}</div>)}{activeTab === 'structure' && (<div className="grid gap-6">{structureItems.length > 0 ? structureItems.map((item, idx) => (<div key={idx} className="group relative bg-white overflow-hidden rounded-3xl border-2 border-slate-100 hover:border-indigo-100 transition-all shadow-sm hover:shadow-md"><div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-[4rem] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div><div className="relative p-6"><div className="flex items-center gap-4 mb-6"><div className="w-12 h-12 bg-white border-2 border-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform"><Hammer size={24} /></div><div><h4 className="font-black text-xl text-slate-800 leading-tight">{item.title}</h4><span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Grammaire</span></div></div><div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 flex flex-col items-center text-center relative overflow-hidden"><div className="hidden"></div><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 z-10">Construction</span><code className="font-mono text-lg md:text-xl font-bold text-indigo-600 bg-white px-4 py-2 rounded-xl border-b-4 border-indigo-100 shadow-sm z-10">{item.formula}</code></div><div className="space-y-3"><div className="flex gap-4 items-start pl-2"><div className="w-1 h-12 bg-green-400 rounded-full shrink-0 mt-1"></div><div><p className="text-xs font-bold text-slate-400 uppercase mb-1">Exemple</p><p className="text-lg font-medium text-slate-700 italic">"{item.example}"</p></div></div>{item.note && (<div className="mt-4 bg-yellow-50 p-3 rounded-xl border border-yellow-100 flex gap-3 items-start"><span className="text-lg">💡</span><p className="text-sm text-yellow-800 font-medium leading-relaxed">{item.note}</p></div>)}</div></div></div>)) : (<div className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center"><div className="p-4 bg-white rounded-full shadow-sm mb-4"><Hammer className="h-8 w-8 text-slate-300" /></div><p className="text-slate-900 font-bold text-lg">Aucune structure découverte</p><p className="text-slate-500 text-sm mt-1 max-w-xs mx-auto">Avance dans les leçons pour débloquer tes premières fiches de construction de phrases !</p></div>)}</div>)}</div>); };
+const NotebookContent = ({ userVocab }) => {
+  const [activeTab, setActiveTab] = useState(() => (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab')) || 'vocab');
+  const items = cleanVocab(userVocab);
+  const groups = { vocab: items.filter(i => i.type === 'swipe'), grammar: items.filter(i => i.type === 'grammar'), structure: items.filter(i => i.type === 'structure') };
+  const tabs = [['vocab', 'Vocabulaire'], ['grammar', 'Verbes'], ['structure', 'Structures']];
+  const Empty = ({ text }) => <p className="text-slate-400 text-center py-12 col-span-full">{text}</p>;
+  return (
+    <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-24 space-y-6">
+      <div><h2 className="text-3xl font-black text-slate-900">Mon lexique</h2><p className="text-slate-500 text-sm mt-1">Tout ce que tu as appris dans tes leçons, classé pour réviser facilement.</p></div>
+      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
+        {tabs.map(([key, label]) => (
+          <button key={key} onClick={() => setActiveTab(key)} className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === key ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{label} <span className="font-medium opacity-60">({groups[key].length})</span></button>
+        ))}
+      </div>
+
+      {activeTab === 'vocab' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {groups.vocab.length ? groups.vocab.map((item) => (
+            <div key={itemKey(item)} className="bg-white p-4 rounded-xl border border-slate-100 flex items-center gap-3">
+              <button onClick={() => speak(item.es)} aria-label={`Écouter ${item.es}`} className="p-2 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 shrink-0"><Volume2 size={16} /></button>
+              <div className="flex-1 min-w-0"><p className="font-bold text-slate-800 truncate">{item.es}</p>{item.sentence && <p className="text-xs text-slate-400 italic truncate">{item.sentence}</p>}</div>
+              <p className="text-indigo-600 font-medium text-right">{item.en}</p>
+            </div>
+          )) : <Empty text="Ton lexique est vide pour l'instant. Termine une leçon pour le remplir !" />}
+        </div>
+      )}
+
+      {activeTab === 'grammar' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {groups.grammar.length ? groups.grammar.map((item) => (
+            <div key={itemKey(item)} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+              <div className="flex items-baseline justify-between gap-3 mb-3">
+                <h4 className="font-black text-lg text-indigo-600">{item.verb ? item.verb.toLowerCase() : item.title}</h4>
+                <span className="text-xs text-slate-400 font-medium text-right">{(item.description || '').split(' — ')[0]}</span>
+              </div>
+              <div className="divide-y divide-slate-50 text-sm">
+                {(item.conjugation || []).map((row) => (
+                  <div key={row.pronoun} className="flex items-center py-1.5"><span className="text-slate-400 w-24">{row.pronoun.toLowerCase()}</span><span className="font-bold text-slate-800 flex-1">{row.verb}</span><span className="text-slate-400 italic text-xs">{row.fr}</span></div>
+                ))}
+              </div>
+            </div>
+          )) : <Empty text="Aucun verbe enregistré pour l'instant. Ils apparaîtront ici au fil de tes leçons." />}
+        </div>
+      )}
+
+      {activeTab === 'structure' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {groups.structure.length ? groups.structure.map((item) => (
+            <div key={itemKey(item)} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+              <h4 className="font-black text-lg text-slate-800">{item.title}</h4>
+              <code className="inline-block font-mono text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg">{item.formula}</code>
+              <div><p className="font-medium text-slate-700">{item.example}</p>{item.example_fr && <p className="text-sm text-slate-400 italic">{item.example_fr}</p>}</div>
+              {item.note && <p className="text-sm text-slate-500 border-t border-slate-50 pt-3">{item.note}</p>}
+            </div>
+          )) : <Empty text="Aucune structure découverte pour l'instant. Avance dans les leçons pour en débloquer !" />}
+        </div>
+      )}
+    </div>
+  );
+};

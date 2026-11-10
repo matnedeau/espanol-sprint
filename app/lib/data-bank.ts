@@ -323,10 +323,17 @@ export const DATA_BANK = {
 
 export const SENTENCE_STRUCTURES = [
   { id: 1, title: "La phrase simple", formula: "Sujet + verbe", example_es: "(Yo) como.", example_en: "Je mange.", explanation: "Le pronom sujet est souvent omis : la terminaison du verbe suffit." },
-  { id: 2, title: "La négation", formula: "No + verbe", example_es: "No hablo.", example_en: "Je ne parle pas.", explanation: "« No » se place juste avant le verbe." },
-  { id: 3, title: "L'accord", formula: "Nom + adjectif", example_es: "La casa roja.", example_en: "La maison rouge.", explanation: "L'adjectif suit le nom et s'accorde en genre et en nombre." },
-  { id: 4, title: "Gustar", formula: "Me gusta...", example_es: "Me gusta el pan.", example_en: "J'aime le pain.", explanation: "Littéralement « le pain me plaît » : le verbe s'accorde avec ce que l'on aime." },
-  { id: 5, title: "Le futur proche", formula: "Ir a + infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Pour parler d'une action imminente ou d'un projet." }
+  { id: 2, title: "La négation", formula: "No + verbe", example_es: "No hablo inglés.", example_en: "Je ne parle pas anglais.", explanation: "« No » se place juste avant le verbe." },
+  { id: 3, title: "L'accord de l'adjectif", formula: "Nom + adjectif", example_es: "La casa roja.", example_en: "La maison rouge.", explanation: "L'adjectif suit le nom et s'accorde en genre et en nombre." },
+  { id: 4, title: "Exprimer ses goûts", formula: "Me gusta + nom / infinitif", example_es: "Me gusta el pan.", example_en: "J'aime le pain.", explanation: "Littéralement « le pain me plaît » : le verbe s'accorde avec ce que l'on aime." },
+  { id: 5, title: "Le futur proche", formula: "Ir a + infinitif", example_es: "Voy a comer.", example_en: "Je vais manger.", explanation: "Pour parler d'une action imminente ou d'un projet." },
+  { id: 6, title: "Poser une question", formula: "¿ Mot interrogatif + verbe ?", example_es: "¿Dónde vives?", example_en: "Où habites-tu ?", explanation: "La question s'ouvre par « ¿ » et le mot interrogatif porte un accent." },
+  { id: 7, title: "L'action en cours", formula: "Estar + gérondif", example_es: "Estoy leyendo.", example_en: "Je suis en train de lire.", explanation: "Le gérondif se termine en -ando ou en -iendo." },
+  { id: 8, title: "L'obligation", formula: "Tener que + infinitif", example_es: "Tengo que trabajar.", example_en: "Je dois travailler.", explanation: "Exprime une obligation personnelle." },
+  { id: 9, title: "Il y a", formula: "Hay + nom", example_es: "Hay un parque cerca.", example_en: "Il y a un parc tout près.", explanation: "« Hay » est invariable, au singulier comme au pluriel." },
+  { id: 10, title: "La comparaison", formula: "Más / menos + adjectif + que", example_es: "Es más alto que yo.", example_en: "Il est plus grand que moi.", explanation: "« Más… que » pour plus, « menos… que » pour moins." },
+  { id: 11, title: "Le passé récent", formula: "Acabar de + infinitif", example_es: "Acabo de llegar.", example_en: "Je viens d'arriver.", explanation: "Pour une action qui vient tout juste de se produire." },
+  { id: 12, title: "La possession", formula: "Mi / tu / su + nom", example_es: "Mi hermano vive aquí.", example_en: "Mon frère habite ici.", explanation: "Pas d'article devant le possessif." }
 ];
 
 export const DAILY_READINGS = [

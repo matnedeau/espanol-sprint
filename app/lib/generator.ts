@@ -1,118 +1,86 @@
-import { DATA_BANK, DAILY_READINGS, CONTENT_PART_1 } from './data-bank';
+import { DATA_BANK, DAILY_READINGS, CONTENT_PART_1, SENTENCE_STRUCTURES } from './data-bank';
 import { CURRICULUM_LOGIC } from './curriculum';
-
-// Accorde l'adjectif avec le nom (genre et nombre) : « La casa » + « Nuevo » → « La casa nueva »
-const agree = (noun: string, adjective: string) => {
-  const article = noun.split(' ')[0].toLowerCase();
-  let adj = adjective.toLowerCase();
-  const feminine = ['la', 'las', 'una'].includes(article) || noun.toLowerCase() === 'el agua';
-  const plural = article === 'los' || article === 'las';
-  if (feminine && adj.endsWith('o')) adj = adj.slice(0, -1) + 'a';
-  if (plural) adj = /[aeiouáéíóú]$/.test(adj) ? adj + 's' : adj.replace(/z$/, 'c') + 'es';
-  return `${noun} ${adj}`;
-};
 
 // --- CŒUR DU GÉNÉRATEUR ---
 
+const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
+
+// Verbe travaillé quand le point de grammaire correspond à un thème précis
+const GRAMMAR_VERB_HINTS: [RegExp, string][] = [
+  [/obligation/i, "Deber"],
+  [/futur/i, "Ir"],
+  [/passé composé|antérieur/i, "Haber"],
+  [/opinion|débat|critique/i, "Creer"],
+  [/subjonctif|hypoth/i, "Querer"],
+  [/politesse|réservation/i, "Poder"],
+  [/conseils/i, "Deber"],
+  [/récit|orientation/i, "Ir"],
+];
+
+/**
+ * Construit une leçon. Le résultat est déterministe : une même leçon a toujours le même contenu
+ * (dans l'appli, sur la page publique et dans la fiche PDF).
+ */
 export const generateStructuredLesson = (id: number) => {
-  let level = "A1";
-  if (id > 20) level = "A2";
-  if (id > 40) level = "B1";
-  if (id > 60) level = "B2";
-  if (id > 80) level = "C1";
-
-  // @ts-ignore : Indexation dynamique complexe
+  const levelIdx = Math.min(Math.max(Math.ceil(id / 20) - 1, 0), LEVELS.length - 1);
+  const level = LEVELS[levelIdx];
+  const position = (id - 1) % 20; // rang de la leçon dans son niveau
   const levelConfig = CURRICULUM_LOGIC[level] || [];
-  const config = levelConfig[(id - 1) % levelConfig.length] || { topic: `Leçon ${id}`, grammar: "Général", category: "abstract" };
-  const topicLower = config.topic.toLowerCase();
-  const grammarLower = config.grammar.toLowerCase();
+  const config = levelConfig[position] || { topic: `Leçon ${id}`, grammar: "Révision", category: "abstract" };
 
-  // SÉLECTION DU VOCABULAIRE
-  const forcedCategory = config.category;
-  
-  const getCandidatePool = (cat: string) => {
-      // @ts-ignore : Accès dynamique aux clés de DATA_BANK.nouns
-      let pool = DATA_BANK.nouns[cat] ? DATA_BANK.nouns[cat] : DATA_BANK.nouns['abstract'];
-      // @ts-ignore : Typage faible pour l'objet pool
-      const levelPool = pool.filter((n: any) => n.levels.includes(level));
-      return levelPool.length > 2 ? levelPool : pool;
-  };
-
-  let candidates = getCandidatePool(forcedCategory);
-  // @ts-ignore
-  const shuffledCandidates = candidates.sort(() => 0.5 - Math.random());
-
-  let card1Noun = shuffledCandidates[0];
-  let card2Noun = shuffledCandidates[1] || shuffledCandidates[0];
-  let card3Noun = shuffledCandidates[2] || shuffledCandidates[0];
-
-  if (shuffledCandidates.length < 3) {
-      // @ts-ignore
-      const backup = getCandidatePool('abstract').sort(() => 0.5 - Math.random());
-      if (!card2Noun) card2Noun = backup[0];
-      if (!card3Noun) card3Noun = backup[1];
+  // --- VOCABULAIRE : 3 mots du thème, sans répétition entre deux leçons du même thème ---
+  const nouns: any = DATA_BANK.nouns;
+  const category: any[] = nouns[config.category] || nouns.abstract;
+  let pool = category.filter((n) => n.levels.includes(level));
+  if (pool.length < 3) {
+    // Pas assez de mots à ce niveau : on complète avec les niveaux les plus proches
+    const distance = (n: any) => Math.min(...n.levels.map((l: string) => Math.abs(LEVELS.indexOf(l) - levelIdx)));
+    pool = [...category].sort((x, y) => distance(x) - distance(y)).slice(0, Math.max(3, pool.length));
   }
+  const previousUses = levelConfig.slice(0, position).filter((c) => c.category === config.category).length;
+  const start = (previousUses * 3) % pool.length;
+  const [c1, c2, c3] = [0, 1, 2].map((i) => pool[(start + i) % pool.length]);
 
-  // SÉLECTION DU VERBE
-  const topicToVerbMap: Record<string, string[]> = {
-    "obligation": ["Deber", "Tener"],
-    "futur": ["Ir", "Haber", "Pensar"],
-    "passé": ["Haber", "Tener", "Ser"],
-    "opinion": ["Creer", "Pensar", "Sentir"],
-    "subjonctif": ["Querer", "Pedir", "Dudar"],
-    "mouvement": ["Ir", "Salir", "Venir"],
-    "état": ["Estar", "Ser", "Sentir"]
-  };
-
-  let targetVerbName = null;
-  for (const [key, verbs] of Object.entries(topicToVerbMap)) {
-    if (grammarLower.includes(key) || topicLower.includes(key)) {
-      targetVerbName = verbs[Math.floor(Math.random() * verbs.length)];
-      break;
-    }
+  // --- VERBE : celui du point de grammaire s'il existe, sinon rotation parmi les verbes du niveau ---
+  const verbs = DATA_BANK.verbs;
+  const grammarWords = config.grammar.toLowerCase().split(/[^a-záéíóúñ]+/);
+  let verb = verbs.find((v) => grammarWords.includes(v.es.toLowerCase()));
+  if (!verb) {
+    const hint = GRAMMAR_VERB_HINTS.find(([pattern]) => pattern.test(config.grammar));
+    if (hint) verb = verbs.find((v) => v.es === hint[1]);
   }
-
-  if (!targetVerbName) {
-    const levelFallbacks: Record<string, string[]> = {
-      "A1": ["Ser", "Tener", "Hacer"],
-      "A2": ["Poder", "Querer", "Deber"],
-      "B1": ["Creer", "Pensar", "Sentir"],
-      "B2": ["Creer", "Sentir", "Haber"],
-      "C1": ["Creer", "Pensar", "Haber"]
-    };
-    // @ts-ignore
-    const candidates = levelFallbacks[level] || ["Ser"];
-    targetVerbName = candidates[id % candidates.length];
+  if (!verb) {
+    const levelVerbs = verbs.filter((v) => v.levels.includes(level));
+    const candidates = levelVerbs.length >= 5 ? levelVerbs : verbs;
+    verb = candidates[position % candidates.length];
   }
-  const randVerb = DATA_BANK.verbs.find(v => v.es === targetVerbName) || DATA_BANK.verbs[0];
+  const verbName = verb.es.toLowerCase();
 
-  // CONSTRUCTION
-  const adj = DATA_BANK.adjectives[(id + 2) % DATA_BANK.adjectives.length];
-  const conn = DATA_BANK.connectors[id % DATA_BANK.connectors.length];
-  const tip = DATA_BANK.tips[id % DATA_BANK.tips.length];
+  // --- EXERCICE DE CONJUGAISON : la personne change d'une leçon à l'autre ---
+  const person = verb.conjugation[position % verb.conjugation.length];
+  const personLabel = person.pronoun.toLowerCase();
+
+  const structure = SENTENCE_STRUCTURES[(id - 1) % SENTENCE_STRUCTURES.length];
+  const conn = DATA_BANK.connectors[(id - 1) % DATA_BANK.connectors.length];
+  const tip = DATA_BANK.tips[(id - 1) % DATA_BANK.tips.length];
+  const theme = config.topic;
+  const clean = (text: string) => text.toLowerCase().replace(/[¿¡!.,;«»]/g, '').trim();
 
   let cardId = id * 1000;
-  const isPlural = id % 2 === 0;
-  const grammarQuestionText = isPlural ? `Conjugue « ${randVerb.es.toLowerCase()} » avec nosotros` : `Conjugue « ${randVerb.es.toLowerCase()} » avec tú`;
-  const targetPronoun = isPlural ? "Nos" : "Tú";
-  const conjFn = randVerb.conjugation.find(c => c.pronoun.includes(targetPronoun) || (targetPronoun === "Nos" && c.pronoun.includes("Nosotros")));
-  const grammarAnswer = conjFn ? [conjFn.verb] : [randVerb.conjugation[0].verb];
-
-  const c1 = { ...card1Noun, context: "Mot-clé", sentence: card1Noun.sentence, sentence_trans: card1Noun.sentence_trans };
-  const c2 = { ...card2Noun, context: "Contexte", sentence: card2Noun.sentence, sentence_trans: card2Noun.sentence_trans };
-  const c3 = { ...card3Noun, context: "Exemple", sentence: card3Noun.sentence, sentence_trans: card3Noun.sentence_trans };
+  const word = (n: any) => ({ id: cardId++, type: "swipe", es: n.es, en: n.en, context: theme, sentence: n.sentence, sentence_trans: n.sentence_trans });
 
   return [
-    { id: cardId++, type: "structure", title: `Leçon ${id} : ${config.topic}`, formula: config.grammar, example: `Verbe clé : ${randVerb.es}`, note: `Objectif de la leçon (niveau ${level})` },
-    { id: cardId++, type: "swipe", es: c1.es, en: c1.en, context: c1.context, sentence: c1.sentence, sentence_trans: c1.sentence_trans },
-    { id: cardId++, type: "grammar", title: `Verbe : ${randVerb.es}`, description: randVerb.en, verb: randVerb.es, conjugation: randVerb.conjugation },
-    { id: cardId++, type: "input", question: grammarQuestionText, answer: grammarAnswer, hint: `Verbe ${randVerb.es}` },
-    { id: cardId++, type: "swipe", es: c2.es, en: c2.en, context: c2.context, sentence: c2.sentence, sentence_trans: c2.sentence_trans },
-    { id: cardId++, type: "structure", title: "L'accord", formula: "Nom + adjectif", example: agree(c1.es, adj.es), note: "En espagnol, l'adjectif se place après le nom et s'accorde avec lui." },
-    { id: cardId++, type: "swipe", es: c3.es, en: c3.en, context: c3.context, sentence: c3.sentence, sentence_trans: c3.sentence_trans },
+    { id: cardId++, type: "structure", save: false, title: `Leçon ${id} : ${theme}`, formula: `Verbe : ${verbName}`, example: `Structure : ${structure.title.charAt(0).toLowerCase()}${structure.title.slice(1)}`, note: `Au programme : 4 mots, 1 verbe, 1 structure et 3 exercices.` },
+    word(c1),
+    { id: cardId++, type: "grammar", title: `Le verbe ${verbName}`, description: `${verb.en} — présent de l'indicatif`, verb: verb.es, conjugation: verb.conjugation },
+    { id: cardId++, type: "input", question: `Conjugue « ${verbName} » au présent avec « ${personLabel} »`, answer: [person.verb, `${personLabel} ${person.verb}`], hint: `${person.fr} → ${person.verb.charAt(0)}…` },
+    word(c2),
+    { id: cardId++, type: "structure", title: structure.title, formula: structure.formula, example: structure.example_es, example_fr: structure.example_en, note: structure.explanation },
+    word(c3),
+    { id: cardId++, type: "input", question: `Comment dit-on « ${c2.en.toLowerCase()} » ?`, answer: [clean(c2.es)], hint: `Commence par « ${c2.es.slice(0, 4)}… »` },
     { id: cardId++, type: "swipe", es: conn.es, en: conn.en, context: "Mot de liaison", sentence: conn.sentence, sentence_trans: conn.sentence_trans },
-    { id: cardId++, type: "structure", title: "Astuce", formula: "Bon à savoir", example: tip, note: "À retenir" },
-    { id: cardId++, type: "input", question: `Traduis : "${c1.sentence_trans}"`, answer: [c1.sentence.toLowerCase().replace(/[¿¡!.,]/g, '')], hint: "Utilise le vocabulaire de la leçon." }
+    { id: cardId++, type: "structure", save: false, title: "Le saviez-vous ?", formula: "Astuce", example: tip, note: "" },
+    { id: cardId++, type: "input", question: `Traduis : « ${c1.sentence_trans} »`, answer: [clean(c1.sentence)], hint: `Utilise « ${c1.es.toLowerCase()} ».` }
   ];
 };
 
@@ -122,17 +90,17 @@ export const generateExamContent = (allContent: any, startId: number, endId: num
   let pool: any[] = [];
   for (let i = startId; i <= endId; i++) {
     if (allContent[i]) {
-      pool = [...pool, ...allContent[i].filter((c: any) => c.type === 'swipe' || c.type === 'input')];
+      pool = [...pool, ...allContent[i].filter((c: any) => (c.type === 'swipe' || c.type === 'input') && !/^Conjugue|^Comment dit-on/.test(c.question || ''))];
     }
   }
   if (pool.length < 10) return [{ id: examId, type: "structure", title: "Examen indisponible", formula: "Contenu en cours de chargement", example: "Réessaie dans un instant", note: "Si le problème persiste, contacte le support." }];
-  const selected = pool.sort(() => 0.5 - Math.random()).slice(0, 20);
+  const selected = [...pool].sort(() => 0.5 - Math.random()).slice(0, 20);
   
   return [
     { id: examId, type: "structure", title: `Examen ${levelName}`, formula: "Test final", example: "20 questions", note: "Objectif : 16 bonnes réponses sur 20" },
     ...selected.map((item: any, idx: number) => {
         if (item.type === 'input') return { ...item, id: examId + idx + 1 };
-        const questionText = item.sentence_trans ? `Traduis : "${item.sentence_trans}"` : `Traduis : "${item.en}"`;
+        const questionText = item.sentence_trans ? `Traduis : « ${item.sentence_trans} »` : `Traduis : « ${item.en} »`;
         const answerText = item.sentence ? item.sentence : item.es;
         return {
             ...item,

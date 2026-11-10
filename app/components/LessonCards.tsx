@@ -127,9 +127,14 @@ export const SwipeCard = ({ data, onNext }: any) => {
         <div className={`w-full h-full bg-white rounded-3xl shadow-xl border-b-8 border-slate-100 flex flex-col relative transition-all duration-300 ${swiped ? 'opacity-0 translate-x-full' : ''}`}>
             <div className="absolute top-4 right-4"><button onClick={(e) => { e.stopPropagation(); speak(data.es); }} aria-label="Écouter" className="p-3 bg-slate-100 rounded-full text-indigo-600"><Volume2 size={24}/></button></div>
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6">
-                <h2 className="text-5xl font-black text-slate-800">{data.es}</h2>
+                <h2 className="text-4xl font-black text-slate-800 break-words">{data.es}</h2>
                 <div className="bg-indigo-50 px-6 py-3 rounded-2xl"><p className="text-xl font-bold text-indigo-600">{data.en}</p></div>
-                <p className="text-sm text-slate-400 italic">"{data.context}"</p>
+                {data.sentence ? (
+                    <div className="space-y-1 max-w-xs">
+                        <p className="text-base text-slate-700 font-medium">{data.sentence}</p>
+                        {data.sentence_trans && <p className="text-sm text-slate-400 italic">{data.sentence_trans}</p>}
+                    </div>
+                ) : data.context ? <p className="text-sm text-slate-400 italic">{data.context}</p> : null}
             </div>
             <div className="p-6 flex justify-center"><button onClick={() => swipe('right')} className="w-full py-4 bg-teal-500 text-white rounded-xl font-bold text-xl shadow-lg">J'ai compris !</button></div>
         </div>
@@ -137,34 +142,27 @@ export const SwipeCard = ({ data, onNext }: any) => {
 };
 
 // --- TYPE 3 : GRAMMAR CARD ---
-export const GrammarCard = ({ data, onNext }: any) => { 
-    const [rev, setRev] = useState(false); 
-    return (
-        <div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="bg-indigo-600 p-8 text-white text-center relative">
-                <button onClick={() => speak(data.verb || data.title)} aria-label="Écouter" className="absolute top-4 right-4 p-2 bg-white/20 rounded-full"><Volume2 size={20}/></button>
-                <h3 className="text-3xl font-black">{data.title}</h3>
-                <p className="text-indigo-200 mt-2">{data.description}</p>
-            </div>
-            <div className="flex-1 p-6 flex flex-col justify-between bg-slate-50">
-                {rev ? (
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        {data.conjugation.map((row: any, i: number) => (
-                            <div key={i} className="flex justify-between p-4 border-b last:border-0">
-                                <span className="text-slate-400 font-medium w-1/3">{row.pronoun}</span>
-                                <span className="text-indigo-600 font-black text-xl w-1/3 text-center">{row.verb}</span>
-                                <span className="text-slate-300 text-sm w-1/3 text-right italic">{row.fr}</span>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="flex-1 flex items-center justify-center"><p className="text-slate-400 italic">Essaie de te souvenir de la conjugaison, puis vérifie.</p></div>
-                )}
-                <button onClick={rev ? onNext : () => setRev(true)} className="w-full mt-6 bg-yellow-400 text-slate-900 py-5 rounded-2xl font-bold text-xl shadow-lg">{rev ? 'Continuer' : 'Voir la conjugaison'}</button>
-            </div>
+export const GrammarCard = ({ data, onNext }: any) => (
+    <div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="bg-indigo-600 p-6 text-white text-center relative">
+            <button onClick={() => speak(data.verb || data.title)} aria-label="Écouter" className="absolute top-4 right-4 p-2 bg-white/20 rounded-full"><Volume2 size={20}/></button>
+            <h3 className="text-2xl font-black">{data.title}</h3>
+            <p className="text-indigo-200 mt-1 text-sm">{data.description}</p>
         </div>
-    ); 
-};
+        <div className="flex-1 p-5 flex flex-col justify-between bg-slate-50 overflow-y-auto">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                {(data.conjugation || []).map((row: any, i: number) => (
+                    <button key={i} type="button" onClick={() => speak(`${row.pronoun} ${row.verb}`)} className="w-full flex items-center px-4 py-3 border-b last:border-0 text-left hover:bg-slate-50">
+                        <span className="text-slate-400 font-medium w-1/3">{row.pronoun.toLowerCase()}</span>
+                        <span className="text-indigo-600 font-black text-lg w-1/3 text-center">{row.verb}</span>
+                        <span className="text-slate-400 text-sm w-1/3 text-right italic">{row.fr}</span>
+                    </button>
+                ))}
+            </div>
+            <button onClick={onNext} className="w-full mt-5 bg-yellow-400 text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-lg">Continuer</button>
+        </div>
+    </div>
+);
 
 // --- TYPE 4 : STRUCTURE CARD ---
 export const StructureCard = ({ data, onNext }: any) => (
@@ -176,11 +174,11 @@ export const StructureCard = ({ data, onNext }: any) => (
         <div className="flex-1 p-8 flex flex-col justify-center items-center gap-6 bg-slate-50">
             <div className="bg-white p-6 rounded-xl border-2 border-slate-200 w-full text-center">
                 <p className="font-mono text-indigo-600 font-bold text-lg mb-2">{data.formula}</p>
-                <p className="text-slate-500 text-sm">{data.note}</p>
+                {data.note && <p className="text-slate-500 text-sm">{data.note}</p>}
             </div>
             <div className="text-center">
-                <p className="text-2xl font-bold text-slate-800 mb-1">{data.example}</p>
-                <p className="text-sm text-slate-400 italic">Exemple</p>
+                <p className="text-xl font-bold text-slate-800 mb-1">{data.example}</p>
+                {data.example_fr && <p className="text-sm text-slate-400 italic">{data.example_fr}</p>}
             </div>
             <button onClick={onNext} className="w-full mt-auto bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl shadow-lg">C'est noté !</button>
         </div>

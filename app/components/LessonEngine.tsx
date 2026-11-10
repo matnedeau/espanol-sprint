@@ -51,7 +51,8 @@ export default function LessonEngine({ lessonId, initialContent, onComplete, onE
     return content.filter((item: any) => item && item.type);
   }, [content]);
 
-  const [idx, setIdx] = useState(0); 
+  // En développement, ?card=N ouvre directement la carte N (pratique pour vérifier l'affichage)
+  const [idx, setIdx] = useState(() => (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && parseInt(new URLSearchParams(window.location.search).get('card') || '0')) || 0); 
   const [prog, setProg] = useState(0); 
   const [score, setScore] = useState(0);
   
