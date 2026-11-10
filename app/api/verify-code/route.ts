@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
 import { adminDb, errorResponse, requireUser } from '@/app/lib/server/firebase-admin';
 
-// Codes d'accès : définis-les dans la variable d'environnement VIP_CODES (séparés par des virgules).
-// La liste ci-dessous ne sert que de secours tant que VIP_CODES n'est pas configurée.
-const FALLBACK_CODES = ['VIP2025', 'ESPANOL_BETA', 'AMIGO', 'ADMIN_MASTER'];
-
+// Codes d'accès Premium offerts : définis dans la variable d'environnement VIP_CODES (séparés par des virgules),
+// dans .env.local en local et dans Vercel → Settings → Environment Variables en production.
+// Ils ne sont volontairement PAS écrits dans le code : le dépôt GitHub est public.
 function validCodes() {
-  const fromEnv = process.env.VIP_CODES?.split(',').map((c) => c.trim().toUpperCase()).filter(Boolean);
-  return fromEnv && fromEnv.length ? fromEnv : FALLBACK_CODES;
+  return (process.env.VIP_CODES || '').split(',').map((c) => c.trim().toUpperCase()).filter(Boolean);
 }
 
 export async function POST(req: Request) {
