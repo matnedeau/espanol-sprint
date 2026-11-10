@@ -389,6 +389,7 @@ export default function EspanolSprintPro() {
           notify("🌟 Code validé ! Bienvenue en Premium.");
       } else if (res.status === 401) setPromoError("Ta session a expiré. Déconnecte-toi puis reconnecte-toi.");
       else if (data.error === 'NO_CODES_CONFIGURED') setPromoError("Aucun code n'est configuré sur le serveur (variable VIP_CODES absente).");
+      else if (data.error === 'SERVER_MISCONFIGURED') setPromoError("Le serveur ne peut pas lire la clé Firebase (variable FIREBASE_SERVICE_ACCOUNT_KEY dans Vercel).");
       else if (res.status >= 500) setPromoError("Erreur du serveur pendant l'activation. Réessaie dans un instant.");
       else setPromoError("Ce code n'est pas valide.");
     } catch (e) { setPromoError("La vérification a échoué. Réessaie."); }
