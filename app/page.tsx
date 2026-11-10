@@ -387,7 +387,10 @@ export default function EspanolSprintPro() {
           setUserData(prev => ({ ...prev, subscription: { status: 'active', plan: 'premium_gift' } }));
           setShowPremiumModal(false); setShowPromoInput(false); setPromoCode("");
           notify("🌟 Code validé ! Bienvenue en Premium.");
-      } else setPromoError("Ce code n'est pas valide.");
+      } else if (res.status === 401) setPromoError("Ta session a expiré. Déconnecte-toi puis reconnecte-toi.");
+      else if (data.error === 'NO_CODES_CONFIGURED') setPromoError("Aucun code n'est configuré sur le serveur (variable VIP_CODES absente).");
+      else if (res.status >= 500) setPromoError("Erreur du serveur pendant l'activation. Réessaie dans un instant.");
+      else setPromoError("Ce code n'est pas valide.");
     } catch (e) { setPromoError("La vérification a échoué. Réessaie."); }
   };
 
