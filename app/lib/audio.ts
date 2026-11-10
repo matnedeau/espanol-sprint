@@ -71,7 +71,7 @@ export const speak = async (text: string, voiceId: string | null = null) => {
   }
 
   const controller = audioController!;
-  const timeout = setTimeout(() => controller.abort(), 5000);
+  const timeout = setTimeout(() => controller.abort(), 8000);
   try {
     const response = await authFetch('/api/tts', {
       method: 'POST',
@@ -87,6 +87,7 @@ export const speak = async (text: string, voiceId: string | null = null) => {
     clearTimeout(timeout);
     // Abandon volontaire (nouvelle phrase lancée) : on ne joue rien.
     if (error?.name === 'AbortError' && audioController !== controller) return;
+    console.warn('Voix Premium indisponible, voix du navigateur utilisée :', error?.message || error);
     playBrowserVoice(text);
   }
 };
