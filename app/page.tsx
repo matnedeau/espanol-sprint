@@ -3,7 +3,7 @@
 'use client';
 
 import { INITIAL_LESSONS_LIST } from '@/app/lib/curriculum';
-import { speak, setPremiumVoices } from '@/app/lib/audio';
+import { speak, setPremiumVoices, stopSpeaking } from '@/app/lib/audio';
 import { loadContent } from '@/app/lib/content-loader';
 import { auth, db, googleProvider, authFetch } from '@/app/lib/firebase-client';
 
@@ -37,6 +37,27 @@ const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "").split(',').map
 const itemKey = (item) => `${item.type}:${(item.type === 'grammar' ? (item.verb || item.title) : item.type === 'structure' ? item.title : item.es || '').trim().toLowerCase()}`;
 const isLegacyNoise = (item) => item.type === 'structure' && (/^(leçon \d+|astuce|bilan|examen|le saviez-vous)/i.test(item.title || '') || item.formula === 'Bon à savoir');
 const cleanVocab = (vocab) => { const seen = new Set(); return (Array.isArray(vocab) ? vocab : []).filter(item => { if (!item || !item.type || isLegacyNoise(item)) return false; const k = itemKey(item); if (seen.has(k)) return false; seen.add(k); return true; }); };
+
+// Éléments de lexique (mots, verbes, structures) des leçons données, avec les mêmes règles qu'en fin de leçon.
+// Sert quand des leçons sont validées sans être faites : test de niveau, ou rattrapage d'un lexique incomplet.
+const vocabFromLessons = async (lessonIds, knownVocab = []) => {
+  if (!lessonIds?.length) return [];
+  const content = (await loadContent()).generateAllContent();
+  const seen = new Set((knownVocab || []).map(itemKey));
+  const now = new Date().toISOString();
+  const items = [];
+  for (const id of lessonIds) {
+    for (const item of (Array.isArray(content[id]) ? content[id] : [])) {
+      if (!item || item.save === false || !['swipe', 'grammar', 'structure'].includes(item.type) || isLegacyNoise(item)) continue;
+      const k = itemKey(item);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      const { save, ...rest } = item;
+      items.push({ ...rest, grade: 0, interval: 1, lastReview: now });
+    }
+  }
+  return items;
+};
 
 const DEMO_PROFILE = (premium) => ({ name: "Démo", email: "demo@example.com", xp: 450, streak: 3, level: "A1", lastActive: dayKey(), completedLessons: [1, 2, 3], dailyLimit: { date: new Date().toDateString(), count: 1 }, dailyStory: { date: "", storyId: "" }, readStories: [], subscription: { status: premium ? 'active' : 'free' },
   vocab: [
@@ -174,11 +195,15 @@ export default function EspanolSprintPro() {
           const newlyValidated = lessonsToValidate.filter(id => !alreadyDone.includes(id));
           const bonusXP = newlyValidated.length * 50;
 
+          // Le lexique reçoit les mots, verbes et structures de toutes les leçons des niveaux validés
+          const newVocab = await vocabFromLessons(lessonsToValidate, userData?.vocab);
+
           const update = { level: newLevel, xp: increment(bonusXP) };
           if (newlyValidated.length) update.completedLessons = arrayUnion(...newlyValidated);
+          if (newVocab.length) update.vocab = arrayUnion(...newVocab);
           await saveUser(update);
 
-          setUserData(prev => ({ ...prev, level: newLevel, completedLessons: [...alreadyDone, ...newlyValidated], xp: (prev.xp || 0) + bonusXP }));
+          setUserData(prev => ({ ...prev, level: newLevel, completedLessons: [...alreadyDone, ...newlyValidated], xp: (prev.xp || 0) + bonusXP, vocab: [...(prev.vocab || []), ...newVocab] }));
           notify(`Bravo ! Ton niveau est maintenant ${newLevel}.`);
           setView('dashboard');
       } catch (e) {
@@ -267,7 +292,7 @@ export default function EspanolSprintPro() {
                 xp: unlockedLessons.length * 50, 
                 streak: 0, 
                 level: startLevel,
-                vocab: [], 
+                vocab: await vocabFromLessons(unlockedLessons).catch(() => []), 
                 completedLessons: unlockedLessons,
                 dailyLimit: { date: new Date().toDateString(), count: 0 }, 
                 dailyStory: { date: "", storyId: "" }, 
@@ -279,6 +304,13 @@ export default function EspanolSprintPro() {
         }
         setUserData(profile);
         setView('dashboard');
+
+        // Rattrapage : leçons validées (par exemple par un ancien test de niveau) dont le lexique est absent
+        vocabFromLessons(profile.completedLessons, profile.vocab).then(async (missing) => {
+            if (!missing.length) return;
+            await updateDoc(userRef, { vocab: arrayUnion(...missing) });
+            setUserData(prev => ({ ...prev, vocab: cleanVocab([...(prev?.vocab || []), ...missing]) }));
+        }).catch(e => console.error("Rattrapage du lexique impossible", e));
         if (paymentConfirmed) notify("🎉 Félicitations ! Ton compte est maintenant Premium.");
         else if (params.get('payment') === 'success') notify("Le paiement n'a pas pu être confirmé. Contacte-nous si tu as été débité.", 'error');
       } catch (error) {
@@ -871,6 +903,7 @@ const ConversationMode = ({ onExit, onPremiumRequired }) => {
       setHistory(prev => [...prev, { role: 'user', text: data.userText }, { role: 'ai', text: data.aiText }]);
       
       if (data.audio) {
+        stopSpeaking(); // Pas de chevauchement avec une voix de leçon encore en cours
         const audio = new Audio(data.audio);
         audio.onended = () => { setStatus("idle"); setPendingAudio(null); };
         
@@ -1350,11 +1383,11 @@ const DashboardContent = ({ userData, allLessons, onStartLesson, onDownloadPDF, 
 
       {/* Parcours */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h3 className="text-xl font-black text-slate-900">Ton parcours</h3>
-          <div className="flex gap-1 bg-slate-100 p-1 rounded-xl" role="tablist" aria-label="Niveaux">
+          <div className="grid grid-cols-5 sm:flex gap-1 bg-slate-100 p-1 rounded-xl" role="tablist" aria-label="Niveaux">
             {LEVELS.map((level, i) => (
-              <button key={level} role="tab" aria-selected={selectedLevel === level} onClick={() => setSelectedLevel(level)} className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1 transition-all ${selectedLevel === level ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+              <button key={level} role="tab" aria-selected={selectedLevel === level} onClick={() => setSelectedLevel(level)} className={`px-2 sm:px-3 py-1.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1 transition-all ${selectedLevel === level ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
                 {i < currentIdx && <Check size={13} className="text-green-500" />}{i > currentIdx && <Lock size={11} />}{level}
               </button>
             ))}

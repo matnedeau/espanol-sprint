@@ -1,4 +1,4 @@
-import { DATA_BANK, DAILY_READINGS, CONTENT_PART_1, SENTENCE_STRUCTURES } from './data-bank';
+import { DATA_BANK, DAILY_READINGS, CONTENT_PART_1, SENTENCE_STRUCTURES, LESSON_WORDS } from './data-bank';
 import { CURRICULUM_LOGIC } from './curriculum';
 
 // --- CŒUR DU GÉNÉRATEUR ---
@@ -39,7 +39,12 @@ export const generateStructuredLesson = (id: number) => {
   }
   const previousUses = levelConfig.slice(0, position).filter((c) => c.category === config.category).length;
   const start = (previousUses * 3) % pool.length;
-  const [c1, c2, c3] = [0, 1, 2].map((i) => pool[(start + i) % pool.length]);
+  let [c1, c2, c3] = [0, 1, 2].map((i) => pool[(start + i) % pool.length]);
+  // Mots fixés pour cette leçon (thème précis) : ils remplacent ceux de la catégorie
+  const fixed = LESSON_WORDS[id];
+  if (fixed && fixed.length >= 3) {
+    [c1, c2, c3] = fixed.slice(0, 3).map(([es, en, sentence, sentence_trans]) => ({ levels: [level], es, en, sentence, sentence_trans }));
+  }
 
   // --- VERBE : celui du point de grammaire s'il existe, sinon rotation parmi les verbes du niveau ---
   const verbs = DATA_BANK.verbs;

@@ -4,8 +4,13 @@ export function generateSuperQuiz(lessonsContent: any, userData: any) {
   // 1. Récupération de tout le vocabulaire disponible
   const allItems: any[] = [];
   
+  // On ne révise que les leçons déjà terminées (à défaut, les trois premières du parcours).
+  const done = new Set<string>((userData?.completedLessons || []).map((id: any) => String(id)));
+  const allowed = done.size > 0 ? done : new Set(['1', '2', '3']);
+
   if (lessonsContent) {
-    Object.values(lessonsContent).forEach((lesson: any) => {
+    Object.entries(lessonsContent).forEach(([lessonId, lesson]: [string, any]) => {
+      if (!allowed.has(String(lessonId))) return;
       if (Array.isArray(lesson)) {
         lesson.forEach((item: any) => {
           if (item.type === 'swipe' && item.es && item.en) {
