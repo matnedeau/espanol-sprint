@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Loader2, Check, X } from 'lucide-react';
 import { speak } from '@/app/lib/audio';
-import { SwipeCard, InputCard, GrammarCard, StructureCard } from './LessonCards';
+import { SwipeCard, InputCard, GrammarCard, StructureCard, ChoiceCard } from './LessonCards';
 
 interface LessonEngineProps {
   lessonId: number | string; // Accepte ID ou Content
@@ -106,6 +106,7 @@ export default function LessonEngine({ lessonId, initialContent, onComplete, onE
                     {card.type === 'input' && (<InputCard key={card.id} data={card} onNext={next} isExam={isExam} onScore={handleScore} />)}
                     {card.type === 'grammar' && (<GrammarCard key={card.id} data={card} onNext={next} />)}
                     {card.type === 'structure' && (<StructureCard key={card.id} data={card} onNext={next} />)}
+                    {card.type === 'choice' && (<ChoiceCard key={card.id} data={card} onNext={next} isExam={isExam} onScore={handleScore} />)}
                 </div>
             )}
         </div>

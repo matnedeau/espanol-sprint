@@ -9,7 +9,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:lessons": "node --no-warnings --import ./scripts/ts-resolve.mjs scripts/check-lessons.ts"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.10.0",

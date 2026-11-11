@@ -34,7 +34,7 @@ const YEARLY_PRICE = process.env.NEXT_PUBLIC_YEARLY_PRICE_LABEL || "39,99 €";
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "").split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
 
 // Clé d'unicité d'une fiche du lexique (évite les doublons : même verbe, même structure, même mot)
-const itemKey = (item) => `${item.type}:${(item.type === 'grammar' ? (item.verb || item.title) : item.type === 'structure' ? item.title : item.es || '').trim().toLowerCase()}`;
+const itemKey = (item) => `${item.type}:${(item.type === 'grammar' ? (item.key || item.verb || item.title) : item.type === 'structure' ? item.title : item.es || '').trim().toLowerCase()}`;
 const isLegacyNoise = (item) => item.type === 'structure' && (/^(leçon \d+|astuce|bilan|examen|le saviez-vous)/i.test(item.title || '') || item.formula === 'Bon à savoir');
 const cleanVocab = (vocab) => { const seen = new Set(); return (Array.isArray(vocab) ? vocab : []).filter(item => { if (!item || !item.type || isLegacyNoise(item)) return false; const k = itemKey(item); if (seen.has(k)) return false; seen.add(k); return true; }); };
 
@@ -87,36 +87,48 @@ const AUTH_ERRORS = {
 };
 const authErrorMessage = (error) => { if (!AUTH_ERRORS[error?.code]) console.error('Erreur auth non traduite :', error?.code, error?.message); return AUTH_ERRORS[error?.code] || "Une erreur est survenue. Réessaie dans un instant."; };
 
-// --- DONNÉES DU TEST DE NIVEAU (20 QUESTIONS) ---
+// --- TEST DE NIVEAU (20 questions, 5 par niveau, alignées sur le parcours) ---
+// Chaque bloc vérifie les acquis d'un niveau. On est placé au premier niveau dont le bloc n'est pas réussi :
+// réussir le bloc A1 fait commencer en A2, réussir aussi le bloc A2 en B1, et ainsi de suite jusqu'à C1.
+const PLACEMENT_PASS = 3; // bonnes réponses sur 5 pour valider un niveau (au hasard, on en obtient 1 en moyenne)
 const PLACEMENT_TEST = [
-  // A1 (Débutant)
-  { id: 1, q: "Comment dit-on « bonjour » en espagnol ?", options: ["Hola", "Adiós", "Gracias", "Por favor"], ans: "Hola" },
-  { id: 2, q: "Yo ___ español.", options: ["hablo", "habla", "hablas", "hablan"], ans: "hablo" },
-  { id: 3, q: "¿Cómo ___ llamas?", options: ["te", "se", "me", "le"], ans: "te" },
-  { id: 4, q: "La casa es ___.", options: ["grande", "grandes", "grando", "granda"], ans: "grande" },
-  { id: 5, q: "Ellos ___ mis amigos. (être)", options: ["son", "están", "es", "sois"], ans: "son" },
+  // Acquis du niveau A1 : présent, ser / estar / hay, gustar, futur proche
+  { id: 1, level: "A1", q: "Yo ___ francés.", options: ["soy", "estoy", "tengo", "hay"], ans: "soy" },
+  { id: 2, level: "A1", q: "Nosotros ___ en Madrid.", options: ["vivimos", "viven", "vivo", "vivís"], ans: "vivimos" },
+  { id: 3, level: "A1", q: "___ una mesa en la cocina.", options: ["Hay", "Está", "Es", "Son"], ans: "Hay" },
+  { id: 4, level: "A1", q: "Me ___ los libros.", options: ["gustan", "gusta", "gusto", "gustas"], ans: "gustan" },
+  { id: 5, level: "A1", q: "Mañana ___ a estudiar.", options: ["voy", "va", "ir", "fui"], ans: "voy" },
 
-  // A2 (Élémentaire)
-  { id: 6, q: "Ayer yo ___ al cine. (aller)", options: ["fui", "iba", "voy", "he ido"], ans: "fui" },
-  { id: 7, q: "Nosotros ___ en Madrid.", options: ["vivimos", "viven", "vivo", "vivís"], ans: "vivimos" },
-  { id: 8, q: "Voy a comprar ___ manzanas.", options: ["unas", "uno", "una", "un"], ans: "unas" },
-  { id: 9, q: "¿___ hora es?", options: ["Qué", "Cuál", "Cómo", "Dónde"], ans: "Qué" },
-  { id: 10, q: "Me gusta ___ la música.", options: ["escuchar", "escucho", "escuchando", "escucha"], ans: "escuchar" },
+  // Acquis du niveau A2 : temps du passé, pronoms, por / para, futur
+  { id: 6, level: "A2", q: "Ayer ___ al cine.", options: ["fui", "he ido", "iba", "voy"], ans: "fui" },
+  { id: 7, level: "A2", q: "Cuando era niño, ___ en un pueblo.", options: ["vivía", "viví", "he vivido", "vivo"], ans: "vivía" },
+  { id: 8, level: "A2", q: "¿Las llaves? No ___ veo.", options: ["las", "los", "les", "la"], ans: "las" },
+  { id: 9, level: "A2", q: "Este regalo es ___ ti.", options: ["para", "por", "a", "de"], ans: "para" },
+  { id: 10, level: "A2", q: "Mañana ___ tiempo.", options: ["tendré", "teneré", "tengo", "tenía"], ans: "tendré" },
 
-  // B1 (Intermédiaire)
-  { id: 11, q: "Busco una persona que ___ hablar japonés.", options: ["sepa", "sabe", "sabrá", "supo"], ans: "sepa" },
-  { id: 12, q: "Si ___ tiempo, viajaría más.", options: ["tuviera", "tengo", "tendría", "tenga"], ans: "tuviera" },
-  { id: 13, q: "Es importante que ___ a tiempo.", options: ["llegues", "llegas", "llegarás", "llegaste"], ans: "llegues" },
-  { id: 14, q: "Hemos ___ el trabajo. (finir)", options: ["terminado", "terminar", "terminando", "terminó"], ans: "terminado" },
-  { id: 15, q: "Que signifie l'expression « estar en las nubes » ?", options: ["Être dans la lune", "Être pilote", "Être mort", "Être grand"], ans: "Être dans la lune" },
+  // Acquis du niveau B1 : subjonctif présent, impératif négatif, pronoms doubles
+  { id: 11, level: "B1", q: "Quiero que ___ a la fiesta.", options: ["vengas", "vienes", "vendrás", "venir"], ans: "vengas" },
+  { id: 12, level: "B1", q: "No creo que Ana ___ razón.", options: ["tenga", "tiene", "tendrá", "tenía"], ans: "tenga" },
+  { id: 13, level: "B1", q: "Cuando ___ a casa esta noche, te llamo.", options: ["llegue", "llegaré", "llegaría", "llegaba"], ans: "llegue" },
+  { id: 14, level: "B1", q: "¿El libro? ___ doy mañana a Ana.", options: ["Se lo", "Le lo", "Lo le", "Se le"], ans: "Se lo" },
+  { id: 15, level: "B1", q: "No ___ tan rápido, por favor.", options: ["hables", "hablas", "habla", "hablar"], ans: "hables" },
 
-  // B2 (Avancé)
-  { id: 16, q: "Aunque ___, saldré a correr. (pleuvoir)", options: ["llueva", "llueve", "lloverá", "llovía"], ans: "llueva" },
-  { id: 17, q: "No creo que él ___ la verdad.", options: ["diga", "dice", "dirá", "dijo"], ans: "diga" },
-  { id: 18, q: "Ojalá ___ mañana. (venir)", options: ["venga", "viene", "vendrá", "venía"], ans: "venga" },
-  { id: 19, q: "Que signifie l'expression « tomar el pelo » ?", options: ["Se moquer de quelqu'un", "Aller chez le coiffeur", "Avoir peur", "Être chauve"], ans: "Se moquer de quelqu'un" },
-  { id: 20, q: "Si hubieras estudiado, ___ el examen.", options: ["habrías aprobado", "habrás aprobado", "hubieras aprobado", "apruebas"], ans: "habrías aprobado" }
+  // Acquis du niveau B2 : subjonctif imparfait, hypothèses irréelles, discours indirect au passé
+  { id: 16, level: "B2", q: "Si ___ dinero, viajaría más.", options: ["tuviera", "tengo", "tendría", "tenga"], ans: "tuviera" },
+  { id: 17, level: "B2", q: "Si hubieras estudiado, ___ el examen.", options: ["habrías aprobado", "habrás aprobado", "hubieras aprobado", "apruebas"], ans: "habrías aprobado" },
+  { id: 18, level: "B2", q: "Ayer dijo que ___ hoy.", options: ["vendría", "vendrá", "venga", "viene"], ans: "vendría" },
+  { id: 19, level: "B2", q: "Quería que tú ___ con ella.", options: ["hablaras", "hables", "hablas", "hablarías"], ans: "hablaras" },
+  { id: 20, level: "B2", q: "Busco un piso que ___ terraza.", options: ["tenga", "tiene", "tendrá", "tuvo"], ans: "tenga" }
 ];
+
+/** Niveau de départ : le premier niveau dont le bloc de questions n'est pas réussi (C1 si tous le sont). */
+const placementLevel = (correctIds) => {
+  for (const level of ["A1", "A2", "B1", "B2"]) {
+    const block = PLACEMENT_TEST.filter(q => q.level === level);
+    if (block.filter(q => correctIds.includes(q.id)).length < PLACEMENT_PASS) return level;
+  }
+  return "C1";
+};
 
 // --- COMPOSANT PRINCIPAL ---
 export default function EspanolSprintPro() {
@@ -1241,16 +1253,15 @@ const LevelTest = ({ onComplete, onBack }) => {
     // Les réponses sont mélangées une fois par test : la bonne réponse n'est plus toujours la première.
     const questions = useMemo(() => PLACEMENT_TEST.map(q => ({ ...q, options: [...q.options].sort(() => Math.random() - 0.5) })), []);
 
+    const [correctIds, setCorrectIds] = useState([]);
+
     const handleAnswer = (option) => {
-        const newScore = score + (option === questions[index].ans ? 1 : 0);
-        setScore(newScore);
+        const isCorrect = option === questions[index].ans;
+        const newCorrect = isCorrect ? [...correctIds, questions[index].id] : correctIds;
+        setCorrectIds(newCorrect);
+        setScore(newCorrect.length);
         if (index + 1 < questions.length) { setIndex(index + 1); return; }
-        // Barème sur 20 questions
-        let level = "A1";
-        if (newScore >= 5) level = "A2";
-        if (newScore >= 10) level = "B1";
-        if (newScore >= 15) level = "B2";
-        setDetectedLevel(level);
+        setDetectedLevel(placementLevel(newCorrect));
     };
 
     if (detectedLevel) {
@@ -1263,6 +1274,7 @@ const LevelTest = ({ onComplete, onBack }) => {
                 <p className="text-slate-500 text-lg">Score : {score} / {questions.length}</p>
                 <p className="text-slate-900 font-bold mt-6">Ton niveau</p>
                 <p className="text-6xl font-black text-indigo-600 my-2">{detectedLevel}</p>
+                <p className="text-slate-500 text-sm">{detectedLevel === "A1" ? "Tu commences par les bases : c'est le meilleur point de départ." : `Les leçons des niveaux précédents sont validées : tu commences directement en ${detectedLevel}.`}</p>
                 <button
                     onClick={async () => { setSubmitting(true); try { await onComplete(detectedLevel); } finally { setSubmitting(false); } }}
                     disabled={submitting}
@@ -1511,7 +1523,7 @@ const NotebookContent = ({ userVocab }) => {
   const [activeTab, setActiveTab] = useState(() => (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab')) || 'vocab');
   const items = cleanVocab(userVocab);
   const groups = { vocab: items.filter(i => i.type === 'swipe'), grammar: items.filter(i => i.type === 'grammar'), structure: items.filter(i => i.type === 'structure') };
-  const tabs = [['vocab', 'Vocabulaire'], ['grammar', 'Verbes'], ['structure', 'Structures']];
+  const tabs = [['vocab', 'Vocabulaire'], ['grammar', 'Conjugaison et tableaux'], ['structure', 'Règles']];
   const Empty = ({ text }) => <p className="text-slate-400 text-center py-12 col-span-full">{text}</p>;
   return (
     <div className="max-w-3xl mx-auto w-full p-5 md:p-10 pb-28 space-y-6">
@@ -1539,8 +1551,8 @@ const NotebookContent = ({ userVocab }) => {
           {groups.grammar.length ? groups.grammar.map((item) => (
             <div key={itemKey(item)} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
               <div className="flex items-baseline justify-between gap-3 mb-3">
-                <h4 className="font-black text-lg text-indigo-600">{item.verb ? item.verb.toLowerCase() : item.title}</h4>
-                <span className="text-xs text-slate-400 font-medium text-right">{(item.description || '').split(' — ')[0]}</span>
+                <h4 className="font-black text-lg text-indigo-600">{item.key ? item.title : item.verb ? item.verb.toLowerCase() : item.title}</h4>
+                <span className="text-xs text-slate-400 font-medium text-right">{item.key ? (item.description || '').split(' — ')[1] : (item.description || '').split(' — ')[0]}</span>
               </div>
               <div className="divide-y divide-slate-50 text-sm">
                 {(item.conjugation || []).map((row) => (

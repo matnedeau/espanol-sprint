@@ -145,14 +145,14 @@ export const SwipeCard = ({ data, onNext }: any) => {
 export const GrammarCard = ({ data, onNext }: any) => (
     <div className="w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
         <div className="bg-indigo-600 p-6 text-white text-center relative">
-            <button onClick={() => speak(data.verb || data.title)} aria-label="Écouter" className="absolute top-4 right-4 p-2 bg-white/20 rounded-full"><Volume2 size={20}/></button>
+            {data.verb && <button onClick={() => speak(data.verb)} aria-label="Écouter" className="absolute top-4 right-4 p-2 bg-white/20 rounded-full"><Volume2 size={20}/></button>}
             <h3 className="text-2xl font-black">{data.title}</h3>
             <p className="text-indigo-200 mt-1 text-sm">{data.description}</p>
         </div>
         <div className="flex-1 p-5 flex flex-col justify-between bg-slate-50 overflow-y-auto">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 {(data.conjugation || []).map((row: any, i: number) => (
-                    <button key={i} type="button" onClick={() => speak(`${row.pronoun} ${row.verb}`)} className="w-full flex items-center px-4 py-3 border-b last:border-0 text-left hover:bg-slate-50">
+                    <button key={i} type="button" onClick={() => speak(data.verb ? `${row.pronoun} ${row.verb}` : (/[.?!…]$/.test(row.fr || '') ? row.fr : row.verb))} className="w-full flex items-center px-4 py-3 border-b last:border-0 text-left hover:bg-slate-50">
                         <span className="text-slate-400 font-medium w-1/3">{row.pronoun.toLowerCase()}</span>
                         <span className="text-indigo-600 font-black text-lg w-1/3 text-center">{row.verb}</span>
                         <span className="text-slate-400 text-sm w-1/3 text-right italic">{row.fr}</span>
@@ -184,3 +184,52 @@ export const StructureCard = ({ data, onNext }: any) => (
         </div>
     </div>
 );
+
+// --- TYPE 5 : CHOICE CARD (question à choix) ---
+export const ChoiceCard = ({ data, onNext, isExam, onScore }: any) => {
+    const [picked, setPicked] = useState<string | null>(null);
+    const [done, setDone] = useState(false);
+    const [scored, setScored] = useState(false);
+
+    useEffect(() => { setPicked(null); setDone(false); setScored(false); }, [data]);
+
+    const choose = (option: string) => {
+        if (done) return;
+        const correct = option === data.answer;
+        setPicked(option);
+        if (!scored) { onScore?.(correct); setScored(true); } // Seule la première réponse compte
+        if (correct || isExam) setDone(true);
+    };
+
+    const isRight = picked === data.answer;
+    return (
+        <div className="w-full h-full bg-white rounded-3xl shadow-2xl border-b-[12px] border-slate-100 flex flex-col p-6 md:p-10 justify-center gap-5 animate-in zoom-in overflow-y-auto">
+            <div className="text-center space-y-2">
+                <span className="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full uppercase">{isExam ? 'Examen' : (data.label || 'Choisis la bonne réponse')}</span>
+                <h3 className="text-xl md:text-2xl font-black text-slate-800">{data.question}</h3>
+            </div>
+            <div className="grid gap-3">
+                {data.options.map((option: string) => {
+                    const state = picked !== option ? (done && option === data.answer ? 'reveal' : 'idle') : option === data.answer ? 'right' : 'wrong';
+                    return (
+                        <button key={option} type="button" onClick={() => choose(option)} disabled={done}
+                            className={`w-full p-4 rounded-2xl border-2 font-bold text-lg text-left transition-all ${
+                                state === 'right' || state === 'reveal' ? 'border-green-400 bg-green-50 text-green-700' :
+                                state === 'wrong' ? 'border-red-400 bg-red-50 text-red-500 animate-shake' :
+                                'border-slate-200 text-slate-700 hover:border-indigo-400 hover:bg-indigo-50'
+                            }`}>
+                            {option}
+                        </button>
+                    );
+                })}
+            </div>
+            {picked && !isRight && !done && <p className="text-center text-red-500 font-bold">Pas tout à fait… Essaie encore !</p>}
+            {done && (
+                <div className="space-y-4 animate-in slide-in-from-bottom-2 fade-in">
+                    {data.explain && <p className="text-center text-slate-500 text-sm font-medium">{data.explain}</p>}
+                    <button type="button" onClick={onNext} className={`w-full py-4 rounded-2xl font-bold text-xl text-white shadow-xl active:scale-95 transition-all ${isRight ? 'bg-green-500' : 'bg-slate-900'}`}>Continuer</button>
+                </div>
+            )}
+        </div>
+    );
+};
